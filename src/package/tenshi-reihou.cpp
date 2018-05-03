@@ -3465,24 +3465,24 @@ public:
     }
 };
 
-RhShiguangCard::RhShiguangCard()
+RhShuguangCard::RhShuguangCard()
 {
-    m_skillName = "rhshiguangv";
+    m_skillName = "rhshuguangv";
     target_fixed = true;
 }
 
-void RhShiguangCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
+void RhShuguangCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
 {
     source->loseMark("@time");
-    source->drawCards(1, "rhshiguang");
-    room->addPlayerMark(source, "rhshiguang");
+    source->drawCards(1, "rhshuguang");
+    room->addPlayerMark(source, "rhshuguang");
 }
 
-class RhShiguangGivenSkill : public ZeroCardViewAsSkill
+class RhShuguangGivenSkill : public ZeroCardViewAsSkill
 {
 public:
-    RhShiguangGivenSkill()
-        : ZeroCardViewAsSkill("rhshiguangv")
+    RhShuguangGivenSkill()
+        : ZeroCardViewAsSkill("rhshuguangv")
     {
         attached_lord_skill = true;
     }
@@ -3499,15 +3499,15 @@ public:
 
     virtual const Card *viewAs() const
     {
-        return new RhShiguangCard;
+        return new RhShuguangCard;
     }
 };
 
-class RhShiguang : public TriggerSkill
+class RhShuguang : public TriggerSkill
 {
 public:
-    RhShiguang()
-        : TriggerSkill("rhshiguang")
+    RhShuguang()
+        : TriggerSkill("rhshuguang")
     {
         events << EventAcquireSkill << EventLoseSkill << EventPhaseChanging;
         frequency = NotCompulsory;
@@ -3544,10 +3544,10 @@ public:
         if (triggerEvent == EventAcquireSkill) {
             player->gainMark("@time", 4);
             foreach (ServerPlayer *p, room->getAlivePlayers())
-                room->attachSkillToPlayer(p, "rhshiguangv");
+                room->attachSkillToPlayer(p, "rhshuguangv");
         } else {
             foreach (ServerPlayer *p, room->getAllPlayers()) {
-                room->detachSkillFromPlayer(p, "rhshiguangv", true);
+                room->detachSkillFromPlayer(p, "rhshuguangv", true);
                 if (p->getMark("@time") > 0)
                     p->loseAllMarks("@time");
             }
@@ -3556,17 +3556,17 @@ public:
     }
 };
 
-class RhShiguangMaxCards : public MaxCardsSkill
+class RhShuguangMaxCards : public MaxCardsSkill
 {
 public:
-    RhShiguangMaxCards()
-        : MaxCardsSkill("#rhshiguang")
+    RhShuguangMaxCards()
+        : MaxCardsSkill("#rhshuguang")
     {
     }
 
     virtual int getExtra(const Player *target) const
     {
-        return -target->getMark("rhshiguang");
+        return -target->getMark("rhshuguang");
     }
 };
 
@@ -4725,9 +4725,9 @@ TenshiReihouPackage::TenshiReihouPackage()
     reihou037->addSkill(new RhGuozhu);
 
     General *reihou038 = new General(this, "reihou038", "rei", 4, true, true);
-    reihou038->addSkill(new RhShiguang);
-    reihou038->addSkill(new RhShiguangMaxCards);
-    related_skills.insertMulti("rhshiguang", "#rhshiguang");
+    reihou038->addSkill(new RhShuguang);
+    reihou038->addSkill(new RhShuguangMaxCards);
+    related_skills.insertMulti("rhshuguang", "#rhshuguang");
     reihou038->addSkill(new RhKuili);
 
     General *reihou039 = new General(this, "reihou039", "rei", 4, true, true);
@@ -4783,13 +4783,13 @@ TenshiReihouPackage::TenshiReihouPackage()
     addMetaObject<RhYinrenCard>();
     addMetaObject<RhYoushengCard>();
     addMetaObject<RhYizhiCard>();
-    addMetaObject<RhShiguangCard>();
+    addMetaObject<RhShuguangCard>();
     addMetaObject<RhChenshengCard>();
     addMetaObject<RhNajieCard>();
     addMetaObject<RhXiaozhangCard>();
     addMetaObject<RhZhangchiCard>();
 
-    skills << new RhShiguangGivenSkill << new RhZhangchiVS;
+    skills << new RhShuguangGivenSkill << new RhZhangchiVS;
 }
 
 ADD_PACKAGE(TenshiReihou)
