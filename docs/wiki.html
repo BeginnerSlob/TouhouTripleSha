@@ -205,6 +205,8 @@ Error message and password prompt
 
 <li>$:/出处宏</li>
 
+<li>$:/更新历史宏</li>
+
 <li>$:/花色宏</li>
 
 <li>$:/技能宏</li>
@@ -9616,6 +9618,41 @@ Error message and password prompt
 &lt;!--$source$--&gt;
 \end</pre>
 </div>
+<div created="20180503014605144" modified="20180503014707413" tags="$:/tags/Macro" title="$:/更新历史宏">
+<pre>\define revealContent(id:&quot;&quot; titleHide:&quot;&quot; titleShow:&quot;&quot; text:&quot;&quot;)
+&lt;$reveal type=&quot;nomatch&quot; state=&quot;$:/state/$id$&quot; text=&quot;show&quot;&gt;
+
+&lt;$button class=&quot;tc-btn-invisible&quot; set=&quot;$:/state/$id$&quot; setTo=&quot;show&quot;&gt;
+
+$titleHide$
+
+&lt;/$button&gt;
+
+&lt;/$reveal&gt;
+
+&lt;$reveal type=&quot;match&quot; state=&quot;$:/state/$id$&quot; text=&quot;show&quot;&gt;
+
+&lt;$button class=&quot;tc-btn-invisible&quot; set=&quot;$:/state/$id$&quot; setTo=&quot;hide&quot;&gt;
+
+$titleShow$
+
+&lt;/$button&gt;
+
+&lt;&lt;&lt;
+$text$
+&lt;&lt;&lt;
+
+&lt;/$reveal&gt;
+\end
+
+\define update(id:&quot;&quot; text:&quot;&quot;)
+&lt;&lt;revealContent &quot;&quot;&quot;$id$&quot;&quot;&quot; &quot;!!''更改历史▸''&quot; &quot;!!''更改历史▾''&quot; &quot;&quot;&quot;$text$&quot;&quot;&quot;&gt;&gt;
+\end
+
+\define detail(id:&quot;&quot; id2:&quot;&quot; text:&quot;&quot;)
+&lt;&lt;revealContent &quot;&quot;&quot;$id$$id2$&quot;&quot;&quot; &quot;!!!''详细▸''&quot; &quot;!!!''详细▾''&quot; &quot;&quot;&quot;$text$&quot;&quot;&quot;&gt;&gt;
+\end</pre>
+</div>
 <div created="20160103075912063" modified="20160108012417725" tags="$:/tags/Macro" title="$:/花色宏">
 <pre>\define spade()
 @@color:black;♠@@
@@ -11041,7 +11078,30 @@ thyanmeng:''衍梦''——''锁定技''。其他角色不能令你的技能无�
 
 ''恋迷''——''觉醒技''。准备阶段开始时，若你装备区里的牌数大于你的体力值，你减1点体力上限，然后获得〖''狂骨''〗。
 
-（''狂骨''）——（参见[[蕾琪尔·阿尔卡德]]）</pre>
+（''狂骨''）——（参见[[蕾琪尔·阿尔卡德]]）
+
+&lt;$macrocall $name=update id={{!!title}}
+
+text=&quot;&quot;&quot;!V8.9
+
+!!''禁果''
+''阶段技''⇨''出牌阶段开始时''
+
+''牌''⇨''手牌''
+
+效果重做
+&lt;$macrocall $name=detail id={{!!title}} id2=a
+text=&quot;''禁果''——''阶段技''。你可以选择一项：1.获得于此回合内的〖''血呓''〗；2.弃置一张&lt;$macrocall $name=heart/&gt;~~手~~牌并选择一名~~有牌的~~其他角色▶你获取该角色的两张牌，__然后其选择一项：1.回复1点体力；2.摸一张牌。__&quot;/&gt;
+
+!!''血呓''
+
+增加''阶段技''
+
+''非锦囊牌''⇨''牌''
+&lt;$macrocall $name=detail id={{!!title}} id2=b
+text=&quot;''血呓''——你可以将一张&lt;$macrocall $name=heart/&gt;~~非锦囊~~牌当【春雪幻梦】使用。&quot;/&gt;&quot;&quot;&quot;
+
+/&gt;</pre>
 </div>
 <div created="20160105131303386" modified="20160111123058184" tags="花势力 幻属性 异世界的金兰" title="芙蕾德莉卡·贝伦卡斯泰露">
 <pre>&lt;!--旧王异--&gt;
