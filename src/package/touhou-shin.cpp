@@ -2186,6 +2186,114 @@ public:
     }
 };
 
+ThDieyingCard::ThDieyingCard()
+{
+}
+
+bool ThDieyingCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const
+{
+    return targets.isEmpty() && !to_select->isWounded();
+}
+
+void ThDieyingCard::onEffect(const CardEffectStruct &effect) const
+{
+    effect.from->getRoom()->damage(DamageStruct("thdieying", effect.from, effect.to));
+}
+
+class ThDieyingVS : public OneCardViewAsSkill
+{
+public:
+    ThDieyingVS()
+        : OneCardViewAsSkill("thdieying")
+    {
+        response_pattern = "@@thdieying";
+        filter_pattern = ".!";
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const
+    {
+        Card *card = new ThDieyingCard;
+        card->addSubcard(originalCard);
+        return card;
+    }
+};
+
+class ThDieying : public TriggerSkill
+{
+public:
+    ThDieying()
+        : TriggerSkill("thdieying")
+    {
+        view_as_skill = new ThDieyingVS;
+        events << PreCardUsed << EventPhaseChanging << EventPhaseStart;
+    }
+
+    virtual QStringList triggerable(TriggerEvent e, Room *r, ServerPlayer *p, QVariant &d, ServerPlayer *&) const
+    {
+        if (e == PreCardUsed && p->getPhase() != Player::NotActive && r->getCurrent() == p) {
+            CardUseStruct use = d.value<CardUseStruct>();
+            int type = use.card->getTypeId();
+            if (type != 0) {
+                int n = p->getMark(objectName());
+                if (n == 0)
+                    p->setMark(objectName(), type);
+                else if (n != type)
+                    p->setFlags("ThDieyingDisabled");
+            }
+        } else if (e == EventPhaseChanging && p->getMark(objectName()) > 0) {
+            if (d.value<PhaseChangeStruct>().to == Player::NotActive)
+                p->setMark(objectName(), 0);
+        } else if (e == EventPhaseStart && p->getPhase() == Player::Finish && p->getMark(objectName()) > 0
+                   && !p->hasFlag("ThDieyingDisabled")) {
+            return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        return room->askForUseCard(player, "@@thdieying", "@thdieying");
+    }
+};
+
+ThBiyiCard::ThBiyiCard()
+{
+}
+
+bool ThBiyiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *) const
+{
+    int sum = 0;
+    foreach (const Player *p, targets)
+        sum += p->getHp();
+    if (sum == 3)
+        return false;
+    return sum + to_select->getHp() <= 3;
+}
+
+void ThBiyiCard::onEffect(const CardEffectStruct &effect) const
+{
+    effect.to->drawCards(1, "thbiyi");
+}
+
+class ThBiyi : public ZeroCardViewAsSkill
+{
+public:
+    ThBiyi()
+        : ZeroCardViewAsSkill("thbiyi")
+    {
+    }
+
+    virtual const Card *viewAs() const
+    {
+        return new ThBiyiCard;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return !player->hasUsed("ThBiyiCard");
+    }
+};
+
 TouhouShinPackage::TouhouShinPackage()
     : Package("touhou-shin")
 {
@@ -2270,12 +2378,18 @@ TouhouShinPackage::TouhouShinPackage()
     shin016->addSkill(new ThYuancui);
     shin016->addSkill(new ThHuikuang);
 
+    General *shin018 = new General(this, "shin018", "hana", 3);
+    shin018->addSkill(new ThDieying);
+    shin018->addSkill(new ThBiyi);
+
     addMetaObject<ThLuanshenCard>();
     addMetaObject<ThLianyingCard>();
     addMetaObject<ThMumiCard>();
     addMetaObject<ThShenmiCard>();
     addMetaObject<ThMuyuCard>();
     addMetaObject<ThNihuiCard>();
+    addMetaObject<ThDieyingCard>();
+    addMetaObject<ThBiyiCard>();
 
     skills << new ThBaochuiRecord;
 }
