@@ -2322,17 +2322,13 @@ public:
     ThShijieViewAsSkill()
         : OneCardViewAsSkill("thshijie")
     {
+        filter_pattern = ".|.|.|utensil";
         expand_pile = "utensil";
     }
 
     virtual bool isEnabledAtPlay(const Player *) const
     {
         return false;
-    }
-
-    virtual bool viewFilter(const Card *to_select) const
-    {
-        return Self->getPile("utensil").contains(to_select->getEffectiveId());
     }
 
     virtual const Card *viewAs(const Card *o_card) const

@@ -2243,8 +2243,8 @@ public:
         } else if (e == EventPhaseChanging && p->getMark(objectName()) > 0) {
             if (d.value<PhaseChangeStruct>().to == Player::NotActive)
                 p->setMark(objectName(), 0);
-        } else if (e == EventPhaseStart && p->getPhase() == Player::Finish && p->getMark(objectName()) > 0
-                   && !p->hasFlag("ThDieyingDisabled")) {
+        } else if (e == EventPhaseStart && TriggerSkill::triggerable(p) && p->getPhase() == Player::Finish
+                   && p->getMark(objectName()) > 0 && !p->hasFlag("ThDieyingDisabled")) {
             return QStringList(objectName());
         }
         return QStringList();
@@ -2291,6 +2291,140 @@ public:
     virtual bool isEnabledAtPlay(const Player *player) const
     {
         return !player->hasUsed("ThBiyiCard");
+    }
+};
+
+ThTunaCard::ThTunaCard()
+{
+    will_throw = false;
+    target_fixed = true;
+    handling_method = MethodNone;
+}
+
+void ThTunaCard::use(Room *, ServerPlayer *source, QList<ServerPlayer *> &) const
+{
+    source->skip(Player::Play);
+    source->addToPile("breath", subcards);
+}
+
+class ThTunaVS : public ViewAsSkill
+{
+public:
+    ThTunaVS()
+        : ViewAsSkill("thtuna")
+    {
+        response_pattern = "@@thtuna";
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
+    {
+        int sum = 0;
+        foreach (const Card *c, selected)
+            sum += c->getNumber();
+        if (sum == 13)
+            return false;
+        return sum + to_select->getNumber() <= 13 && to_select->getTypeId() != Card::TypeBasic;
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const
+    {
+        if (cards.isEmpty())
+            return NULL;
+        Card *card = new ThTunaCard;
+        card->addSubcards(cards);
+        return card;
+    }
+};
+
+class ThTuna : public TriggerSkill
+{
+public:
+    ThTuna()
+        : TriggerSkill("thtuna")
+    {
+        view_as_skill = new ThTunaVS;
+        events << EventPhaseChanging;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (TriggerSkill::triggerable(player) && !player->isNude() && !player->isSkipped(Player::Play)) {
+            if (data.value<PhaseChangeStruct>().to == Player::Play)
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        return room->askForUseCard(player, "@@thtuna", "@thtuna");
+    }
+};
+
+ThNingguCard::ThNingguCard()
+{
+    will_throw = false;
+    handling_method = MethodNone;
+}
+
+bool ThNingguCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
+    return targets.isEmpty() && !to_select->hasFlag("ThNingguUsed") && to_select != Self;
+}
+
+void ThNingguCard::use(Room *room, ServerPlayer *, QList<ServerPlayer *> &targets) const
+{
+    room->setPlayerFlag(targets.first(), "ThNingguUsed");
+
+    CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), "thninggu", QString());
+    room->throwCard(this, reason, NULL);
+
+    if (!room->askForCard(targets.first(), "^BasicCard", "@thninggu-discard"))
+        room->loseHp(targets.first());
+}
+
+class ThNingguVS : public OneCardViewAsSkill
+{
+public:
+    ThNingguVS()
+        : OneCardViewAsSkill("thninggu")
+    {
+        filter_pattern = ".|.|.|breath";
+        expand_pile = "breath";
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const
+    {
+        Card *card = new ThNingguCard;
+        card->addSubcard(originalCard);
+        return card;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return !player->getPile("breath").isEmpty();
+    }
+};
+
+class ThNinggu : public TriggerSkill
+{
+public:
+    ThNinggu()
+        : TriggerSkill("thninggu")
+    {
+        view_as_skill = new ThNingguVS;
+        events << EventPhaseChanging;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
+            foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                if (p->hasFlag("ThNingguUsed"))
+                    room->setPlayerFlag(p, "-ThNingguUsed");
+            }
+        }
+        return QStringList();
     }
 };
 
@@ -2498,6 +2632,10 @@ TouhouShinPackage::TouhouShinPackage()
     shin018->addSkill(new ThDieying);
     shin018->addSkill(new ThBiyi);
 
+    General *shin019 = new General(this, "shin019", "yuki");
+    shin019->addSkill(new ThTuna);
+    shin019->addSkill(new ThNinggu);
+
     General *shin022 = new General(this, "shin022", "hana");
     shin022->addSkill(new ThGuizhou);
     shin022->addSkill(new ThRenmo);
@@ -2512,6 +2650,8 @@ TouhouShinPackage::TouhouShinPackage()
     addMetaObject<ThNihuiCard>();
     addMetaObject<ThDieyingCard>();
     addMetaObject<ThBiyiCard>();
+    addMetaObject<ThTunaCard>();
+    addMetaObject<ThNingguCard>();
     addMetaObject<ThRenmoCard>();
 
     skills << new ThBaochuiRecord;
