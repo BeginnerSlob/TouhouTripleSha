@@ -142,7 +142,7 @@ public:
     IkHuanghun()
         : OneCardViewAsSkill("ikhuanghun")
     {
-        filter_pattern = "TrickCard";
+        filter_pattern = "TrickCard|.|.|hand";
     }
 
     const Card *viewAs(const Card *originalCard) const

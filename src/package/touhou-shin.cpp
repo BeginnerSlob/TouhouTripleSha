@@ -2294,6 +2294,122 @@ public:
     }
 };
 
+class ThGuizhou : public TargetModSkill
+{
+public:
+    ThGuizhou()
+        : TargetModSkill("thguizhou")
+    {
+        frequency = NotCompulsory;
+    }
+
+    virtual int getExtraTargetNum(const Player *from, const Card *) const
+    {
+        if (from->hasSkill(objectName())) {
+            int n = 0;
+            if (from->getHp() == 1)
+                n++;
+            foreach (const Player *p, from->getAliveSiblings()) {
+                if (p->getHp() == 1)
+                    n++;
+            }
+            return n;
+        }
+        return 0;
+    }
+};
+
+ThRenmoCard::ThRenmoCard()
+{
+    will_throw = false;
+    can_recast = true;
+    handling_method = Card::MethodRecast;
+    target_fixed = true;
+}
+
+void ThRenmoCard::onUse(Room *room, const CardUseStruct &card_use) const
+{
+    ServerPlayer *player = card_use.from;
+
+    CardMoveReason reason(CardMoveReason::S_REASON_RECAST, player->objectName());
+    reason.m_skillName = this->getSkillName();
+    room->moveCardTo(this, player, NULL, Player::DiscardPile, reason);
+    player->broadcastSkillInvoke("@recast");
+
+    int id = card_use.card->getSubcards().first();
+
+    LogMessage log;
+    log.type = "#UseCard_Recast";
+    log.from = player;
+    log.card_str = QString::number(id);
+    room->sendLog(log);
+
+    player->drawCards(1, "recast");
+
+    QString choice = room->askForChoice(player, "threnmo", "attackrange+slashnum");
+
+    if (choice == "attackrange")
+        room->addPlayerMark(player, "threnmorange");
+    else
+        room->addPlayerMark(player, "threnmonum");
+
+    //Player::getAttackRange
+}
+
+class ThRenmoVS : public OneCardViewAsSkill
+{
+public:
+    ThRenmoVS()
+        : OneCardViewAsSkill("threnmo")
+    {
+        filter_pattern = "EquipCard|.|.|hand";
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const
+    {
+        Card *card = new ThRenmoCard;
+        card->addSubcard(originalCard);
+        return card;
+    }
+};
+
+class ThRenmo : public TriggerSkill
+{
+public:
+    ThRenmo()
+        : TriggerSkill("threnmo")
+    {
+        view_as_skill = new ThRenmoVS;
+        events << EventPhaseChanging;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *r, ServerPlayer *p, QVariant &d, ServerPlayer *&) const
+    {
+        if (d.value<PhaseChangeStruct>().to == Player::NotActive) {
+            if (p->getMark("threnmorange") > 0)
+                r->setPlayerMark(p, "threnmorange", 0);
+            if (p->getMark("threnmonum") > 0)
+                r->setPlayerMark(p, "threnmonum", 0);
+        }
+        return QStringList();
+    }
+};
+
+class ThRenMoTargetMod : public TargetModSkill
+{
+public:
+    ThRenMoTargetMod()
+        : TargetModSkill("#threnmo")
+    {
+        frequency = NotCompulsory;
+    }
+
+    virtual int getResidueNum(const Player *from, const Card *) const
+    {
+        return from->getMark("threnmonum");
+    }
+};
+
 TouhouShinPackage::TouhouShinPackage()
     : Package("touhou-shin")
 {
@@ -2382,6 +2498,12 @@ TouhouShinPackage::TouhouShinPackage()
     shin018->addSkill(new ThDieying);
     shin018->addSkill(new ThBiyi);
 
+    General *shin022 = new General(this, "shin022", "hana");
+    shin022->addSkill(new ThGuizhou);
+    shin022->addSkill(new ThRenmo);
+    shin022->addSkill(new ThRenMoTargetMod);
+    related_skills.insertMulti("threnmo", "#threnmo");
+
     addMetaObject<ThLuanshenCard>();
     addMetaObject<ThLianyingCard>();
     addMetaObject<ThMumiCard>();
@@ -2390,6 +2512,7 @@ TouhouShinPackage::TouhouShinPackage()
     addMetaObject<ThNihuiCard>();
     addMetaObject<ThDieyingCard>();
     addMetaObject<ThBiyiCard>();
+    addMetaObject<ThRenmoCard>();
 
     skills << new ThBaochuiRecord;
 }

@@ -98,4 +98,13 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
+class ThRenmoCard : public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThRenmoCard();
+    virtual void onUse(Room *room, const CardUseStruct &card_use) const;
+};
+
 #endif // TOUHOUSHIN_H
