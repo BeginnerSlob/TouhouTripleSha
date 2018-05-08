@@ -211,6 +211,7 @@ return {
 	
 	["#shin017"] = "危险的舞者",
 	["shin017"] = "尔子田里乃＆丁礼田舞",--风 - 空 - 3血
+	["&shin017"] = "里乃＆舞",
 	["designer:shin017"] = "宛若改帝",
 	["illustrator:shin017"] = "",
 	["cv:shin017"] = "暂无",
@@ -221,6 +222,7 @@ return {
 
 	["#shin018"] = "近于神的蝴蝶",
 	["shin018"] = "爱塔妮缇拉尔瓦",--花 - 空 - 3血
+	["&shin018"] = "拉尔瓦",
 	["designer:shin018"] = "同声异谱&此人不搞基",
 	["illustrator:shin018"] = "",
 	["cv:shin018"] = "暂无",
@@ -231,6 +233,7 @@ return {
 	
 	["#shin019"] = "神荼郁垒",
 	["shin019"] = "高丽野阿吽",--雪 - 空 - 4血
+	["&shin019"] = "阿吽",
 	["designer:shin019"] = "桀",
 	["illustrator:shin019"] = "",
 	["cv:shin019"] = "暂无",
@@ -241,6 +244,7 @@ return {
 	
 	["#shin020"] = "追想之春",
 	["shin020"] = "依神紫苑",--月 - 空 - 4血
+	["&shin020"] = "紫苑",
 	["designer:shin020"] = "名和行年",
 	["illustrator:shin020"] = "",
 	["cv:shin020"] = "暂无",
@@ -253,6 +257,7 @@ return {
 
 	["#shin021"] = "究极的秘神",
 	["shin021"] = "摩多罗隐岐奈",--风 - 幻 - 3血
+	["&shin021"] = "隐岐奈",
 	["designer:shin021"] = "怪若樲棂",
 	["illustrator:shin021"] = "",
 	["cv:shin021"] = "暂无",
@@ -263,6 +268,7 @@ return {
 	
 	["#shin022"] = "渡世的山姥",
 	["shin022"] = "坂田合欢乃",--花 - 空 - 4血
+	["&shin022"] = "合欢乃",
 	["designer:shin022"] = "永恒的须臾&同声异谱",
 	["illustrator:shin022"] = "",
 	["cv:shin022"] = "暂无",
@@ -273,6 +279,7 @@ return {
 
 	["#shin023"] = "垂迹的地藏",
 	["shin023"] = "矢田寺成美",--雪 - 空 - 3血
+	["&shin023"] = "成美",
 	["designer:shin023"] = "雾之湖的小沐",
 	["illustrator:shin023"] = "",
 	["cv:shin023"] = "暂无",
@@ -283,6 +290,7 @@ return {
 	
 	["#shin024"] = "清朴之秋",
 	["shin024"] = "依神女苑",--月 - 空 - 3血
+	["&shin024"] = "女苑",
 	["designer:shin024"] = "花店",
 	["illustrator:shin024"] = "",
 	["cv:shin024"] = "暂无",
