@@ -2544,6 +2544,55 @@ public:
     }
 };
 
+class ThMieyi : public TriggerSkill
+{
+public:
+    ThMieyi()
+        : TriggerSkill("thmieyi")
+    {
+        events << TargetSpecifying;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    {
+        TriggerList skill_list;
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.card->isKindOf("Slash")) {
+            foreach (ServerPlayer *to, use.to) {
+                if (TriggerSkill::triggerable(to))
+                    skill_list.insert(to, QStringList(objectName()));
+            }
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerSkill, Room *room, ServerPlayer *target, QVariant &, ServerPlayer *ask_who) const
+    {
+        if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(target))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerSkill, Room *room, ServerPlayer *target, QVariant &data, ServerPlayer *ask_who) const
+    {
+        CardUseStruct use = data.value<CardUseStruct>();
+        use.nullified_list << "_ALL_TARGETS";
+        data = QVariant::fromValue(use);
+
+        Duel *duel = new Duel(Card::NoSuit, 0);
+        duel->setSkillName("_thmieyi");
+        duel->setCancelable(false);
+        if (target->isProhibited(ask_who, duel))
+            room->useCard(CardUseStruct(duel, target, ask_who));
+        else
+            delete duel;
+
+        return false;
+    }
+}
+
 TouhouShinPackage::TouhouShinPackage()
     : Package("touhou-shin")
 {
@@ -2641,6 +2690,10 @@ TouhouShinPackage::TouhouShinPackage()
     shin022->addSkill(new ThRenmo);
     shin022->addSkill(new ThRenMoTargetMod);
     related_skills.insertMulti("threnmo", "#threnmo");
+
+    General *shin023 = new General(this, "shin023", "hana");
+    shin023->addSkill(new ThMieyi);
+    //shin023->addSkill(new ThShili);
 
     addMetaObject<ThLuanshenCard>();
     addMetaObject<ThLianyingCard>();
