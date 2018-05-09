@@ -2553,7 +2553,7 @@ public:
         events << TargetSpecifying;
     }
 
-    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    virtual TriggerList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &data) const
     {
         TriggerList skill_list;
         CardUseStruct use = data.value<CardUseStruct>();
@@ -2566,7 +2566,7 @@ public:
         return skill_list;
     }
 
-    virtual bool cost(TriggerSkill, Room *room, ServerPlayer *target, QVariant &, ServerPlayer *ask_who) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *target, QVariant &, ServerPlayer *ask_who) const
     {
         if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(target))) {
             room->broadcastSkillInvoke(objectName());
@@ -2575,7 +2575,7 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerSkill, Room *room, ServerPlayer *target, QVariant &data, ServerPlayer *ask_who) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *target, QVariant &data, ServerPlayer *ask_who) const
     {
         CardUseStruct use = data.value<CardUseStruct>();
         use.nullified_list << "_ALL_TARGETS";
@@ -2584,14 +2584,90 @@ public:
         Duel *duel = new Duel(Card::NoSuit, 0);
         duel->setSkillName("_thmieyi");
         duel->setCancelable(false);
-        if (target->isProhibited(ask_who, duel))
+        if (!target->isProhibited(ask_who, duel))
             room->useCard(CardUseStruct(duel, target, ask_who));
         else
             delete duel;
 
         return false;
     }
-}
+};
+
+class ThShili : public TriggerSkill
+{
+public:
+    ThShili()
+        : TriggerSkill("thshili")
+    {
+        events << EventPhaseStart;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const
+    {
+        return TriggerSkill::triggerable(target) && target->getPhase() == Player::Play;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        QList<int> &drawPile = room->getDrawPile();
+        QList<int> card_ids;
+        for (int i = 0; i < 2; i++) {
+            room->getThread()->trigger(FetchDrawPileCard, room, NULL);
+            if (drawPile.isEmpty())
+                room->swapPile();
+            card_ids << drawPile.takeLast();
+        }
+        CardsMoveStruct move(card_ids, player, Player::PlaceTable,
+                             CardMoveReason(CardMoveReason::S_REASON_TURNOVER, player->objectName(), objectName(), QString()));
+        room->moveCardsAtomic(move, true);
+
+        room->getThread()->delay();
+        room->getThread()->delay();
+
+        bool same = Sanguosha->getCard(card_ids.first())->sameColorWith(Sanguosha->getCard(card_ids.last()));
+        if (same) {
+            Slash *slash = new Slash(Card::SuitToBeDecided, -1);
+            slash->addSubcards(card_ids);
+            slash->setSkillName("_thshili");
+            QList<ServerPlayer *> targets;
+            foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                if (player->canSlash(p, slash))
+                    targets << p;
+            }
+
+            ServerPlayer *target = NULL;
+            if (!targets.isEmpty())
+                target = room->askForPlayerChosen(player, targets, objectName(), "@dummy-slash", true);
+            if (target)
+                room->useCard(CardUseStruct(slash, player, target));
+            else {
+                CardMoveReason reason(CardMoveReason::S_REASON_NATURAL_ENTER, player->objectName(), objectName(), QString());
+                room->throwCard(slash, reason, NULL);
+                delete slash;
+            }
+        } else {
+            room->fillAG(card_ids, player);
+            int id = room->askForAG(player, card_ids, false, objectName());
+            card_ids.removeOne(id);
+            room->clearAG(player);
+            room->obtainCard(player, id, true);
+
+            CardMoveReason reason(CardMoveReason::S_REASON_NATURAL_ENTER, player->objectName(), objectName(), QString());
+            room->moveCardTo(Sanguosha->getCard(card_ids.first()), NULL, Player::DiscardPile, reason, true);
+        }
+
+        return false;
+    }
+};
 
 TouhouShinPackage::TouhouShinPackage()
     : Package("touhou-shin")
@@ -2691,9 +2767,11 @@ TouhouShinPackage::TouhouShinPackage()
     shin022->addSkill(new ThRenMoTargetMod);
     related_skills.insertMulti("threnmo", "#threnmo");
 
-    General *shin023 = new General(this, "shin023", "hana");
+    General *shin023 = new General(this, "shin023", "yuki");
     shin023->addSkill(new ThMieyi);
-    //shin023->addSkill(new ThShili);
+    shin023->addSkill(new ThShili);
+    shin009->addSkill(new SlashNoDistanceLimitSkill("thshili"));
+    related_skills.insertMulti("thshili", "#thshili-slash-ndl");
 
     addMetaObject<ThLuanshenCard>();
     addMetaObject<ThLianyingCard>();
