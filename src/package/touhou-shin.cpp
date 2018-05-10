@@ -3,6 +3,7 @@
 #include "client.h"
 #include "clientplayer.h"
 #include "engine.h"
+#include "fantasy.h"
 #include "general.h"
 #include "maneuvering.h"
 #include "room.h"
@@ -2582,6 +2583,104 @@ public:
     }
 };
 
+class ThShenhu : public TriggerSkill
+{
+public:
+    ThShenhu()
+        : TriggerSkill("thshenhu")
+    {
+        events << Damage << Damaged << EventPhaseChanging;
+    }
+
+    virtual QStringList triggerable(TriggerEvent e, Room *room, ServerPlayer *player, QVariant &d, ServerPlayer *&) const
+    {
+        if (e == EventPhaseChanging) {
+            if (d.value<PhaseChangeStruct>().to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAlivePlayers())
+                    p->setFlags("-ThShenhuUsed");
+            }
+            return QStringList();
+        }
+        if (TriggerSkill::triggerable(player) && !player->isKongcheng()) {
+            foreach (const Player *p, room->getOtherPlayers(player)) {
+                if (!p->isKongcheng())
+                    return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        QList<ServerPlayer *> targets;
+        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+            if (!p->isKongcheng() && !p->hasFlag("ThShenhuUsed"))
+                targets << p;
+        }
+        ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "@thshenhu", true, true);
+        if (target) {
+            room->broadcastSkillInvoke(objectName());
+            player->tag["ThShenhuTarget"] = QVariant::fromValue(target);
+            target->setFlags("ThShenhuUsed");
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        ServerPlayer *target = player->tag["ThShenhuTarget"].value<ServerPlayer *>();
+        player->tag.remove("ThShenhuTarget");
+        if (target) {
+            bool win = player->pindian(target, objectName());
+            if (win) {
+                LureTiger *lure = new LureTiger(Card::NoSuit, 0);
+                lure->setSkillName("_thshenhu");
+                if (!player->isProhibited(target, lure))
+                    room->useCard(CardUseStruct(lure, player, target));
+                else
+                    delete lure;
+            } else
+                target->drawCards(1, objectName());
+        }
+        return false;
+    }
+};
+
+class ThHouhu : public TriggerSkill
+{
+public:
+    ThHouhu()
+        : TriggerSkill("thhouhu")
+    {
+        events << Pindian;
+        frequency = Frequent;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *, QVariant &) const
+    {
+        TriggerList list;
+        foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName()))
+            list.insert(p, QStringList(objectName()));
+        return list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *player) const
+    {
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer *player) const
+    {
+        player->drawCards(1, objectName());
+        return false;
+    }
+};
+
 class ThGuizhou : public TargetModSkill
 {
 public:
@@ -2918,6 +3017,10 @@ TouhouShinPackage::TouhouShinPackage()
     General *shin019 = new General(this, "shin019", "yuki");
     shin019->addSkill(new ThTuna);
     shin019->addSkill(new ThNinggu);
+
+    General *shin021 = new General(this, "shin021", "kaze");
+    shin021->addSkill(new ThShenhu);
+    shin021->addSkill(new ThHouhu);
 
     General *shin022 = new General(this, "shin022", "hana");
     shin022->addSkill(new ThGuizhou);
