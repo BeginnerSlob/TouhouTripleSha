@@ -2270,9 +2270,7 @@ function SmartAI:askForDiscard(reason, discard_num, min_num, optional, include_e
 	if include_equip and (self.player:getEquips():isEmpty() or not self.player:isJilei(self.player:getEquips():first())) then flag = flag .. "e" end
 	local all_cards = self.player:getCards(flag)
 	local cards = {}
-	local ignore_table = reason == "gamerule" and self.player:property("ignored_hands"):toString():split("+") or {}
 	for _, c in sgs.qlist(all_cards) do
-		if table.contains(ignore_table, c:getEffectiveId()) then continue end
 		if sgs.Sanguosha:matchExpPattern(pattern, self.player, c) then table.insert(cards, c) end
 	end
 	self:sortByKeepValue(cards)
