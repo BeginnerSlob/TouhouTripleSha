@@ -6271,10 +6271,10 @@ IkaiMokuPackage::IkaiMokuPackage()
     General *luna029 = new General(this, "luna029", "tsuki", 5);
     luna029->addSkill(new IkZhuohuo);
     luna029->addSkill(new MarkAssignSkill("@blaze", 2));
+    related_skills.insertMulti("ikzhuohuo", "#@blaze-2");
     luna029->addSkill(new IkWumou);
     luna029->addSkill(new IkSuikong);
     luna029->addSkill(new IkTianwu);
-    related_skills.insertMulti("ikzhuohuo", "#@blaze-2");
 
     addMetaObject<IkHuanghunCard>();
     addMetaObject<IkSuinieCard>();

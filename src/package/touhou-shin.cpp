@@ -2583,6 +2583,173 @@ public:
     }
 };
 
+class ThQiongfaziyuan : public TriggerSkill
+{
+public:
+    ThQiongfaziyuan()
+        : TriggerSkill("thqiongfaziyuan")
+    {
+        events << Death;
+        frequency = Compulsory;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const
+    {
+        if (TriggerSkill::triggerable(target) && target->aliveCount() == 2) {
+            if (target->getMark("@poor") > 0)
+                return true;
+            foreach (const Player *p, target->getAliveSiblings()) {
+                if (p->getMark("@poor") > 0)
+                    return true;
+            }
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        room->sendCompulsoryTriggerLog(player, objectName());
+        foreach (ServerPlayer *p, room->getAlivePlayers()) {
+            if (p->getMark("@poor") > 0)
+                p->loseAllMarks("@poor");
+        }
+        player->drawCards(2, objectName());
+        return false;
+    }
+};
+
+class ThQiongfaSkill : public TriggerSkill
+{
+public:
+    ThQiongfaSkill()
+        : TriggerSkill("#thqiongfa")
+    {
+        events << EventMarksGot << EventMarksLost;
+        frequency = NotCompulsory;
+        global = true;
+    }
+
+    virtual QStringList triggerable(TriggerEvent e, Room *room, ServerPlayer *player, QVariant &data,
+                                    ServerPlayer *&) const
+    {
+        if (data.toString() == "@poor") {
+            if (e == EventMarksLost && player->getMark("@poor") == 0 && player->hasSkill("thchipin", true)
+                && player->hasSkill("thaimin", true)) {
+                QStringList skills;
+                skills << "-thchipin"
+                       << "-thaimin";
+                room->handleAcquireDetachSkills(player, skills, true, true);
+            } else if (e == EventMarksGot && !(player->hasSkill("thchipin", true) && player->hasSkill("thaimin", true))) {
+                QStringList skills;
+                skills << "thchipin"
+                       << "thaimin";
+                room->handleAcquireDetachSkills(player, skills, true, true);
+            }
+        }
+        return QStringList();
+    }
+};
+
+class ThChipin : public DrawCardsSkill
+{
+public:
+    ThChipin()
+        : DrawCardsSkill("thchipin")
+    {
+        frequency = Compulsory;
+    }
+
+    virtual int getDrawNum(ServerPlayer *player, int n) const
+    {
+        Room *room = player->getRoom();
+        room->broadcastSkillInvoke(objectName());
+        room->sendCompulsoryTriggerLog(player, objectName());
+
+        return n - 1;
+    }
+};
+
+ThAiminCard::ThAiminCard()
+{
+    target_fixed = true;
+}
+
+void ThAiminCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
+{
+    foreach (ServerPlayer *p, room->getOtherPlayers(source)) {
+        if (!source->isKongcheng()) {
+            const Card *card = room->askForCard(p, ".", "@thaimin-give:" + source->objectName(), QVariant(), MethodNone);
+            if (card) {
+                CardMoveReason reason(CardMoveReason::S_REASON_GIVE, p->objectName(), source->objectName(), "thaimin",
+                                      QString());
+                room->obtainCard(source, card, reason, false);
+            }
+        }
+    }
+}
+
+class ThAimin : public ZeroCardViewAsSkill
+{
+public:
+    ThAimin()
+        : ZeroCardViewAsSkill("thaimin")
+    {
+    }
+
+    virtual const Card *viewAs() const
+    {
+        return new ThAiminCard;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        if (player->hasUsed("ThAiminCard"))
+            return false;
+        bool has_card = false;
+        foreach (const Player *p, player->getAliveSiblings()) {
+            if (p->getHandcardNum() < player->getHandcardNum())
+                return false;
+            if (!p->isKongcheng())
+                has_card = true;
+        }
+        return has_card;
+    }
+};
+
+class ThAiminTrigger : public TriggerSkill
+{
+public:
+    ThAiminTrigger()
+        : TriggerSkill("#thaimin")
+    {
+        events << CardsMoveOneTime;
+        frequency = NotCompulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        if (move.to == player) {
+            if (move.reason.m_reason == CardMoveReason::S_REASON_GIVE && move.reason.m_skillName == "thaimin") {
+                foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                    if (p->getHandcardNum() > player->getHandcardNum())
+                        return QStringList(objectName());
+                }
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        room->sendCompulsoryTriggerLog(player, "thaimin");
+        player->loseMark("@poor");
+        ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), "thaimin", "@thaimin");
+        target->gainMark("@poor");
+        return false;
+    }
+};
+
 class ThShenhu : public TriggerSkill
 {
 public:
@@ -3018,6 +3185,15 @@ TouhouShinPackage::TouhouShinPackage()
     shin019->addSkill(new ThTuna);
     shin019->addSkill(new ThNinggu);
 
+    General *shin020 = new General(this, "shin020", "tsuki");
+    shin020->addSkill(new ThQiongfaziyuan);
+    shin020->addSkill(new MarkAssignSkill("@poor", 1));
+    shin020->addSkill(new ThQiongfaSkill);
+    related_skills.insertMulti("thqiongfaziyuan", "#@poor-1");
+    related_skills.insertMulti("thqiongfaziyuan", "#thqiongfa");
+    shin020->addRelateSkill("thchipin");
+    shin020->addRelateSkill("thaimin");
+
     General *shin021 = new General(this, "shin021", "kaze");
     shin021->addSkill(new ThShenhu);
     shin021->addSkill(new ThHouhu);
@@ -3045,9 +3221,11 @@ TouhouShinPackage::TouhouShinPackage()
     addMetaObject<ThBiyiCard>();
     addMetaObject<ThTunaCard>();
     addMetaObject<ThNingguCard>();
+    addMetaObject<ThAiminCard>();
     addMetaObject<ThRenmoCard>();
 
-    skills << new ThBaochuiRecord;
+    skills << new ThBaochuiRecord << new ThChipin << new ThAimin << new ThAiminTrigger;
+    related_skills.insertMulti("thaimin", "#thaimin");
 }
 
 ADD_PACKAGE(TouhouShin)

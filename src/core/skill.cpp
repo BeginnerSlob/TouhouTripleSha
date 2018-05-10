@@ -696,5 +696,5 @@ MarkAssignSkill::MarkAssignSkill(const QString &mark, int n)
 
 void MarkAssignSkill::onGameStart(ServerPlayer *player) const
 {
-    player->getRoom()->addPlayerMark(player, mark_name, n);
+    player->gainMark(mark_name, n);
 }
