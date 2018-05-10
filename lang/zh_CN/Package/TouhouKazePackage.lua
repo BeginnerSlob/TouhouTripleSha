@@ -7,7 +7,7 @@ return {
 	["kaze001"] = "东风谷早苗",--风 - 空 - 3血
 	["&kaze001"] = "早苗",
 	["designer:kaze001"] = "幻桜落",
-	["illustrator:kaze001"] = "6U",
+	["illustrator:kaze001"] = "An2A",
 	["cv:kaze001"] = "暂无",
 	["thzhiji"] = "祉迹",
 	[":thzhiji"] = "弃牌阶段结束时，若你于此阶段弃置了两张或更多的手牌，你可以回复1点体力或摸两张牌。",

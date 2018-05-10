@@ -140,7 +140,7 @@ return {
 	["sp011"] = "SP琪露诺",--雪 - 空 - 4血
 	["&sp011"] = "SP琪露诺",
 	["designer:sp011"] = "ECauchy",
-	["illustrator:sp011"] = "Spark621",
+	["illustrator:sp011"] = "cuteg",
 	["cv:sp011"] = "暂无",
 	["thjiuzhang"] = "九章",
 	[":thjiuzhang"] = "锁定技。你的点数大于9的牌的点数视为9。",
@@ -158,7 +158,7 @@ return {
 	["sp012"] = "SP露米娅",--月 - 空 - 4血
 	["&sp012"] = "SP露米娅",
 	["designer:sp012"] = "s0litaire",
-	["illustrator:sp012"] = "サクラメ",
+	["illustrator:sp012"] = "Spark621",
 	["cv:sp012"] = "暂无",
 	["thyingshi"] = "影弑",
 	[":thyingshi"] = "出牌阶段限三次，你可以对一名你与其距离为X的角色使用一张不计入使用限制的【杀】（X为你此阶段发动“影弑”的次数+1）。",
