@@ -2629,8 +2629,7 @@ public:
         global = true;
     }
 
-    virtual QStringList triggerable(TriggerEvent e, Room *room, ServerPlayer *player, QVariant &data,
-                                    ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent e, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
         if (data.toString() == "@poor") {
             if (e == EventMarksLost && player->getMark("@poor") == 0 && player->hasSkill("thchipin", true)
@@ -3089,6 +3088,100 @@ public:
     }
 };
 
+class ThYuchi : public TriggerSkill
+{
+public:
+    ThYuchi()
+        : TriggerSkill("thyuchi")
+    {
+        events << EventPhaseStart;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const
+    {
+        TriggerList list;
+        if (player->getPhase() == Player::Play && !player->isKongcheng()) {
+            foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                if (p->inMyAttackRange(player))
+                    list.insert(p, QStringList(objectName()));
+            }
+        }
+        return list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    {
+        if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    {
+        QString pattern = ".";
+        if (player->getHandcardNum() > ask_who->getHandcardNum())
+            pattern += "!";
+        const Card *card
+            = room->askForCard(player, pattern, "@thyuchi:" + ask_who->objectName(), QVariant(), Card::MethodNone);
+        if (pattern.endsWith("!") && !card)
+            card = player->getRandomHandCard();
+        if (card) {
+            CardMoveReason reason(CardMoveReason::S_REASON_GIVE, player->objectName(), ask_who->objectName(), objectName(),
+                                  QString());
+            room->obtainCard(ask_who, card, reason, false);
+
+            Slash *slash = new Slash(Card::NoSuit, 0);
+            slash->setSkillName("_thyuchi");
+            QList<ServerPlayer *> targets;
+            foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                if (player->canSlash(p, slash))
+                    targets << p;
+            }
+
+            if (targets.isEmpty()) {
+                delete slash;
+                return false;
+            }
+
+            ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "@dummy-slash");
+            room->useCard(CardUseStruct(slash, player, target));
+        }
+        return false;
+    }
+};
+
+class ThSancai : public TriggerSkill
+{
+public:
+    ThSancai()
+        : TriggerSkill("thsancai")
+    {
+        events << CardsMoveOneTime;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (TriggerSkill::triggerable(player)) {
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (!room->getTag("FirstRound").toBool() && player->getPhase() != Player::Draw && move.to == player
+                && move.to_place == Player::PlaceHand && player->getHandcardNum() > player->getMaxCards())
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        room->sendCompulsoryTriggerLog(player, objectName());
+        int n = player->getHandcardNum() - player->getMaxCards();
+        room->askForDiscard(player, objectName(), n, n);
+        return false;
+    }
+};
+
 TouhouShinPackage::TouhouShinPackage()
     : Package("touhou-shin")
 {
@@ -3209,6 +3302,10 @@ TouhouShinPackage::TouhouShinPackage()
     shin023->addSkill(new ThShili);
     shin023->addSkill(new SlashNoDistanceLimitSkill("thshili"));
     related_skills.insertMulti("thshili", "#thshili-slash-ndl");
+
+    General *shin024 = new General(this, "shin024", "tsuki", 3);
+    shin024->addSkill(new ThYuchi);
+    shin024->addSkill(new ThSancai);
 
     addMetaObject<ThLuanshenCard>();
     addMetaObject<ThLianyingCard>();
