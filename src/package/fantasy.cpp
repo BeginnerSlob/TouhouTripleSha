@@ -1110,29 +1110,24 @@ public:
         if (e == CardUsed) {
             if (WeaponSkill::triggerable(player) && player->getMark("controlRod") == 0) {
                 CardUseStruct use = data.value<CardUseStruct>();
-                if (use.card->isKindOf("Slash")) {
-                    foreach (ServerPlayer *to, use.to) {
-                        if (to->getMark("Equips_of_Others_Nullified_to_You") > 0)
-                            continue;
-                        return QStringList(objectName());
-                    }
-                }
+                if (use.card->isKindOf("Slash"))
+                    return QStringList(objectName());
             }
         } else if (e == Damage) {
             if (player && player->isAlive()) {
                 DamageStruct damage = data.value<DamageStruct>();
                 if (damage.to->isAlive() && damage.card && damage.card->hasFlag("rodusing") && !damage.transfer
-                    && !damage.chain)
+                    && !damage.chain && damage.to->getMark("Equips_of_Others_Nullified_to_You") == 0)
                     return QStringList(objectName());
             }
         }
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent e, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    virtual bool cost(TriggerEvent e, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
         if (e == CardUsed) {
-            if (player->askForSkillInvoke(objectName())) {
+            if (player->askForSkillInvoke(objectName(), data)) {
                 player->setMark("controlRod", 1);
                 room->setEmotion(player, "effects/weapon");
                 return true;
