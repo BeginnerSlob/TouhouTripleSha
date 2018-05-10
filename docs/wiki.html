@@ -9634,11 +9634,12 @@ Error message and password prompt
 &lt;!--$source$--&gt;
 \end</pre>
 </div>
-<div created="20180503014605144" modified="20180503014707413" tags="$:/tags/Macro" title="$:/更新历史宏">
+<div created="20180503014605144" modified="20180510021443573" tags="$:/tags/Macro" title="$:/更新历史宏">
 <pre>\define revealContent(id:&quot;&quot; titleHide:&quot;&quot; titleShow:&quot;&quot; text:&quot;&quot;)
-&lt;$reveal type=&quot;nomatch&quot; state=&quot;$:/temp/$id$&quot; text=&quot;show&quot;&gt;
+&lt;$list filter=&quot;[title&lt;&gt;addsuffix[$:/temp/]addsuffix{!!title}addsuffix[/]addsuffix[$id$]]&quot; variable=&quot;.state&quot;&gt;
+&lt;$reveal type=&quot;nomatch&quot; state=&lt;&lt;.state&gt;&gt; text=&quot;show&quot;&gt;
 
-&lt;$button class=&quot;tc-btn-invisible&quot; set=&quot;$:/temp/$id$&quot; setTo=&quot;show&quot;&gt;
+&lt;$button class=&quot;tc-btn-invisible&quot; set=&lt;&lt;.state&gt;&gt; setTo=&quot;show&quot;&gt;
 
 $titleHide$
 
@@ -9646,9 +9647,9 @@ $titleHide$
 
 &lt;/$reveal&gt;
 
-&lt;$reveal type=&quot;match&quot; state=&quot;$:/temp/$id$&quot; text=&quot;show&quot;&gt;
+&lt;$reveal type=&quot;match&quot; state=&lt;&lt;.state&gt;&gt; text=&quot;show&quot;&gt;
 
-&lt;$button class=&quot;tc-btn-invisible&quot; set=&quot;$:/temp/$id$&quot; setTo=&quot;hide&quot;&gt;
+&lt;$button class=&quot;tc-btn-invisible&quot; set=&lt;&lt;.state&gt;&gt; setTo=&quot;hide&quot;&gt;
 
 $titleShow$
 
@@ -9661,12 +9662,12 @@ $text$
 &lt;/$reveal&gt;
 \end
 
-\define update(id:&quot;&quot; text:&quot;&quot;)
-&lt;&lt;revealContent &quot;&quot;&quot;$id$&quot;&quot;&quot; &quot;!!''更改历史▸''&quot; &quot;!!''更改历史▾''&quot; &quot;&quot;&quot;$text$&quot;&quot;&quot;&gt;&gt;
+\define update(text:&quot;&quot;)
+&lt;&lt;revealContent &quot;&quot; &quot;!!''更改历史▸''&quot; &quot;!!''更改历史▾''&quot; &quot;&quot;&quot;$text$&quot;&quot;&quot;&gt;&gt;
 \end
 
-\define detail(id:&quot;&quot; id2:&quot;&quot; text:&quot;&quot;)
-&lt;&lt;revealContent &quot;&quot;&quot;$id$$id2$&quot;&quot;&quot; &quot;!!!详细▸&quot; &quot;!!!详细▾&quot; &quot;&quot;&quot;$text$&quot;&quot;&quot;&gt;&gt;
+\define detail(id:&quot;&quot; text:&quot;&quot;)
+&lt;&lt;revealContent &quot;&quot;&quot;$id$&quot;&quot;&quot; &quot;!!!详细▸&quot; &quot;!!!详细▾&quot; &quot;&quot;&quot;$text$&quot;&quot;&quot;&gt;&gt;
 \end</pre>
 </div>
 <div created="20160103075912063" modified="20160108012417725" tags="$:/tags/Macro" title="$:/花色宏">
@@ -11126,7 +11127,7 @@ thyanmeng:''衍梦''——''锁定技''。其他角色不能令你的技能无�
 
 （''狂骨''）——（参见[[蕾琪尔·阿尔卡德]]）
 
-&lt;$macrocall $name=update id={{!!title}}
+&lt;$macrocall $name=update
 
 text=&quot;&quot;&quot;!V8.9
 
@@ -11136,7 +11137,7 @@ text=&quot;&quot;&quot;!V8.9
 ''手牌''⇨''牌''
 
 效果重做
-&lt;$macrocall $name=detail id={{!!title}} id2=a
+&lt;$macrocall $name=detail id=a
 text=&quot;''禁果''——''阶段技''。你可以选择一项：1.获得于此回合内的〖''血呓''〗；2.弃置一张&lt;$macrocall $name=heart/&gt;~~手~~牌并选择一名~~有牌的~~其他角色▶你获取该角色的两张牌，__然后其选择一项：1.回复1点体力；2.摸一张牌。__&quot;/&gt;
 
 !!''血呓''
@@ -11144,7 +11145,7 @@ text=&quot;''禁果''——''阶段技''。你可以选择一项：1.获得于�
 增加''阶段技''
 
 ''非锦囊牌''⇨''牌''
-&lt;$macrocall $name=detail id={{!!title}} id2=b
+&lt;$macrocall $name=detail id=b
 text=&quot;''血呓''——你可以将一张&lt;$macrocall $name=heart/&gt;~~非锦囊~~牌当【春雪幻梦】使用。&quot;/&gt;&quot;&quot;&quot;
 
 /&gt;</pre>
@@ -11295,7 +11296,7 @@ text=&quot;''血呓''——你可以将一张&lt;$macrocall $name=heart/&gt;~~�
 
 ''无念''——''锁定技''。①你将对一名角色造成的伤害结算改为该角色受到无来源同渠道同属性同伤害值的伤害。②未受伤且体力上限不为1的角色使用的【杀】和非延时类锦囊牌对你无效。
 
-&lt;$macrocall $name=update id={{!!title}}
+&lt;$macrocall $name=update
 
 text=&quot;&quot;&quot;!V8.9
 
@@ -11303,7 +11304,7 @@ text=&quot;&quot;&quot;!V8.9
 删除''阶段技''
 
 ''交给红色手牌''⇨''使用&lt;$macrocall $name=heart/&gt;牌指定唯一目标''
-&lt;$macrocall $name=detail id={{!!title}} id2=a
+&lt;$macrocall $name=detail id=a
 text=&quot;''埋火''——~~''阶段技''。~~__你可以将一张红色牌交给一名角色并__选择一种花色▶该角色展示手牌，然后其摸X张牌（X为其手牌中此花色牌的数量与3中的较小值）。&quot;/&gt;&quot;&quot;&quot;
 
 /&gt;
@@ -15009,13 +15010,13 @@ text=&quot;''埋火''——~~''阶段技''。~~__你可以将一张红色牌交�
 
 ''知时''——当你于回合外得到牌/失去手牌后，你可以亮出牌堆顶的一张牌▶你选择一项：1. 将之置于牌堆顶；2. 将之置入弃牌堆。
 
-&lt;$macrocall $name=update id={{!!title}}
+&lt;$macrocall $name=update
 
 text=&quot;&quot;&quot;!V8.9
 
 !!''辩方''
 效果重做
-&lt;$macrocall $name=detail id={{!!title}} id2=a
+&lt;$macrocall $name=detail id=a
 text=&quot;''辨方''——__当你使用【杀】对一名其他角色造成伤害后，或一名其他角色使用【杀】对你造成伤害后，你可以执行X次判定（X为你已损失的体力值与1中的较大值）：若结果为红色，你可以获取该角色的一张牌。__&quot;/&gt;
 
 !!''知时''
