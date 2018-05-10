@@ -1941,17 +1941,18 @@ void Room::setPlayerMark(ServerPlayer *player, const QString &mark, int value)
 {
     int delta = value - player->getMark(mark);
     player->setMark(mark, value);
-    QVariant _mark = mark;
-    if (delta > 0)
-        thread->trigger(EventMarksGot, this, player, _mark);
-    else if (delta < 0)
-        thread->trigger(EventMarksLost, this, player, _mark);
 
     JsonArray args;
     args << player->objectName();
     args << mark;
     args << value;
     doBroadcastNotify(S_COMMAND_SET_MARK, args);
+
+    QVariant _mark = mark;
+    if (delta > 0)
+        thread->trigger(EventMarksGot, this, player, _mark);
+    else if (delta < 0)
+        thread->trigger(EventMarksLost, this, player, _mark);
 }
 
 void Room::addPlayerMark(ServerPlayer *player, const QString &mark, int add_num)
@@ -4418,8 +4419,10 @@ void Room::_fillMoveInfo(CardsMoveStruct &moves, int card_index) const
         if (moves.to_player_name.isEmpty())
             moves.to_player_name = moves.to->objectName();
         int card_id = moves.card_ids[card_index];
-        if (moves.to_place == Player::PlaceSpecial || moves.to_place == Player::PlaceTable)
-            moves.to_pile_name = moves.to->getPileName(card_id);
+        if (moves.to_place == Player::PlaceSpecial || moves.to_place == Player::PlaceTable) {
+            if (moves.to_pile_name.isEmpty())
+                moves.to_pile_name = moves.to->getPileName(card_id);
+        }
     }
 }
 

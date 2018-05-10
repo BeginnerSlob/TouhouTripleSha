@@ -2186,6 +2186,160 @@ public:
     }
 };
 
+class ThXuanman : public TriggerSkill
+{
+public:
+    ThXuanman()
+        : TriggerSkill("thxuanman")
+    {
+        events << DrawInitialCards << AfterDrawInitialCards << CardsMoveOneTime << EventMarksGot;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent e, Room *, ServerPlayer *p, QVariant &d, ServerPlayer *&) const
+    {
+        if (TriggerSkill::triggerable(p)) {
+            if (e == DrawInitialCards || e == AfterDrawInitialCards)
+                return QStringList(objectName());
+            else if (e == EventMarksGot && d.toString() == "@flying" && p->getMark("@flying") > 3)
+                return QStringList(objectName());
+            else if (e == CardsMoveOneTime) {
+                CardsMoveOneTimeStruct move = d.value<CardsMoveOneTimeStruct>();
+                if (move.from == p && move.from_places.contains(Player::PlaceHand)) {
+                    int reason = move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON;
+                    if (reason == CardMoveReason::S_REASON_USE || reason == CardMoveReason::S_REASON_RESPONSE
+                        || reason == CardMoveReason::S_REASON_DISCARD)
+                        return QStringList(objectName());
+                }
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent e, Room *r, ServerPlayer *p, QVariant &d, ServerPlayer *) const
+    {
+        if (e == DrawInitialCards) {
+            r->sendCompulsoryTriggerLog(p, objectName());
+            d = d.toInt() + 2;
+        } else if (e == AfterDrawInitialCards) {
+            r->broadcastSkillInvoke(objectName());
+            const Card *exchange_card = r->askForExchange(p, objectName(), 3, 3);
+            p->addToPile("dance", exchange_card->getSubcards(), false);
+            delete exchange_card;
+        } else if (e == EventMarksGot) {
+            r->sendCompulsoryTriggerLog(p, objectName());
+            r->removePlayerMark(p, "@flying", 4);
+            p->drawCards(1, objectName());
+        } else if (e == CardsMoveOneTime) {
+            r->sendCompulsoryTriggerLog(p, objectName());
+            QList<int> hands = p->handCards();
+            QList<int> piles = p->getPile("dance");
+            CardsMoveStruct move1(hands, p, Player::PlaceSpecial,
+                                  CardMoveReason(CardMoveReason::S_REASON_PUT, p->objectName()));
+            move1.to_pile_name = "dance";
+            CardsMoveStruct move2(piles, p, Player::PlaceHand, CardMoveReason(CardMoveReason::S_REASON_EXCHANGE_FROM_PILE,
+                                                                              p->objectName(), objectName(), QString()));
+            QList<CardsMoveStruct> moves;
+            moves << move1 << move2;
+            r->moveCardsAtomic(moves, false);
+
+            p->addToPile("dance", hands, false);
+
+            r->addPlayerMark(p, "@flying");
+        }
+        return false;
+    }
+};
+
+ThKuangwuCard::ThKuangwuCard()
+{
+    target_fixed = true;
+}
+
+void ThKuangwuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
+{
+    source->drawCards(1, objectName());
+    const Card *card1 = NULL, *card2 = NULL;
+    if (source->canDiscard(source, "he")) {
+        card1 = room->askForCard(source, "..!", "@thkuangwu");
+        if (!card1) {
+            QList<const Card *> cards = source->getCards("he");
+            card1 = cards.at(qrand() % cards.length());
+        }
+    }
+    source->drawCards(1, objectName());
+    if (source->canDiscard(source, "he")) {
+        card2 = room->askForCard(source, "..!", "@thkuangwu");
+        if (!card2) {
+            QList<const Card *> cards = source->getCards("he");
+            card2 = cards.at(qrand() % cards.length());
+        }
+    }
+
+    if (card1 && card2 && card1->sameColorWith(card2))
+        source->setFlags("ThKuangwuInvoke");
+}
+
+class ThKuangwuVS : public ZeroCardViewAsSkill
+{
+public:
+    ThKuangwuVS()
+        : ZeroCardViewAsSkill("thkuangwu")
+    {
+    }
+
+    virtual const Card *viewAs() const
+    {
+        return new ThKuangwuCard;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return !player->hasUsed("ThKuangwuCard");
+    }
+};
+
+class ThKuangwu : public TriggerSkill
+{
+public:
+    ThKuangwu()
+        : TriggerSkill("thkuangwu")
+    {
+        view_as_skill = new ThKuangwuVS;
+        events << EventPhaseChanging;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (player && player->isAlive() && player->hasFlag("ThKuangwuInvoke")
+            && data.value<PhaseChangeStruct>().to == Player::NotActive)
+            return QStringList(objectName());
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        if (player->askForSkillInvoke(objectName(), "draw")) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        player->drawCards(1, objectName());
+        if (!player->isKongcheng()) {
+            const Card *card = room->askForCard(player, ".!", "@thkuangwu-put", QVariant(), Card::MethodNone);
+            if (!card)
+                card = player->getRandomHandCard();
+            player->addToPile("dance", card, false);
+        }
+        room->askForDiscard(player, objectName(), 1, 1, false, true);
+        return false;
+    }
+};
+
 ThDieyingCard::ThDieyingCard()
 {
 }
@@ -2753,6 +2907,10 @@ TouhouShinPackage::TouhouShinPackage()
     shin016->addSkill(new ThYuancui);
     shin016->addSkill(new ThHuikuang);
 
+    General *shin017 = new General(this, "shin017", "kaze", 3);
+    shin017->addSkill(new ThXuanman);
+    shin017->addSkill(new ThKuangwu);
+
     General *shin018 = new General(this, "shin018", "hana", 3);
     shin018->addSkill(new ThDieying);
     shin018->addSkill(new ThBiyi);
@@ -2779,6 +2937,7 @@ TouhouShinPackage::TouhouShinPackage()
     addMetaObject<ThShenmiCard>();
     addMetaObject<ThMuyuCard>();
     addMetaObject<ThNihuiCard>();
+    addMetaObject<ThKuangwuCard>();
     addMetaObject<ThDieyingCard>();
     addMetaObject<ThBiyiCard>();
     addMetaObject<ThTunaCard>();

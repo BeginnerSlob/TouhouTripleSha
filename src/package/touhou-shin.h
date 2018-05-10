@@ -76,6 +76,16 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
+class ThKuangwuCard : public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThKuangwuCard();
+
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
 class ThDieyingCard : public SkillCard
 {
     Q_OBJECT
