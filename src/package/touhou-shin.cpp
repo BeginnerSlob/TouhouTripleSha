@@ -3207,7 +3207,7 @@ TouhouShinPackage::TouhouShinPackage()
     General *shin023 = new General(this, "shin023", "yuki");
     shin023->addSkill(new ThMieyi);
     shin023->addSkill(new ThShili);
-    shin009->addSkill(new SlashNoDistanceLimitSkill("thshili"));
+    shin023->addSkill(new SlashNoDistanceLimitSkill("thshili"));
     related_skills.insertMulti("thshili", "#thshili-slash-ndl");
 
     addMetaObject<ThLuanshenCard>();
