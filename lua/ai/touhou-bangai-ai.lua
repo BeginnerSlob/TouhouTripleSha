@@ -1,17 +1,20 @@
---辨方：每当你使用【杀】对一名其他角色造成一次伤害后，或一名其他角色使用一张【杀】对你造成一次伤害后，你可以进行X次判定，每有一张判定牌为红色，你便可以获得该角色的一张牌（X为你已损失的体力值，且至少为1）。
-sgs.ai_skill_invoke.thbianfang = function(self, data)
-	local damage = data:toDamage()
-	local target = damage.to
-	if target:objectName() == self.player:objectName() then
-		target = damage.from
+--辨方：当你相邻的角色于其回合外失去手牌后，若你的手牌数不大于该角色，你可以摸一张牌。
+sgs.ai_skill_invoke.thbianfang = true
+
+--知时：当你于回合外得到牌/失去手牌后，你可以亮出牌堆顶的一张牌，然后你将之置于牌堆顶或置入弃牌堆。
+sgs.ai_skill_invoke.thzhishi = true
+
+sgs.ai_skill_choice.thzhishi = function(self, choices, data)
+	local card = data:toCard()
+	if (self:isValuableCard(card)) then
+		local next_player
+		for _, p in sgs.qlist(global_room:getOtherPlayers(self.player)) do
+			if p:faceUp() then next_player = p break end
+		end
+		next_player = next_player or self.player:faceUp() and self.player or self.player:getNextAlive(1, false)
+		return self.isFriend(next_player) and "draw" or "discard"
 	end
-	if target and not target:isNude() and target:isAlive() and self:isEnemy(target) and not self:doNotDiscard(target) then
-		return true
-	end
-	if target and self:needToThrowArmor(target) and self:isFriend(target) then
-		return true
-	end
-	return false
+	return math.random(1, 3) == 3 and "discard" or "draw"
 end
 
 --授卷：出牌阶段开始时，你可以摸两张牌，若如此做，此阶段内每当一名其他角色失去牌时，你须交给其一张牌。
@@ -221,27 +224,57 @@ end
 
 sgs.ai_use_priority.ThXumeiCard = -2
 
---隙境：你的回合外，每当你的非装备牌进入弃牌堆后，你可以用一张相同颜色的手牌替换之。
-sgs.ai_skill_cardask["@thxijing"] = function(self, data)
-	local card = data:toCard()
-	if card then
-		local h_cards = sgs.QList2Table(self.player:getHandcards())
-		self:sortByKeepValue(h_cards)
-		for _, c in ipairs(h_cards) do
-			if c:sameColorWith(card) then
-				if self:getKeepValue(card, false) > self:getKeepValue(c) then
-					return "$" .. c:getEffectiveId()
-				end
-			end
-		end
-	else
-		self.room:writeToConsole("no Card!")
+--梦违：当一名角色的手牌被展示后，你可以摸一张牌。
+sgs.ai_skill_invoke.thmengwei = true
+
+--隙境：当一名角色的判定牌生效前，你可以令该角色展示手牌，然后你选择打出其中的一张牌代替之。
+sgs.ai_skill_invoke.thxijing = function(self, data)
+	local judge = data:toJudge()
+	if self:needRetrial(judge) and judge.who:getHandcardNum() > 1 then
+		return true
 	end
-	return "."
+	return false
 end
 
---梦违：结束阶段开始时，若你的手牌小于两张，你可以将手牌补至两张；其他角色的准备阶段开始时，若你没有手牌，你可以摸一张牌。
---无
+sgs.ai_skill_askforag.thxijing = function(self, card_ids)
+	local cards = {}
+	for _, id in ipairs(card_ids) do
+		table.insert(cards, sgs.Sanguosha:getCard(id))
+	end
+	local judge = self.player:getTag("ThXijingJudge"):toJudge()
+	local target = judge.who
+
+	local cmp = function(a, b)
+		local a_keep_value, b_keep_value = sgs.ai_keep_value[a:getClassName()] or 0, sgs.ai_keep_value[b:getClassName()] or 0
+		a_keep_value = a_keep_value + a:getNumber() / 100
+		b_keep_value = b_keep_value + b:getNumber() / 100
+		return a_keep_value < b_keep_value
+	end
+
+	local card_id = self:getRetrialCardId(cards, judge, false)
+	if card_id ~= -1 then return card_id end
+	if target and not self:isEnemy(target) then
+		local valueless = {}
+		for _, card in ipairs(cards) do
+			if not self:isValuableCard(card, target) then table.insert(valueless, card) end
+		end
+		if #valueless == 0 then valueless = cards end
+		table.sort(valueless, cmp)
+		return valueless[1]:getEffectiveId()
+	else
+		for _, card in ipairs(cards) do
+			if judge:isBad(card) then return card:getEffectiveId() end
+		end
+		local valuable = {}
+		for _, card in ipairs(cards) do
+			if self:isValuableCard(card, target) then table.insert(valuable, card) end
+		end
+		if #valuable == 0 then valuable = cards end
+		table.sort(valuable, cmp)
+		return valuable[#valuable]:getEffectiveId()
+	end
+	return -1
+end
 
 --死镰：锁定技，专属技，你的武器牌均视为【杀】；你获得即将进入你装备区的武器牌；若你的装备区没有武器牌，你视为装备着【离魂之镰】。
 --无
@@ -278,12 +311,12 @@ end
 --衍梦：锁定技，其他角色不能令你的人物技能无效或失去。
 --无
 
---琴韶：弃牌阶段开始时，若你的手牌数大于体力值，你可以令一名其他角色摸X张牌；若你的手牌数小于体力值，你可以摸X张牌（X为你的手牌数与体力值之差）。
+--琴韶：弃牌阶段开始时，若你的手牌数：大于体力值，你可以选择一名其他角色，令其摸X张牌；小于体力值，你可以摸X-1张牌（X为你手牌数与体力值的差）。
 sgs.ai_skill_playerchosen.thqinshao = function(self, targets)
-	local n = self.player:getHandcardNum() - self.player:getHp()
+	local n = self.player:getHandcardNum() - self.player:getHp() - 1
 	return self:findPlayerToDraw(false, n)
 end
-	
+
 sgs.ai_skill_invoke.thqinshao = true
 
 sgs.ai_skill_playerchosen.thqinshao = -40
@@ -550,7 +583,7 @@ end
 --辉轮：锁定技，你的黑色【杀】均视为【桃】；你的红色【桃】均视为【杀】。
 --smart-ai.lua isCard
 
---妄道：出牌阶段，你可以选择一名其他角色并展示一张【桃】，该角色须选择一项：对你使用一张花色相同的无视距离的【杀】；或获得此牌，然后令你选择弃置其两张牌或令其失去1点体力。
+--妄道：出牌阶段，你可以选择一名其他角色并展示一张【桃】，该角色须选择一项：1.对你使用一张与此【桃】花色相同的无视距离的【杀】；2.令你弃置此【桃】，然后令你选择弃置其两张牌或令其失去1点体力。
 local thwangdao_skill = {}
 thwangdao_skill.name = "thwangdao"
 table.insert(sgs.ai_skills, thwangdao_skill)

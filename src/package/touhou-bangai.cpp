@@ -617,7 +617,9 @@ public:
         QList<int> hand = judge->who->handCards();
         room->showAllCards(judge->who);
         room->fillAG(hand, player);
+        player->tag["ThXijingJudge"] = data; // for AI
         int id = room->askForAG(player, hand, false, objectName());
+        player->tag.remove("ThXijingJudge");
         room->clearAG(player);
         if (id == -1)
             id = hand.at(rand() % hand.length());
