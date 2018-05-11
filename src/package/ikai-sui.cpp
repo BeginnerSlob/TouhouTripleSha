@@ -160,7 +160,7 @@ public:
         ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "@ikshushen", true);
 
         if (target) {
-            if (target->getHandcardNum() > target->getMaxHp()
+            if (target->getHandcardNum() >= target->getMaxHp()
                 && (target == player
                     || room->askForChoice(player, objectName(), "draw+turnover", QVariant::fromValue(target)) == "turnover"))
                 target->turnOver();
