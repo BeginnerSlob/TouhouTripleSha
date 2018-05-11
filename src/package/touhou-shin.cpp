@@ -2728,7 +2728,7 @@ public:
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        if (move.to == player) {
+        if (move.to == player && player->getMark("@poor") > 0) {
             if (move.reason.m_reason == CardMoveReason::S_REASON_GIVE && move.reason.m_skillName == "thaimin") {
                 foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
                     if (p->getHandcardNum() < player->getHandcardNum())
