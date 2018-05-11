@@ -374,15 +374,16 @@ sgs.ai_use_priority.LureTiger = 4.9
 sgs.ai_keep_value.LureTiger = 3.22
 
 sgs.ai_skill_invoke.control_rod = function(self, data)
-	local target = data:toPlayer()
-	return not self:isFriend(target)
-end
-
-sgs.ai_choicemade_filter.skillInvoke.control_rod = function(self, player, promptlist)
-	if promptlist[#promptlist] == "yes" then
-		local target = findPlayerByObjectName(self.room, promptlist[#promptlist - 1])
-		if target then sgs.updateIntention(player, target, 50) end
-	end
+	local use = data:toCardUse()
+	local n = self:hasHeavySlashDamage(self.player, use.card, use.to:first(), true)
+	local damage = {}
+	damage.nature = sgs.DamageStruct_Fire
+	damage.damage = n
+	damage.from = self.player
+	damage.to = use.to:first()
+	if self:isEnemy(use.to:first()) then return self:damageIsEffective_(damage, true) > n
+	elseif self:isFriend(use.to:first()) then return self:damageIsEffective_(damage, true) < n end 
+	return false
 end
 
 local scroll_skill = {}
