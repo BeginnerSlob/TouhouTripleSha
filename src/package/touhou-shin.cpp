@@ -2731,7 +2731,7 @@ public:
         if (move.to == player) {
             if (move.reason.m_reason == CardMoveReason::S_REASON_GIVE && move.reason.m_skillName == "thaimin") {
                 foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
-                    if (p->getHandcardNum() > player->getHandcardNum())
+                    if (p->getHandcardNum() < player->getHandcardNum())
                         return QStringList(objectName());
                 }
             }
