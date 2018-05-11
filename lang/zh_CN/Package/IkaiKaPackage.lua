@@ -297,7 +297,7 @@ return {
 
 	["#snow048"] = "喧哄的问题儿",
 	["snow048"] = "三枝叶留佳",--雪 - 空 - 4血
-	["&snow048"] = "留佳",
+	["&snow048"] = "叶留佳",
 	["designer:snow048"] = "昂翼天使",
 	["illustrator:snow048"] = "NAbyssor",
 	["ikqile"] = "气乐",
