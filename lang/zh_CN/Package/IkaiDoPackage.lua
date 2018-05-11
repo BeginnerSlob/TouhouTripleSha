@@ -174,7 +174,7 @@ return {
 	["#snow001"] = "静夜的歌姬",
 	["snow001"] = "拉克丝•克莱茵",--雪 - 空 - 4血
 	["&snow001"] = "拉克丝",
-	["designer:snow001"] = "幻桜落",
+	["designer:snow001"] = "游卡桌游",
 	["illustrator:snow001"] = "KD",
 	["ikzhiheng"] = "制衡",
 	[":ikzhiheng"] = "阶段技。你可以弃置一至X张牌，然后摸等量的牌（X为你的体力上限）。",

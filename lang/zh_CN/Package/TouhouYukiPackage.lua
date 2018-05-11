@@ -108,7 +108,7 @@ return {
 	["#yuki008"] = "法界之火",
 	["yuki008"] = "圣白莲",--雪 - 空 - 3血
 	["&yuki008"] = "白莲",
-	["designer:yuki008"] = "冬天吃雪糕",
+	["designer:yuki008"] = "幻桜落",
 	["illustrator:yuki008"] = "えふぇ",
 	["cv:yuki008"] = "暂无",
 	["thziyun"] = "紫云",
