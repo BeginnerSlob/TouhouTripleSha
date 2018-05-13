@@ -3026,6 +3026,9 @@ end
 function SmartAI:hasHeavySlashDamage(from, slash, to, return_value)
 	from = from or self.room:getCurrent()
 	to = to or self.player
+	if to:getHp() <= 1 and from:hasSkill("thyuwu") then
+		if return_value then return 998 else return true end
+	end
 	local is_friend = self:isFriend(from, to)
 	if not from:hasSkill("ikxuwu") and self:hasSilverLionEffect(to) then
 		if return_value then return 1 else return false end

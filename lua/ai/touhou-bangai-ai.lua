@@ -8,11 +8,11 @@ sgs.ai_skill_choice.thzhishi = function(self, choices, data)
 	local card = data:toCard()
 	if (self:isValuableCard(card)) then
 		local next_player
-		for _, p in sgs.qlist(global_room:getOtherPlayers(self.player)) do
+		for _, p in sgs.qlist(self.room:getOtherPlayers(self.player)) do
 			if p:faceUp() then next_player = p break end
 		end
 		next_player = next_player or self.player:faceUp() and self.player or self.player:getNextAlive(1, false)
-		return self.isFriend(next_player) and "draw" or "discard"
+		return self:isFriend(next_player) and "draw" or "discard"
 	end
 	return math.random(1, 3) == 3 and "discard" or "draw"
 end
@@ -251,7 +251,7 @@ sgs.ai_skill_askforag.thxijing = function(self, card_ids)
 		return a_keep_value < b_keep_value
 	end
 
-	local card_id = self:getRetrialCardId(cards, judge, false)
+	local card_id = self:getRetrialCardId(cards, judge, self.player:objectName() == judge.who:objectName())
 	if card_id ~= -1 then return card_id end
 	if target and not self:isEnemy(target) then
 		local valueless = {}

@@ -126,37 +126,26 @@ function sgs.ai_cardneed.thmopao(to, card, self)
 			or (card:isKindOf("EightDiagram") and not (self:hasEightDiagramEffect(to) or getKnownCard(to, self, "EightDiagram", false) > 0))
 end
 
---彼岸：当一名处于濒死状态的角色成为【桃】的目标时，你可弃置一张锦囊牌，令此【桃】对其无效。
-sgs.ai_skill_cardask["@thbian"] = function(self, data, pattern, target)
-	if self:isEnemy(target) then
-		local tricks= {}
-		for _,c in sgs.qlist(self.player:getHandcards()) do
-			if c:isKindOf("TrickCard")  then
-				table.insert(tricks,c)
+--余无：锁定技。当你使用【杀】对体力值不大于1的角色造成伤害时，其立即死亡。
+function sgs.ai_cardneed.thyuwu(to, card, self)
+	for _, enemy in ipairs(self.enemies) do
+		if enemy:getHp() <= 1 then
+			if to:canSlash(enemy) then
+				return isCard("Slash", card, to) and getKnownCard(to, self, "Slash", true) == 0
+			else
+				return getKnownCard(to, self, "Slash", true) > 0 and isCard("Weapon", card, to)
 			end
 		end
-		if #tricks == 0 then return "." end
-		self:sortByKeepValue(tricks)
-		return "$" .. tricks[1]:getId()
 	end
-	return "."
+	return false
 end
 
-sgs.ai_choicemade_filter.cardResponded["@thbian"] = function(self, player, promptlist)
-	if promptlist[#promptlist] ~= "_nil_" then
-		local target = self.room:findPlayer(promptlist[#promptlist - 1])
-		if target then
-			sgs.updateIntention(player, target, 100)
-		end
-	end
-end
+--smart-ai.lua SmartAI:hasHeavySlashDamage
 
---归航：当一名角色进入濒死状态时，你可展示其一张手牌，若为红色，该角色须弃置之并回复1点体力。
+--归航：当一名角色进入濒死状态时，你可以减1点体力上限，然后你令其回复1点体力。
 sgs.ai_skill_invoke.thguihang = function(self, data)
 	local dying = data:toDying()
 	local isFriend = false
-	local allBlack = true
-	if dying.who:isKongcheng() then return false end
 
 	isFriend = not self:isEnemy(dying.who)
 	if not sgs.GetConfig("EnableHegemony", false) and self.role == "renegade"
@@ -168,108 +157,43 @@ sgs.ai_skill_invoke.thguihang = function(self, data)
 		isFriend = false
 	end
 
-	local knownNum = 0
-	local cards = dying.who:getHandcards()
-	for _, card in sgs.qlist(cards) do
-		local flag = string.format("%s_%s_%s","visible", self.player:objectName(), dying.who:objectName())
-		if dying.who:objectName() == self.player:objectName() or card:hasFlag("visible") or card:hasFlag(flag) then
-			knownNum = knownNum + 1
-			if card:isRed() then allBlack = false end
-		end
-	end
-	if knownNum < dying.who:getHandcardNum() then allBlack = false end
-
-	return isFriend and not allBlack
-end
-
-sgs.ai_cardshow.thguihang = function(self, requestor)
-	assert(self.player:objectName() == requestor:objectName())
-
-	local cards = sgs.QList2Table(self.player:getHandcards())
-	self:sortByKeepValue(cards)
-	for _, card in ipairs(cards) do
-		if card:isRed() then
-			return card
-		end
+	if not isFriend then
+		return false
 	end
 
-	return cards[1]
+	if self:isFriend(dying.who) and self:getAllPeachNum(dying.who) < 1 - dying.who:getHp() then
+		return true
+	end
+	return false
 end
 
 sgs.ai_choicemade_filter.skillInvoke.thguihang = function(self, player, promptlist)
 	local dying = self.room:getCurrentDyingPlayer()
 	if promptlist[#promptlist] == "yes" then
-		if dying and dying:objectName() ~= self.player:objectName() then sgs.updateIntention(player, dying, -80) end
-	elseif promptlist[#promptlist] == "no" then
-		if not dying or dying:isKongcheng() or dying:objectName() == self.player:objectName() then return end
-		local allBlack = true
-		local knownNum = 0
-		local cards = dying:getHandcards()
-		for _, card in sgs.qlist(cards) do
-			local flag = string.format("%s_%s_%s","visible", player:objectName(), dying:objectName())
-			if card:hasFlag("visible") or card:hasFlag(flag) then
-				knownNum = knownNum + 1
-				if card:isRed() then allBlack = false end
-			end
+		if dying and dying:objectName() ~= self.player:objectName() then
+			sgs.updateIntention(player, dying, -120)
 		end
-		if knownNum < dying:getHandcardNum() then allBlack = false end
-		if not allBlack then sgs.updateIntention(player, dying, 80) end
 	end
 end
 
---无间：出牌阶段限一次，你可弃置一张牌并指定你攻击范围内的一名角色，直到你的下回合开始，该角色计算与除其以外的角色的距离时，始终+1。
-local thwujian_skill = {}
-thwujian_skill.name = "thwujian"
-table.insert(sgs.ai_skills, thwujian_skill)
-thwujian_skill.getTurnUseCard = function(self)
-	if self.player:hasUsed("ThWujianCard") then return end
-	local cards = sgs.QList2Table(self.player:getCards("he"))
-	self:sortByKeepValue(cards)
-	return sgs.Card_Parse("@ThWujianCard=" .. cards[1]:getEffectiveId())
-end
-
-sgs.ai_skill_use_func.ThWujianCard = function(card, use, self)
-	local rangefix = 0
-	if self.player:getWeapon() and self.player:getWeapon():getId() == card:getSubcards():first() then
-		rangefix = rangefix + sgs.weapon_range[self.player:getWeapon():getClassName()] - self.player:getAttackRange(false)
-	end
-	if self.player:getOffensiveHorse() and self.player:getOffensiveHorse():getId() == card:getSubcards():first() then
-		rangefix = rangefix + 1
-	end
+--彼岸：当你于濒死状态回复体力后，若你的体力值不小于1，你可以视为对一至X名角色使用一张无距离限制的【杀】（X为你的体力上限）。
+sgs.ai_skill_use["@@thbian"] = function(self, prompt, method)
+	local n = self.player:getMaxHp()
 	local targets = {}
-	for _, p in ipairs(self.enemies) do
-		if self.player:inMyAttackRange(p, rangefix) then
-			table.insert(targets, p)
+	local victims = self.room:getOtherPlayers(self.player)
+	for i = 1,n,1 do
+		local p = sgs.ai_skill_playerchosen.slash_extra_targets(self, victims)
+		if p ~= nil then
+			table.insert(targets, p:objectName())
+		else
+			break
 		end
 	end
-	if #targets == 0 then return end
-	local target
-	local max_danger = 0
-	for _, p in ipairs(targets) do
-		local current_danger = 0
-		for _, f in ipairs(self.friends) do
-			if p:distanceTo(f) == p:getAttackRange() then
-				if self:isWeak(f) then
-					current_danger = current_danger + 2
-				end
-				current_danger = current_danger + 1
-			end
-		end
-		if current_danger > max_danger then
-			max_danger = current_danger
-			target = p
-		end
+	if #targets == 0 then
+		return "."
 	end
-	if target and (max_danger >= 3 or self:getOverflow() > 0) then
-		use.card = card
-		if use.to then
-			use.to:append(target)
-		end
-		return
-	end
+	return "slash:thbian[no_suit:0]=.->" + table.concat(targets, "+")
 end
-
-sgs.ai_card_intention.ThWujianCard = 30
 
 --血兰：你可以弃置一张红色牌并抵消一张【桃】对一名角色的效果，然后若该角色的体力上限不大于其游戏开始时的体力上限，则该角色须增加1点体力上限。
 sgs.ai_skill_cardask["@thxuelan"] = function(self, data, pattern, target)
