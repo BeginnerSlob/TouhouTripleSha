@@ -1636,7 +1636,7 @@ public:
             return QStringList();
         if (triggerEvent == HpRecover) {
             RecoverStruct recover = data.value<RecoverStruct>();
-            if (recover.who != player)
+            if (recover.who && recover.who != player)
                 for (int i = 0; i < recover.recover; i++)
                     skills << objectName();
         } else if (triggerEvent == Damaged) {

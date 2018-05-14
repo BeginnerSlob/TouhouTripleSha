@@ -2473,7 +2473,7 @@ public:
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *&) const
     {
-        if (player->getPhase() == Player::Start && !player->tag["ThDongxi"].toStringList().isEmpty())
+        if (player->getPhase() == Player::Start)
             return QStringList(objectName());
         return QStringList();
     }
@@ -2482,6 +2482,8 @@ public:
     {
         QStringList names = player->tag.value("ThDongxi").toStringList();
         player->tag.remove("ThDongxi");
+        if (names.isEmpty())
+            return false;
         QStringList _names;
         foreach (QString name, names)
             _names << "-" + name;
