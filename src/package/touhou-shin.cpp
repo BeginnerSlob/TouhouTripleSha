@@ -2589,30 +2589,26 @@ public:
     ThQiongfaziyuan()
         : TriggerSkill("thqiongfaziyuan")
     {
-        events << Death;
+        events << EventMarksGot;
         frequency = Compulsory;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
     {
-        if (TriggerSkill::triggerable(target) && target->aliveCount() == 2) {
-            if (target->getMark("@poor") > 0)
-                return true;
-            foreach (const Player *p, target->getAliveSiblings()) {
-                if (p->getMark("@poor") > 0)
-                    return true;
+        TriggerList list;
+        if (data.toString() == "@poor") {
+            foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                if (player == p)
+                    continue;
+                list.insert(p, QStringList(objectName()));
             }
         }
-        return false;
+        return list;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *player) const
     {
         room->sendCompulsoryTriggerLog(player, objectName());
-        foreach (ServerPlayer *p, room->getAlivePlayers()) {
-            if (p->getMark("@poor") > 0)
-                p->loseAllMarks("@poor");
-        }
         player->drawCards(2, objectName());
         return false;
     }
