@@ -381,12 +381,8 @@ end
 local findThHuanlongResult = function(self)
 	local player = self.player
 	local choices = {}
-	if not player:hasFlag("thhuanlong1") then
-		table.insert(choices, "thhuanlong1")
-	end
-	if not player:hasFlag("thhuanlong2") then
-		table.insert(choices, "thhuanlong2")
-	end
+	table.insert(choices, "thhuanlong1")
+	table.insert(choices, "thhuanlong2")
 	if not player:hasFlag("thhuanlong") then
 		table.insert(choices, "thhuanlong3")
 	end
@@ -406,7 +402,7 @@ local findThHuanlongResult = function(self)
 		end
 	end
 	local n = self:getOverflow()
-	if n < -1 then
+	if n < 0 then
 		if table.contains(choices, "thhuanlong2") then
 			return "thhuanlong2"
 		elseif table.contains(choices, "thhuanlong3") then
@@ -414,8 +410,6 @@ local findThHuanlongResult = function(self)
 		elseif table.contains(choices, "thhuanlong1") then
 			return "thhuanlong1"
 		end
-	elseif #choices == 1 then
-		return choices[1]
 	end
 	return "cancel"
 end

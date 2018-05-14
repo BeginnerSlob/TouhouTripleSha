@@ -678,16 +678,8 @@ sgs.ai_choicemade_filter.cardChosen.thguangshi = sgs.ai_choicemade_filter.cardCh
 --隼武：当一张武器牌或防具牌置入弃牌堆时，若你的人物牌上没有牌，你可以将之置于你的人物牌上。
 sgs.ai_skill_invoke.thsunwu = true
 
---僚感：出牌阶段，你可以令一名角色获得你的人物牌上的牌。若如此做，该角色视为拥有技能“遐攻”和“净涅”，直到你的下个回合开始。
-local thliaogan_skill = {}
-thliaogan_skill.name = "thliaogan"
-table.insert(sgs.ai_skills, thliaogan_skill)
-thliaogan_skill.getTurnUseCard = function(self)
-	if self.player:getPile("frost"):isEmpty() then return end
-	return sgs.Card_Parse("@ThLiaoganCard=.")
-end
-
-sgs.ai_skill_use_func.ThLiaoganCard = function(card, use, self)
+--僚感：一名角色的出牌阶段开始时，你可以令一名角色获得你的人物牌上的牌。若如此做，该角色视为拥有技能“遐攻”和“净涅”，直到你的下个回合开始。
+sgs.ai_skill_playerchosen.thliaogan = function(card, use, self)
 	local isGoodThLiaoganTarget = function(target, equip)
 		local same = self:getSameEquip(equip, target)
 		if not same then
@@ -695,45 +687,35 @@ sgs.ai_skill_use_func.ThLiaoganCard = function(card, use, self)
 				return true
 			end
 		end
-		return target:isWounded() and (equip:isKindOf("SilverLion") or (same and same:isKindOf("SilverLion")))
+		return target:getPhase() ~= sgs.Player_NotActive and target:isWounded() and (equip:isKindOf("SilverLion") or (same and same:isKindOf("SilverLion")))
 	end
 	local euqip = sgs.Sanguosha:getCard(self.player:getPile("frost"):first())
-	local same = self:getSameEquip(euqip)
-	if same and isGoodThLiaoganTarget(self.player, euqip) then
-		use.card = card
-		if use.to then
-			use.to:append(self.player)
+	local friend = self.room:getCurrent()
+	if self:isFriend(friend) then
+		local same = self:getSameEquip(euqip, friend)
+		if same and isGoodThLiaoganTarget(friend, euqip) then
+			return friend
 		end
-		return
 	end
 	if euqip:isKindOf("Weapon") then
 		self:sort(self.friends, "handcard")
 		self.friends = sgs.reverse(self.friends)
 		for _, p in ipairs(self.friends) do
 			if isGoodThLiaoganTarget(p, euqip) then
-				use.card = card
-				if use.to then
-					use.to:append(p)
-				end
-				return
+				return p
 			end
 		end
 	else
 		self:sort(self.friends, "defense")
 		for _, p in ipairs(self.friends) do
 			if isGoodThLiaoganTarget(p, euqip) then
-				use.card = card
-				if use.to then
-					use.to:append(p)
-				end
-				return
+				return p
 			end
 		end
 	end
 end
 
-sgs.ai_use_priority.ThLiaoganCard = 9
-sgs.ai_card_intention.ThLiaoganCard = -50
+sgs.ai_playerchosen_intention.thliaogan = -50
 
 --戋月：摸牌阶段或出牌阶段开始时，你可以视为使用一张【心网密葬】，该牌生效后，你可以选择一项：令目标角色获得被弃置的牌，且其此回合不能使用或打出该牌；或结束当前阶段。
 sgs.ai_skill_use["@@thjianyue"] = function(self, prompt, method)
@@ -802,15 +784,21 @@ sgs.ai_skill_cardask["@thhuanjian-self"] = function(self)
 	return cards[1]
 end
 
---深秘：你可以将你人物牌上颜色相同的两张牌当【闪】使用或打出；或将你人物牌上颜色不同的两张牌当【三粒天滴】使用。
+--深秘：你可以将你人物牌上颜色相同的两张牌当任意基本牌使用或打出；或将你人物牌上颜色不同的两张牌当【三粒天滴】使用。
 sgs.ai_cardsview_valuable.thshenmi = function(self, class_name, player)
 	local ids = player:getPile("note")
 	if ids:length() < 2 then return nil end
 	local card1 = sgs.Sanguosha:getCard(ids:first())
 	local card2 = sgs.Sanguosha:getCard(ids:last())
 	if card1:sameColorWith(card2) then
+		if class_name == "Peach" then
+			return ("peach:thshenmi[to_be_decided:0]=%d+%d"):format(ids:first(), ids:last())
+		end
 		if class_name == "Jink" then
 			return ("jink:thshenmi[to_be_decided:0]=%d+%d"):format(ids:first(), ids:last())
+		end
+		if class_name == "Slash" then
+			return ("slash:thshenmi[to_be_decided:0]=%d+%d"):format(ids:first(), ids:last())
 		end
 	else
 		if class_name == "Nullification" then

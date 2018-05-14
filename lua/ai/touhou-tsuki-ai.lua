@@ -113,7 +113,10 @@ sgs.ai_skill_use_func.ThYejunCard = function(card, use, self)
 	end
 end
 
---禁果：出牌阶段限一次，你可以选择一项：1. 弃置一张红桃手牌并获得一名其他角色的两张牌（不足则全部获得），然后该角色选择回复1点体力；或摸一张牌；2. 获得技能“血呓”直到回合结束。
+--[[禁果：阶段技。你可以选择一项：
+1. 弃置一张红桃手牌并获得一名其他角色的两张牌（不足则全部获得），然后该角色回复1点体力；
+2. 获得技能“血呓”（阶段技。你可以将一张红桃牌当【春雪幻梦】使用。）直到回合结束。
+若你发动“禁果”，此阶段结束时，你需展示所有手牌并弃置其中的红桃手牌。]]
 local thjinguo_skill = {}
 thjinguo_skill.name = "thjinguo"
 table.insert(sgs.ai_skills, thjinguo_skill)
@@ -129,7 +132,7 @@ sgs.ai_skill_use_func.ThJinguoCard = function(card, use, self)
 			table.insert(hearts, c)
 		end
 	end
-	if #hearts > 0 then
+	if #hearts > 0 and #heart < 3 then
 		self:sortByKeepValue(hearts)
 		if not isCard("Peach", hearts[1], self.player) then
 			local str = "@ThJinguoCard=" .. hearts[1]:getEffectiveId()
@@ -148,22 +151,17 @@ sgs.ai_skill_use_func.ThJinguoCard = function(card, use, self)
 	use.card = card
 end
 
-sgs.ai_skill_choice.thjinguo = function(self, choices)
-	if string.find(choices, "recover") then
-		return "recover"
-	else
-		return "draw"
-	end
-end
-
 sgs.ai_use_priority.ThJinguoCard = 10
 sgs.ai_card_intention.ThJinguoCard = 30
 
---血呓：你可以将红桃非锦囊牌当【春雪幻梦】使用。
+--血呓：阶段技。你可以将红桃牌当【春雪幻梦】使用。
 local thxueyi_skill = {}
 thxueyi_skill.name = "thxueyi"
 table.insert(sgs.ai_skills, thxueyi_skill)
 thxueyi_skill.getTurnUseCard = function(self, inclusive)
+	if self.player:hasFlag("ThXueyiUsed") then
+		return nil
+	end
 	local cards = self.player:getCards("he")
 	for _, id in sgs.qlist(getWoodenOxPile(self.player)) do
 		local c = sgs.Sanguosha:getCard(id)
@@ -184,7 +182,7 @@ thxueyi_skill.getTurnUseCard = function(self, inclusive)
 	end
 
 	for _, acard in ipairs(cards) do
-		if acard:getSuit() == sgs.Card_Heart and not acard:isKindOf("TrickCard") and ((self:getUseValue(acard) < sgs.ai_use_value.Indulgence) or inclusive) then
+		if acard:getSuit() == sgs.Card_Heart and ((self:getUseValue(acard) < sgs.ai_use_value.Indulgence) or inclusive) then
 			local shouldUse = true
 
 			if acard:isKindOf("Armor") then
@@ -1318,10 +1316,36 @@ sgs.ai_skill_choice.thyongye = function(self, choices, data)
 		else
 			self.thyongye_collateral = nil
 		end
+	elseif use.card:isKindOf("FeintAttack") then
+		local dummy_use = { isDummy = true, to = sgs.SPlayerList(), current_targets = {} }
+		for _, p in sgs.qlist(use.to) do
+			table.insert(dummy_use.current_targets, p:objectName())
+		end
+		self:useCardFeintAttack(use.card, dummy_use)
+		if dummy_use.card and dummy_use.to:length() == 2 then
+			local first = dummy_use.to:at(0):objectName()
+			local second = dummy_use.to:at(1):objectName()
+			self.thyongye_feintattack = { first, second }
+			return "add"
+		else
+			self.thyongye_feintattack = nil
+		end
 	elseif use.card:isKindOf("ExNihilo") then
 		local friend = self:findPlayerToDraw(false, 2, use.card)
 		if friend then
 			self.thyongye_extra_target = friend
+			return "add"
+		end
+	elseif use.card:isKindOf("Reinforce") then
+		local friend = self:findPlayerToDraw(false, 3, use.card)
+		if friend then
+			self.thyongye_extra_target = friend
+			return "add"
+		end
+	elseif use.card:isKindOf("Rout") then
+		local enemy = self:findPlayerToDiscard("e", false, true, nil, false, "Weapon,Armor,Horse")
+		if enemy then
+			self.thyongye_extra_target = enemy
 			return "add"
 		end
 	elseif use.card:isKindOf("GodSalvation") then
@@ -1388,8 +1412,13 @@ sgs.ai_skill_playerchosen.thyongye = function(self, targets)
 end
 
 sgs.ai_skill_use["@@thyongye!"] = function(self, prompt) -- extra target for Collateral
-	if not self.thyongye_collateral then self.room:writeToConsole("ThYongye player chosen error!!") end
-	return "@ExtraCollateralCard=.->" .. self.thyongye_collateral[1] .. "+" .. self.thyongye_collateral[2]
+	if self.thyongye_collateral then
+		return "@ExtraCollateralCard=.->" .. self.thyongye_collateral[1] .. "+" .. self.thyongye_collateral[2]
+	elseif self.thyongye_feintattack then
+		return "@ExtraFeintAttackCard=.->" .. self.thyongye_feintattack[1] .. "+" .. self.thyongye_feintattack[2]
+	end
+	self.room:writeToConsole("ThYongye player chosen error!!")
+	return "."
 end
 
 --世明：摸牌阶段开始时，你可以放弃摸牌，改为从牌堆顶亮出四张牌，你获得其中的红色牌或者点数不大于9的牌，将其余的牌置入弃牌堆。

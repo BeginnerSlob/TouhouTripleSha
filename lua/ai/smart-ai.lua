@@ -91,8 +91,8 @@ function setInitialTables()
 	sgs.need_kongcheng = "lianying|noslianying|ikjingyou|sijian|thjingtao|thfeijing|thkaihai"
 	sgs.masochism_skill = "ikyumeng|yiji|jieming|ikhuanji|nosfankui|thfusheng|ikaoli|vsganglie|nosganglie|enyuan|fangzhu|guixin|langgu|quanji|thzhehui|chengxiang|noschengxiang|" .. 
 						  "thshenzhou"
-	sgs.wizard_skill = "iktiansuo|nosguicai|guidao|jilve|tiandu|noszhenlie|huanshi"
-	sgs.wizard_harm_skill = "iktiansuo|nosguicai|guidao|jilve|huanshi"
+	sgs.wizard_skill = "iktiansuo|nosguicai|guidao|jilve|tiandu|noszhenlie|huanshi|thxijing"
+	sgs.wizard_harm_skill = "iktiansuo|nosguicai|guidao|jilve|huanshi|thxijing"
 	sgs.priority_skill = "dimeng|haoshi|qingnang|ikhuiquan|jizhi|guzheng|ikkuipo|jieyin|nosguose|guose|duanliang|jujian|fanjian|nosfanjian|noslijian|lijian|" ..
 							"manjuan|thjinlu|ikchibao|nostuxi|qiaobian|yongsi|ikzhiheng|ikmengyang|nosrende|ikshenai|mingce|wansha|iklingshi|jilve|" ..
 							"anxu|qice|yinling|qingcheng|zhaoxin"

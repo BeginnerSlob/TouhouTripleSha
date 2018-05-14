@@ -1153,7 +1153,7 @@ sgs.ai_choicemade_filter.skillInvoke.thxujing = function(self, player, promptlis
 	end
 end
 
---灵殒：出牌阶段，若你不拥有相应技能，你可以弃置一张牌，并获得该技能，视为使用以下一张牌：1.【绯想镜诗】－“崩坏”；2.【碎月绮斗】－“散灵”；3.【妙手探云】－“心殇”；4.【赤雾锁魂】－“禁恋”。
+--灵殒：出牌阶段，若你不拥有相应技能，你可以弃置一张牌，并获得该技能，视为使用以下一张牌：1.【绯想镜诗】－“崩坏”；2.【灼狱业焰】－“散灵”；3.【心网密葬】－“心殇”；4.【赤雾锁魂】－“禁恋”。
 local thlingyun_skill = {}
 thlingyun_skill.name = "thlingyun"
 table.insert(sgs.ai_skills, thlingyun_skill)
@@ -1200,15 +1200,15 @@ sgs.ai_skill_use_func.ThLingyunCard = function(card, use, self)
 			end
 		end
 	end
-	--snatch
-	if not self.player:hasSkill("ikxinshang") and self:getUseValue(original_card) < sgs.ai_use_value.Snatch then
-		local snatch = sgs.cloneCard("snatch")
-		snatch:setSkillName("_thlingyun")
-		if snatch:isAvailable(self.player) and not self.player:isCardLimited(snatch, sgs.Card_MethodUse) then
+	--dismantlement
+	if not self.player:hasSkill("ikxinshang") and self:getUseValue(original_card) < sgs.ai_use_value.Dismantlement then
+		local dismantlement = sgs.cloneCard("dismantlement")
+		dismantlement:setSkillName("_thlingyun")
+		if dismantlement:isAvailable(self.player) and not self.player:isCardLimited(dismantlement, sgs.Card_MethodUse) then
 			local dummy_use = { isDummy = true, to = sgs.SPlayerList() }
-			self:useCardSnatchOrDismantlement(snatch, dummy_use)
+			self:useCardSnatchOrDismantlement(dismantlement, dummy_use)
 			if dummy_use.card then
-				use.card = sgs.Card_Parse("@ThLingyunCard=" .. original_card:getEffectiveId() .. ":snatch")
+				use.card = sgs.Card_Parse("@ThLingyunCard=" .. original_card:getEffectiveId() .. ":dismantlement")
 				if use.to then
 					use.to = dummy_use.to
 				end
@@ -1216,20 +1216,20 @@ sgs.ai_skill_use_func.ThLingyunCard = function(card, use, self)
 			end
 		end
 	end
-	--duel
+	--fire_attack
 	local n = 0
 	for _, skill in sgs.qlist(self.player:getVisibleSkillList()) do
 		if skill:isAttachedLordSkill() then continue end
 		n = n + 1
 	end
 	if not self.player:hasSkill("thsanling") and n >= 5 and #self.friends_noself > 0 then
-		local duel = sgs.cloneCard("duel")
-		duel:setSkillName("_thlingyun")
-		if duel:isAvailable(self.player) and not self.player:isCardLimited(duel, sgs.Card_MethodUse) then
+		local fire_attack = sgs.cloneCard("fire_attack")
+		fire_attack:setSkillName("_thlingyun")
+		if fire_attack:isAvailable(self.player) and not self.player:isCardLimited(fire_attack, sgs.Card_MethodUse) then
 			local dummy_use = { isDummy = true, to = sgs.SPlayerList() }
-			self:useCardDuel(duel, dummy_use)
+			self:useCardFireAttack(fire_attack, dummy_use)
 			if dummy_use.card then
-				use.card = sgs.Card_Parse("@ThLingyunCard=" .. original_card:getEffectiveId() .. ":duel")
+				use.card = sgs.Card_Parse("@ThLingyunCard=" .. original_card:getEffectiveId() .. ":fire_attack")
 				if use.to then
 					use.to = dummy_use.to
 				end
@@ -1267,7 +1267,7 @@ end
 
 sgs.ai_playerchosen_intention.thzhaoai = -150
 
---五难：每当一名其他角色：1. 使用一张【神惠雨降】或【竹曲谜宝】时2. 于濒死状态回复体力后，若其体力值不小于13. 受到一次火焰伤害后4. 发动【净琉璃镜】使用或打出一张【闪】时5. 使用【杀】对没有手牌的角色造成伤害时你可以选择一项：回复1点体力；或摸一张牌；或弃置该角色的一张牌。
+--五难：当一名其他角色使用【神惠雨降】或【竹取谜宝】时，或当一名其他角色于濒死状态回复体力后（若其体力值不小于1），或当一名其他角色受到火属性伤害后，或当一名其他角色使用【净琉璃镜】的效果而使用或打出【闪】时，或当一名其他角色使用【杀】对没有手牌的角色造成伤害时，你可以选择一项：1.摸一张牌；2.弃置该角色的一张牌。然后若你是体力值最小的角色，你可以回复1点体力。每回合限一次。
 sgs.ai_skill_invoke.thwunan = true
 
 sgs.ai_skill_choice.thwunan = function(self, choices, data)

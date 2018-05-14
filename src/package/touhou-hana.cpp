@@ -1616,7 +1616,9 @@ public:
         }
 
         room->setPlayerProperty(player, "thyingdeng", objs.join("+"));
+        player->tag["ThYingdengUse"] = data; // for AI
         bool invoke = room->askForUseCard(player, "@@thyingdeng", "@thyingdeng");
+        player->tag.remove("ThYingdengUse");
         room->setPlayerProperty(player, "thyingdeng", "");
         return invoke;
     }

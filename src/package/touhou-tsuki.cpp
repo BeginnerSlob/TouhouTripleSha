@@ -2637,28 +2637,12 @@ public:
         view_as_skill = new ThYongyeViewAsSkill;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
         CardUseStruct use = data.value<CardUseStruct>();
-        if (TriggerSkill::triggerable(player) && use.card->isNDTrick()) {
-            if (Sanguosha->currentRoomState()->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_PLAY)
-                return QStringList();
-            QList<ServerPlayer *> available_targets;
-            if (!use.card->isKindOf("AOE") && !use.card->isKindOf("GlobalEffect")) {
-                foreach (ServerPlayer *p, room->getAlivePlayers()) {
-                    if (use.to.contains(p) || room->isProhibited(player, p, use.card))
-                        continue;
-                    if (use.card->targetFixed()) {
-                        available_targets << p;
-                    } else {
-                        if (use.card->targetFilter(QList<const Player *>(), p, player))
-                            available_targets << p;
-                    }
-                }
-            }
-            if ((use.to.length() > 1 || !available_targets.isEmpty()) && !player->isKongcheng())
+        if (TriggerSkill::triggerable(player) && use.card->isNDTrick() && player->getPhase() == Player::Play)
+            if (!use.to.isEmpty() && player->canDiscard(player, "h"))
                 return QStringList(objectName());
-        }
         return QStringList();
     }
 
@@ -2687,8 +2671,7 @@ public:
             }
         }
         QStringList choices;
-        if (use.to.length() > 1)
-            choices.prepend("remove");
+        choices.prepend("remove");
         if (!available_targets.isEmpty())
             choices.prepend("add");
         QString choice = room->askForChoice(player, "thyongye", choices.join("+"), data);

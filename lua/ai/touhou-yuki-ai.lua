@@ -1410,11 +1410,7 @@ sgs.ai_skill_playerchosen.thlingdie = function(self, targets)
 	for _, enemy in ipairs(self.enemies) do
 		if not enemy:isKongcheng() and self:objectiveLevel(enemy) > 0 
 				and (getKnownNum(enemy) ~= enemy:getHandcardNum()) then
-			use.card = card
-			if use.to then
-				use.to:append(enemy)
-			end
-			return
+			return enemy
 		end
 	end
 	
@@ -1425,11 +1421,7 @@ sgs.ai_skill_playerchosen.thlingdie = function(self, targets)
 		if not self:isFriend(p) then
 			if not p:isKongcheng() and self:objectiveLevel(p) > 0 
 					and (getKnownNum(p) ~= p:getHandcardNum()) then
-				use.card = card
-				if use.to then
-					use.to:append(p)
-				end
-				return
+				return p
 			end
 		end
 	end
@@ -1437,11 +1429,7 @@ sgs.ai_skill_playerchosen.thlingdie = function(self, targets)
 	for _, p in ipairs(players) do
 		if not p:isKongcheng() and self:objectiveLevel(p) > 0 
 				and (getKnownNum(p) ~= p:getHandcardNum()) then
-			use.card = card
-			if use.to then
-				use.to:append(p)
-			end
-			return
+			return p
 		end
 	end
 end
