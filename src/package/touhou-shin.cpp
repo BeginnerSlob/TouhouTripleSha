@@ -3102,7 +3102,7 @@ public:
         TriggerList list;
         if (player->getPhase() == Player::Play && !player->isKongcheng()) {
             foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
-                if (p->inMyAttackRange(player))
+                if (p->inMyAttackRange(player) && Slash::IsAvailable(p))
                     list.insert(p, QStringList(objectName()));
             }
         }
@@ -3146,7 +3146,7 @@ public:
             }
 
             ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "@dummy-slash");
-            room->useCard(CardUseStruct(slash, player, target));
+            room->useCard(CardUseStruct(slash, player, target), true);
         }
         return false;
     }

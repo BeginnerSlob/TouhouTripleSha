@@ -5001,13 +5001,20 @@ public:
         if (zuoci->getGender() != general->getGender())
             zuoci->setGender(general->getGender());
 
-        JsonArray args;
+        LogMessage log;
+        log.type = "#SetIkHuanshen";
+        log.from = zuoci;
+        log.arg = general->objectName();
+        log.arg2 = skill_name;
+        room->sendLog(log);
+
+        /*JsonArray args;
         args << (int)QSanProtocol::S_GAME_EVENT_HUASHEN;
         args << zuoci->objectName();
         args << general->objectName();
         args << skill_name;
         args << true;
-        room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
+        room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);*/
 
         zuoci->tag["IkHuanshenSkill"] = skill_name;
         if (!skill_name.isEmpty())

@@ -975,16 +975,16 @@ void Room::removeReihouCard(ServerPlayer *player, bool isYaodao)
         player->tag.remove(isYaodao ? "Reihou2" : "Reihou");
     } else
         return;
+    handleAcquireDetachSkills(player, skills, true, true);
     if (!isYaodao) {
-        JsonArray args;
+        /*JsonArray args;
         args << (int)QSanProtocol::S_GAME_EVENT_HUASHEN;
         args << player->objectName();
         args << player->getGeneralName();
         args << QString();
         args << false;
-        doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
+        doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);*/
     }
-    handleAcquireDetachSkills(player, skills, true, true);
 }
 
 void Room::broadcastInvoke(const char *method, const QString &arg, ServerPlayer *except)

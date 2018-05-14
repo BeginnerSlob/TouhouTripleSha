@@ -896,26 +896,32 @@ void PlayerCardContainer::stopHuaShen()
 {
     if (_m_huashenAnimation != NULL) {
         _m_huashenAnimation->stop();
-        _m_huashenAnimation->deleteLater();
-        if (_m_huashenNameAnimation != NULL && _m_huashenOldNameAnimation != NULL) {
-            _m_huashenNameAnimation->stop();
-            _m_huashenNameAnimation->deleteLater();
-            _m_huashenOldNameAnimation->stop();
-            _m_huashenOldNameAnimation->deleteLater();
-            _m_avatarNameItem->show();
-        }
-        delete _m_huashenItem;
-        delete _m_huashenNameItem;
-        delete _m_huashenOldNameItem;
+        delete _m_huashenAnimation;
         _m_huashenAnimation = NULL;
-        _m_huashenNameAnimation = NULL;
-        _m_huashenOldNameAnimation = NULL;
-        _m_huashenItem = NULL;
-        _m_huashenNameItem = NULL;
-        _m_huashenOldNameItem = NULL;
-        _clearPixmap(_m_extraSkillBg);
-        _clearPixmap(_m_extraSkillText);
     }
+    if (_m_huashenNameAnimation != NULL && _m_huashenOldNameAnimation != NULL) {
+        _m_avatarNameItem->show();
+        _m_huashenNameAnimation->stop();
+        delete _m_huashenNameAnimation;
+        _m_huashenNameAnimation = NULL;
+        _m_huashenOldNameAnimation->stop();
+        delete _m_huashenOldNameAnimation;
+        _m_huashenOldNameAnimation = NULL;
+    }
+    if (_m_huashenItem != NULL) {
+        delete _m_huashenItem;
+        _m_huashenItem = NULL;
+    }
+    if (_m_huashenNameItem != NULL) {
+        delete _m_huashenNameItem;
+        _m_huashenNameItem = NULL;
+    }
+    if (_m_huashenOldNameItem != NULL) {
+        delete _m_huashenOldNameItem;
+        _m_huashenOldNameItem = NULL;
+    }
+    _clearPixmap(_m_extraSkillBg);
+    _clearPixmap(_m_extraSkillText);
 }
 
 void PlayerCardContainer::updateAvatarTooltip()
