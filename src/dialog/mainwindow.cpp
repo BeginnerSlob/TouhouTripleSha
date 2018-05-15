@@ -673,7 +673,7 @@ void MainWindow::on_actionScenario_Overview_triggered()
 
 void MainWindow::on_actionViewData_triggered()
 {
-    QDesktopServices::openUrl(QUrl("http://beginnerslob.github.com/TouhouTripleSha"));
+    QDesktopServices::openUrl(QUrl("https://beginnerslob.github.com/TouhouTripleSha"));
 }
 
 BroadcastBox::BroadcastBox(Server *server, QWidget *parent)
