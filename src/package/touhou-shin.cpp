@@ -3283,7 +3283,7 @@ TouhouShinPackage::TouhouShinPackage()
     shin020->addRelateSkill("thchipin");
     shin020->addRelateSkill("thaimin");
 
-    General *shin021 = new General(this, "shin021", "kaze");
+    General *shin021 = new General(this, "shin021", "kaze", 3, false);
     shin021->addSkill(new ThShenhu);
     shin021->addSkill(new ThHouhu);
 
@@ -3293,7 +3293,7 @@ TouhouShinPackage::TouhouShinPackage()
     shin022->addSkill(new ThRenMoTargetMod);
     related_skills.insertMulti("threnmo", "#threnmo");
 
-    General *shin023 = new General(this, "shin023", "yuki");
+    General *shin023 = new General(this, "shin023", "yuki", 3);
     shin023->addSkill(new ThMieyi);
     shin023->addSkill(new ThShili);
     shin023->addSkill(new SlashNoDistanceLimitSkill("thshili"));
