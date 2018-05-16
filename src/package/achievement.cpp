@@ -1685,6 +1685,8 @@ public:
             n = times_map["Steal"] + times_map["Fire"] - n;
             room->addAchievementData(player, key, n, false);
         }
+        if (times_map["Steal"] + times_map["Fire"] == 20)
+            gainAchievement(player, room);
         list.clear();
         foreach (QString name, times_map.keys())
             list << QString("%1,%2").arg(name).arg(times_map[name]);
@@ -2588,7 +2590,8 @@ public:
     {
         DeathStruct death = data.value<DeathStruct>();
         if (death.who == player) {
-            if (player == room->getCurrent() && player->getPhase() != Player::NotActive && death.damage && death.damage->from)
+            if (player == room->getCurrent() && player->getPhase() != Player::NotActive && death.damage && death.damage->from
+                && death.damage->from != player)
                 return QStringList(objectName());
         }
         return QStringList();
