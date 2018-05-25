@@ -1167,7 +1167,7 @@ public:
         }
 
         if (ask_who->canDiscard(ask_who, "he"))
-            room->askForDiscard(ask_who, objectName(), 1, 1);
+            room->askForDiscard(ask_who, objectName(), 1, 1, false, true);
 
         if (!player->isNude()) {
             if (ask_who->canDiscard(player, "he")) {
