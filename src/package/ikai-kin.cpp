@@ -3719,7 +3719,7 @@ public:
 
     virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
     {
-        if (ask_who->askForSkillInvoke(objectName(), triggerEvent == CardResponded ? QVariant() : "remove")) {
+        if (ask_who->askForSkillInvoke(objectName(), triggerEvent == EventPhaseStart ? "remove" : QVariant())) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
