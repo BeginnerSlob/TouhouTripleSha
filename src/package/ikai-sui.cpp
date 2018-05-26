@@ -8177,7 +8177,7 @@ public:
     virtual bool isEnabledAtPlay(const Player *player) const
     {
         if (!player->hasUsed("IkCangliuCard"))
-            return new IkCangliuCard;
+            return !player->isKongcheng();
         return Slash::IsAvailable(player) && player->getMark("IkCangliuInvoke") > 0 && player->getMark("ikcangliucount") < 3;
     }
 
