@@ -4853,9 +4853,9 @@ public:
             damage.to->turnOver();
             if (damage.to->isAlive()) {
                 QStringList choices;
-                if (player->getHp() > 0)
+                if (damage.to->getHp() > 0)
                     choices << "hp";
-                if (player->getLostHp() > 0)
+                if (damage.to->getLostHp() > 0)
                     choices << "losehp";
                 QString choice = room->askForChoice(player, objectName(), choices.join("+"));
                 int x = damage.to->getHp();
