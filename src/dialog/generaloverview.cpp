@@ -6,6 +6,7 @@
 #include "skin-bank.h"
 #include "ui_generaloverview.h"
 
+#include <QAction>
 #include <QClipboard>
 #include <QCommandLinkButton>
 #include <QGroupBox>
