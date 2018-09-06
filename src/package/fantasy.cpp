@@ -773,7 +773,7 @@ public:
 
     virtual bool isProhibited(const Player *from, const Player *to, const Card *card, const QList<const Player *> &) const
     {
-        if (to->hasArmorEffect(objectName()) && !from->hasSkill("ikkongni"))
+        if (to->hasArmorEffect(objectName()) && (from && !from->hasSkill("ikkongni")))
             return card->isKindOf("FireAttack") || card->isKindOf("BurningCamps") || card->isKindOf("IronChain")
                 || (card->isKindOf("Slash") && card->isRed());
         return false;

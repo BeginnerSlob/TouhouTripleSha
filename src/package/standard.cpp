@@ -412,7 +412,7 @@ void DelayedTrick::onNullified(ServerPlayer *target) const
                 continue;
             }
 
-            const Skill *skill = room->isProhibited(target, player, this);
+            const Skill *skill = room->isProhibited(NULL, player, this);
             if (skill) {
                 if (!skill->isVisible())
                     skill = Sanguosha->getMainSkill(skill->objectName());

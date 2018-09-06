@@ -7851,7 +7851,7 @@ public:
 
     virtual bool isProhibited(const Player *from, const Player *to, const Card *, const QList<const Player *> &) const
     {
-        return from->getMark("ikrongxinprohibit") > 0 && from != to;
+        return from && from->getMark("ikrongxinprohibit") > 0 && from != to;
     }
 };
 

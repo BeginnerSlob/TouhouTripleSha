@@ -1484,7 +1484,7 @@ public:
     {
         if (!card->isKindOf("Slash"))
             return false;
-        if (to->hasSkill("thheiguan") && from->getMark("@heiguan1") > 0)
+        if (to->hasSkill("thheiguan") && from && from->getMark("@heiguan1") > 0)
             return true;
         else if (to->getMark("@heiguan2") > 0)
             return true;

@@ -550,7 +550,7 @@ public:
 
     virtual bool isProhibited(const Player *from, const Player *to, const Card *card, const QList<const Player *> &) const
     {
-        return from->getPhase() != Player::NotActive && to->hasSkill(objectName()) && card->isKindOf("TrickCard")
+        return from && from->getPhase() != Player::NotActive && to->hasSkill(objectName()) && card->isKindOf("TrickCard")
             && card->isBlack();
     }
 };
@@ -4415,7 +4415,7 @@ public:
 
     virtual bool isProhibited(const Player *from, const Player *to, const Card *card, const QList<const Player *> &) const
     {
-        return to->getMark("@knot") && to->isAdjacentTo(from) && card->getTypeId() != Card::TypeSkill;
+        return from && to->getMark("@knot") && to->isAdjacentTo(from) && card->getTypeId() != Card::TypeSkill;
     }
 };
 

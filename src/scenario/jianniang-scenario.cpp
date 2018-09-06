@@ -1107,7 +1107,7 @@ public:
 
     virtual bool isProhibited(const Player *from, const Player *to, const Card *card, const QList<const Player *> &) const
     {
-        return card->getTypeId() != Card::TypeSkill && from->hasFlag("JnXianmaoUsed") && !to->hasFlag("JnXianmaoTarget");
+        return card->getTypeId() != Card::TypeSkill && from && from->hasFlag("JnXianmaoUsed") && !to->hasFlag("JnXianmaoTarget");
     }
 };
 
