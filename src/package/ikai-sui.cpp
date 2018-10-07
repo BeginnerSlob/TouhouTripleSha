@@ -1100,7 +1100,7 @@ void IkMoqiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) 
 {
     room->removePlayerMark(source, "@moqi");
     room->addPlayerMark(source, "@moqiused");
-    room->addPlayerMark(player, "ikmoqi");
+    room->addPlayerMark(source, "ikmoqi");
     source->drawCards(2, "ikmoqi");
 }
 
