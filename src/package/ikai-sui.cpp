@@ -1100,6 +1100,7 @@ void IkMoqiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) 
 {
     room->removePlayerMark(source, "@moqi");
     room->addPlayerMark(source, "@moqiused");
+    room->addPlayerMark(player, "ikmoqi");
     source->drawCards(2, "ikmoqi");
 }
 
@@ -1135,7 +1136,7 @@ public:
 
     virtual bool triggerable(const ServerPlayer *player) const
     {
-        return PhaseChangeSkill::triggerable(player) && player->getMark("@moqi") >= 1 && player->getPhase() == Player::Start;
+        return PhaseChangeSkill::triggerable(player) && player->getMark("@moqi") > 1 && player->getPhase() == Player::Start;
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
