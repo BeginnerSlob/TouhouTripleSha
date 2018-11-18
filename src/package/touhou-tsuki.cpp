@@ -1604,7 +1604,7 @@ void ThKanyaoCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
             }
         if (unsame) {
             QList<ServerPlayer *> victims;
-            foreach (ServerPlayer *p, room->getOtherPlayers(source))
+            foreach (ServerPlayer *p, room->getAlivePlayers(source))
                 if (p->getHp() >= source->getHp())
                     victims << p;
             if (!victims.isEmpty()) {
