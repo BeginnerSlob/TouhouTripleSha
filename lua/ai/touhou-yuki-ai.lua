@@ -767,8 +767,22 @@ sgs.ai_skill_playerchosen.thheimu = function(self, targets)
 	return nil
 end
 
---寒魄：锁定技，防止你对其他角色造成的火焰伤害，防止你受到的火焰伤害。
+--急冻：锁定技。防止你对其他角色造成的火焰伤害，防止你受到的火焰伤害。
 --smart-ai.lua SmartAI:damageIsEffective
+
+--寒魄：出牌阶段开始时，你可以令一名其他角色摸等同于场上方块牌数的牌，然后弃置等量的牌。若如此做，此阶段结束时，若其于此阶段内失去过至少两张牌，其将人物牌翻面，然后摸一张牌。
+sgs.ai_skill_playerchosen.thhanpo = function(self)
+	local targets = {}
+	local players = sgs.QList2Table(self.room:getOtherPlayers(self.player))
+	self:sort(players, "threat")
+	for _, p in ipairs(players) do
+		if (self:isFriend(p) and not self:toTurnOver(p, 2))
+				or (self:isEnemy(p) and self:toTurnOver(p, 2)) then
+			return p
+		end
+	end
+	return "."
+end
 
 --争冠：每当一名其他角色跳过摸牌阶段后，你可以摸两张牌；每当一名其他角色跳过出牌阶段后，你可以无视距离对一名其他角色使用一张【杀】。
 sgs.ai_skill_invoke.thzhengguan = true
@@ -847,7 +861,7 @@ sgs.ai_skill_use["@@thdongmo"] = function(self, prompt)
 	if #targets == 0 then
 		return "."
 	elseif self.player:getLostHp() - #targets > 1 then
-		if not self:toTurnOver(p, 1) then
+		if not self:toTurnOver(self.player, 1) then
 			return "@ThDongmoCard=.->" .. table.concat(targets, "+")
 		end
 	else
