@@ -232,13 +232,13 @@ public:
             log.arg = reihou->objectName();
             room->sendLog(log);
 
-            /*JsonArray args;
+            JsonArray args;
             args << (int)QSanProtocol::S_GAME_EVENT_HUASHEN;
             args << player->objectName();
             args << reihou->objectName();
             args << QString();
             args << true;
-            room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);*/
+            room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
 
             player->tag["Reihou"] = reihou->objectName();
             foreach (const Skill *skill, reihou->getVisibleSkillList())

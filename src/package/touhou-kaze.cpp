@@ -2436,13 +2436,13 @@ public:
                     list << choice;
                     player->tag["ThDongxi"] = QVariant::fromValue(list);
 
-                    /*JsonArray args;
+                    JsonArray args;
                     args << (int)QSanProtocol::S_GAME_EVENT_HUASHEN;
                     args << player->objectName();
                     args << target->getGeneral()->objectName();
                     args << choice;
                     args << false;
-                    room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);*/
+                    room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
 
                     return true;
                 }
@@ -2489,13 +2489,13 @@ public:
             _names << "-" + name;
         room->handleAcquireDetachSkills(player, _names, true);
 
-        /*JsonArray args;
+        JsonArray args;
         args << (int)QSanProtocol::S_GAME_EVENT_HUASHEN;
         args << player->objectName();
         args << player->getGeneral()->objectName();
         args << QString();
         args << false;
-        room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);*/
+        room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
 
         player->tag["ThDongxiLast"] = QVariant::fromValue(names);
         return false;

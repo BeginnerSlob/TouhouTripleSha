@@ -977,13 +977,13 @@ void Room::removeReihouCard(ServerPlayer *player, bool isYaodao)
         return;
     handleAcquireDetachSkills(player, skills, true, true);
     if (!isYaodao) {
-        /*JsonArray args;
+        JsonArray args;
         args << (int)QSanProtocol::S_GAME_EVENT_HUASHEN;
         args << player->objectName();
         args << player->getGeneralName();
         args << QString();
         args << false;
-        doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);*/
+        doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
     }
 }
 

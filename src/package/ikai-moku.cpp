@@ -5008,13 +5008,13 @@ public:
         log.arg2 = skill_name;
         room->sendLog(log);
 
-        /*JsonArray args;
+        JsonArray args;
         args << (int)QSanProtocol::S_GAME_EVENT_HUASHEN;
         args << zuoci->objectName();
         args << general->objectName();
         args << skill_name;
         args << true;
-        room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);*/
+        room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
 
         zuoci->tag["IkHuanshenSkill"] = skill_name;
         if (!skill_name.isEmpty())
