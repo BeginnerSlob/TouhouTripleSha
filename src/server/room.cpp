@@ -6536,6 +6536,7 @@ QString Room::getWinner(ServerPlayer *victim)
         case Player::Renegade: {
             if (alive_roles.length() == 1 && alive_roles.first() == "lord")
                 victim->setProperty("1v1", true);
+            break;
         }
         case Player::Rebel: {
             if (!alive_roles.contains("rebel") && !alive_roles.contains("renegade"))
