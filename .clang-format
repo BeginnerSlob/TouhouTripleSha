@@ -24,7 +24,7 @@ BraceWrapping:
     BeforeCatch: false
     BeforeElse: false
     IndentBraces: false
-ColumnLimit: 180
+ColumnLimit: 128
 Cpp11BracedListStyle: true
 ForEachMacros: ['foreach', 'Q_FOREACH', 'forever', 'Q_FOREVER']
 # FixNamespaceComments: true

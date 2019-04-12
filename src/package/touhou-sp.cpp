@@ -911,7 +911,7 @@ public:
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
             if (change.to == Player::NotActive) {
                 if (player->hasFlag("thhuanlong"))
-                room->setPlayerFlag(player, "-thhuanlong");
+                    room->setPlayerFlag(player, "-thhuanlong");
                 if (player->getMark("thhuanlong1") > 0)
                     room->setPlayerMark(player, "thhuanlong1", 0);
                 if (player->getMark("thhuanlong2") > 0)
@@ -2147,12 +2147,7 @@ public:
         if (TriggerSkill::triggerable(player)) {
             if (room->getCurrent() == player && player->getPhase() != Player::NotActive) {
                 CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-                if (move.from && move.from->isAlive() && (move.from == player || player->inMyAttackRange(move.from))
-                    && move.from_places.contains(Player::PlaceEquip)
-                    && move.reason.m_reason != CardMoveReason::S_REASON_CHANGE_EQUIP)
-                    skills << objectName();
-                if (move.to && move.to->isAlive() && (move.to == player || player->inMyAttackRange(move.to))
-                    && move.to_place == Player::PlaceEquip)
+                if (move.from && move.from->isAlive() && move.from_places.contains(Player::PlaceEquip))
                     skills << objectName();
             }
         }
