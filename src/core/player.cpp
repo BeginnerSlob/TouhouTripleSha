@@ -975,6 +975,9 @@ bool Player::canDiscard(const Player *to, int card_id) const
         if ((to->getWeapon() && card_id == to->getWeapon()->getEffectiveId())
             || (to->getArmor() && card_id == to->getArmor()->getEffectiveId()))
             return false;
+    } else if (to->getMark("thguzhen") > 0 && this != to) {
+        if (to->getTreasure() && card_id == to->getTreasure()->getEffectiveId())
+            return false;
     } else if (this == to) {
         if (!getJudgingAreaID().contains(card_id) && isJilei(Sanguosha->getCard(card_id)))
             return false;
@@ -1077,8 +1080,7 @@ bool Player::canSlash(const Player *other, const Card *slash, bool distance_limi
         return false;
 
     if (distance_limit)
-        return inMyAttackRange(other,
-                               rangefix - Sanguosha->correctCardTarget(TargetModSkill::DistanceLimit, this, THIS_SLASH));
+        return inMyAttackRange(other, rangefix - Sanguosha->correctCardTarget(TargetModSkill::DistanceLimit, this, THIS_SLASH));
     else
         return true;
 #undef THIS_SLASH

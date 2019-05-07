@@ -276,8 +276,7 @@ public:
                     if (card->getSuit() == suit)
                         disabled_ids << card->getEffectiveId();
 
-                int card_id
-                    = room->askForCardChosen(player, target, "ej", objectName(), false, Card::MethodNone, disabled_ids);
+                int card_id = room->askForCardChosen(player, target, "ej", objectName(), false, Card::MethodNone, disabled_ids);
 
                 if (card_id != -1)
                     room->obtainCard(player, card_id);
@@ -2290,7 +2289,8 @@ public:
     {
         if (TriggerSkill::triggerable(player)) {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card->getTypeId() != Card::TypeSkill && use.card->getSuit() == Card::Heart && use.to.length() == 1) {
+            if (use.card->getTypeId() != Card::TypeSkill && use.card->isRed() && use.to.length() == 1
+                && use.from->getMark(objectName()) == 1) {
                 return QStringList(objectName());
             }
         }
@@ -2329,6 +2329,40 @@ public:
             if (n > 0)
                 player->drawCards(qMin(n, 3), objectName());
         }
+        return false;
+    }
+};
+
+class ThMaihuoRecord : public TriggerSkill
+{
+public:
+    ThMaihuoRecord()
+        : TriggerSkill("#thmaihuo")
+    {
+        events << PreCardUsed << EventPhaseChanging;
+        frequency = Compulsory;
+        global = true;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *, QVariant &data,
+                                    ServerPlayer *&) const
+    {
+        if (triggerEvent == EventPhaseChanging) {
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAlivePlayers())
+                    p->setMark("thmaihuo", 0);
+            }
+        } else {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->getTypeId() != Card::TypeSkill)
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        player->addMark("thmaihuo");
         return false;
     }
 };
@@ -2617,8 +2651,7 @@ void ThXinhuaCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
         room->setPlayerFlag(target, "ThXinhuaInvoked");
         room->broadcastSkillInvoke("thxinhua");
         room->notifySkillInvoked(target, "thxinhua");
-        CardMoveReason reason(CardMoveReason::S_REASON_GIVE, source->objectName(), target->objectName(), "thxinhua",
-                              QString());
+        CardMoveReason reason(CardMoveReason::S_REASON_GIVE, source->objectName(), target->objectName(), "thxinhua", QString());
         room->obtainCard(target, this, reason);
         QList<ServerPlayer *> victims;
         foreach (ServerPlayer *p, room->getOtherPlayers(target)) {
@@ -2834,6 +2867,8 @@ TouhouKazePackage::TouhouKazePackage()
 
     General *kaze017 = new General(this, "kaze017", "kaze", 3, false);
     kaze017->addSkill(new ThMaihuo);
+    kaze017->addSkill(new ThMaihuoRecord);
+    related_skills.insertMulti("thmaihuo", "#thmaihuo");
     kaze017->addSkill(new ThWunian);
 
     General *kaze018 = new General(this, "kaze018$", "kaze", 3);

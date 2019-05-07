@@ -863,6 +863,36 @@ public:
     }
 };
 
+class ThGuzhen : public TriggerSkill
+{
+public:
+    ThGuzhen()
+        : TriggerSkill("thguzhen")
+    {
+        events << CardsMoveOneTime << EventPhaseStart;
+    }
+
+    virtual QStringList triggerable(TriggerEvent e, Room *r, ServerPlayer *p, QVariant &d, ServerPlayer *&) const
+    {
+        if (e == CardsMoveOneTime && TriggerSkill::triggerable(p)) {
+            CardsMoveOneTimeStruct move = d.value<CardsMoveOneTimeStruct>();
+            if (move.from == p && move.from_places.contains(Player::PlaceEquip))
+                return QStringList(objectName());
+            if (move.to == p && move.to_place == Player::PlaceEquip)
+                return QStringList(objectName());
+        } else if (e == EventPhaseStart && p->getMark(objectName()) > 0 && p->getPhase() == Player::RoundStart)
+            r->setPlayerMark(p, objectName(), 0);
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        room->sendCompulsoryTriggerLog(player, objectName());
+        room->addPlayerMark(player, objectName());
+        return false;
+    }
+};
+
 ThLianyingCard::ThLianyingCard()
 {
     target_fixed = true;
@@ -1808,8 +1838,7 @@ void ThMuyuCard::onEffect(const CardEffectStruct &effect) const
     QString pattern = "..";
     if (!can_discard)
         pattern += "!";
-    const Card *card
-        = room->askForCard(effect.to, pattern, "@thmuyu-put:" + effect.from->objectName(), QVariant(), MethodNone);
+    const Card *card = room->askForCard(effect.to, pattern, "@thmuyu-put:" + effect.from->objectName(), QVariant(), MethodNone);
     if (!card && !can_discard) {
         QList<const Card *> cards = effect.to->getCards("he");
         card = cards.at(qrand() % cards.length());
@@ -2238,8 +2267,9 @@ public:
             CardsMoveStruct move1(hands, p, Player::PlaceSpecial,
                                   CardMoveReason(CardMoveReason::S_REASON_PUT, p->objectName()));
             move1.to_pile_name = "dance";
-            CardsMoveStruct move2(piles, p, Player::PlaceHand, CardMoveReason(CardMoveReason::S_REASON_EXCHANGE_FROM_PILE,
-                                                                              p->objectName(), objectName(), QString()));
+            CardsMoveStruct move2(
+                piles, p, Player::PlaceHand,
+                CardMoveReason(CardMoveReason::S_REASON_EXCHANGE_FROM_PILE, p->objectName(), objectName(), QString()));
             QList<CardsMoveStruct> moves;
             moves << move1 << move2;
             r->moveCardsAtomic(moves, false);
@@ -3119,8 +3149,7 @@ public:
         QString pattern = ".";
         if (player->getHandcardNum() > ask_who->getHandcardNum())
             pattern += "!";
-        const Card *card
-            = room->askForCard(player, pattern, "@thyuchi:" + ask_who->objectName(), QVariant(), Card::MethodNone);
+        const Card *card = room->askForCard(player, pattern, "@thyuchi:" + ask_who->objectName(), QVariant(), Card::MethodNone);
         if (pattern.endsWith("!") && !card)
             card = player->getRandomHandCard();
         if (card) {
@@ -3219,6 +3248,7 @@ TouhouShinPackage::TouhouShinPackage()
     shin007->addSkill(new ThMoju);
     shin007->addSkill(new ThMojuMaxCardsSkill);
     related_skills.insertMulti("thmoju", "#thmoju");
+    shin007->addSkill(new ThGuzhen);
 
     General *shin008 = new General(this, "shin008", "tsuki");
     shin008->addSkill(new ThLianying);
