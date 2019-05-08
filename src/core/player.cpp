@@ -976,8 +976,12 @@ bool Player::canDiscard(const Player *to, int card_id) const
             || (to->getArmor() && card_id == to->getArmor()->getEffectiveId()))
             return false;
     } else if (to->getMark("thguzhen") > 0 && this != to) {
-        if (to->getTreasure() && card_id == to->getTreasure()->getEffectiveId())
+        if ((to->getWeapon() && card_id == to->getWeapon()->getEffectiveId())
+            || (to->getArmor() && card_id == to->getArmor()->getEffectiveId())
+            || (to->getDefensiveHorse() && card_id == to->getDefensiveHorse()->getEffectiveId())
+            || (to->getOffensiveHorse() && card_id == to->getOffensiveHorse()->getEffectiveId()))
             return false;
+        return false;
     } else if (this == to) {
         if (!getJudgingAreaID().contains(card_id) && isJilei(Sanguosha->getCard(card_id)))
             return false;
