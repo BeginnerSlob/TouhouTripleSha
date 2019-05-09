@@ -1504,8 +1504,11 @@ void Dismantlement::onEffect(const CardEffectStruct &effect) const
             list << card_id;
             effect.to->tag["ThJianyue"] = QVariant::fromValue(list);
             room->setPlayerCardLimitation(effect.to, "use,response", QString::number(card_id), false);
-        } else
+        } else {
+            if (!effect.to->isChained())
+                room->setPlayerProperty(effect.to, "chained", true);
             room->setPlayerFlag(effect.from, "ThJianyueSkip");
+        }
     }
     // -------------------------
 }
