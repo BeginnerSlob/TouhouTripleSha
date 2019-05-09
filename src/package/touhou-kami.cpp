@@ -1399,15 +1399,13 @@ public:
         delete dummy;
 
         if (red) {
-            QList<ServerPlayer *> targets;
-            foreach (ServerPlayer *p, room->getAllPlayers())
-                if (p->isWounded())
-                    targets << p;
-
-            if (!targets.isEmpty()) {
-                ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "thyuxin-recover", true);
-                if (target)
+            ServerPlayer *target
+                = room->askForPlayerChosen(player, room->getAlivePlayers(), objectName(), "thyuxin-target", true);
+            if (target) {
+                if (target->isWounded() && room->askForChoice(target, objectName(), "recover+draw") == "recover")
                     room->recover(target, RecoverStruct(player));
+                else
+                    target->drawCards(1, objectName());
             }
         }
 
@@ -1782,9 +1780,8 @@ public:
             }
             if (!skills.isEmpty()) {
                 room->handleAcquireDetachSkills(use.from, skills);
-                QStringList list
-                    = use.from->property(QString("thxujing_skills_%1").arg(player->objectName()).toLatin1().data())
-                          .toStringList();
+                QStringList list = use.from->property(QString("thxujing_skills_%1").arg(player->objectName()).toLatin1().data())
+                                       .toStringList();
                 list += skills;
                 room->setPlayerProperty(use.from, QString("thxujing_skills_%1").arg(player->objectName()).toLatin1().data(),
                                         QVariant::fromValue(list));
