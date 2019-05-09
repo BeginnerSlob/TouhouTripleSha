@@ -959,9 +959,11 @@ bool Player::canDiscard(const Player *to, const QString &flags) const
     if (flags.contains(judging_flag) && !to->getJudgingArea().isEmpty())
         return true;
     if (flags.contains(equip_flag)) {
-        if (to->getDefensiveHorse() || to->getOffensiveHorse() || to->getTreasure())
+        if (to->getTreasure())
             return true;
-        if ((to->getWeapon() || to->getArmor()) && (!to->hasSkill("ikhugu") || this == to))
+        if ((to->getDefensiveHorse() || to->getOffensiveHorse()) && (to->getMark("thguzhen") == 0 || this == to))
+            return true;
+        if ((to->getWeapon() || to->getArmor()) && (!(to->hasSkill("ikhugu") || to->getMark("thguzhen") > 0) || this == to))
             return true;
     }
     return false;
@@ -975,14 +977,15 @@ bool Player::canDiscard(const Player *to, int card_id) const
         if ((to->getWeapon() && card_id == to->getWeapon()->getEffectiveId())
             || (to->getArmor() && card_id == to->getArmor()->getEffectiveId()))
             return false;
-    } else if (to->getMark("thguzhen") > 0 && this != to) {
+    }
+    if (to->getMark("thguzhen") > 0 && this != to) {
         if ((to->getWeapon() && card_id == to->getWeapon()->getEffectiveId())
             || (to->getArmor() && card_id == to->getArmor()->getEffectiveId())
             || (to->getDefensiveHorse() && card_id == to->getDefensiveHorse()->getEffectiveId())
             || (to->getOffensiveHorse() && card_id == to->getOffensiveHorse()->getEffectiveId()))
             return false;
-        return false;
-    } else if (this == to) {
+    }
+    if (this == to) {
         if (!getJudgingAreaID().contains(card_id) && isJilei(Sanguosha->getCard(card_id)))
             return false;
     }
