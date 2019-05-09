@@ -1028,9 +1028,11 @@ public:
             QList<int> card_ids;
             room->getThread()->trigger(FetchDrawPileCard, room, NULL);
             QList<int> &draw = room->getDrawPile();
-            if (draw.isEmpty())
-                room->swapPile();
-            card_ids << draw.takeLast();
+            for (int i = 0; i < 2; ++i) {
+                if (draw.isEmpty())
+                    room->swapPile();
+                card_ids << draw.takeLast();
+            }
             CardsMoveStruct move;
             move.card_ids = card_ids;
             move.from = NULL;
