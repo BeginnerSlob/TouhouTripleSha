@@ -622,8 +622,9 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *p, QVariant &data, ServerPlayer *player) const
     {
         CardUseStruct use = data.value<CardUseStruct>();
-        if (!player->hasSkill("ikkongni") && ((p->getArmor() && p->hasArmorEffect(p->getArmor()->objectName()))
-                                              || p->hasSkill("ikjingnie") || p->hasSkill("iklinglong")))
+        if (!player->hasSkill("ikkongni")
+            && ((p->getArmor() && p->hasArmorEffect(p->getArmor()->objectName())) || p->hasSkill("ikjingnie")
+                || p->hasSkill("iklinglong")))
             room->setEmotion(player, "effects/weapon");
         p->addQinggangTag(use.card);
 
@@ -671,8 +672,8 @@ public:
         if (weapon_id != -1)
             room->setCardFlag(weapon_id, "using");
         effect.from->setFlags("BladeUse");
-        bool use = room->askForUseSlashTo(effect.from, effect.to, QString("blade-slash:%1").arg(effect.to->objectName()),
-                                          false, true);
+        bool use = room->askForUseSlashTo(effect.from, effect.to, QString("blade-slash:%1").arg(effect.to->objectName()), false,
+                                          true);
         if (!use)
             effect.from->setFlags("-BladeUse");
         if (weapon_id != -1)
@@ -1086,8 +1087,8 @@ void SavageAssault::onEffect(const CardEffectStruct &effect) const
 {
     Room *room = effect.to->getRoom();
     const Card *slash
-        = room->askForCard(effect.to, "slash", "savage-assault-slash:" + effect.from->objectName(),
-                           QVariant::fromValue(effect), Card::MethodResponse, effect.from->isAlive() ? effect.from : NULL);
+        = room->askForCard(effect.to, "slash", "savage-assault-slash:" + effect.from->objectName(), QVariant::fromValue(effect),
+                           Card::MethodResponse, effect.from->isAlive() ? effect.from : NULL);
     if (slash) {
         room->setEmotion(effect.to, "killer");
     } else {
@@ -1355,8 +1356,8 @@ void Duel::onEffect(const CardEffectStruct &effect) const
             if (slash == NULL)
                 break;
 
-            slash = room->askForCard(first, "slash", "@ikwushuang-slash-2:" + second->objectName(),
-                                     QVariant::fromValue(effect), Card::MethodResponse, second);
+            slash = room->askForCard(first, "slash", "@ikwushuang-slash-2:" + second->objectName(), QVariant::fromValue(effect),
+                                     Card::MethodResponse, second);
             if (slash == NULL)
                 break;
         } else {

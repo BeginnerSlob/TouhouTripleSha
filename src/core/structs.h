@@ -103,7 +103,8 @@ class CardMoveReason
 {
 public:
     int m_reason;
-    QString m_playerId; // the cause (not the source) of the movement, such as "lusu" when "ikyuanjie", or "zhanghe" when "ikmancai"
+    QString m_playerId;
+    // the cause (not the source) of the movement, such as "lusu" when "ikyuanjie", or "zhanghe" when "ikmancai"
     QString m_targetId; // To keep this structure lightweight, currently this is only used for UI purpose.
     // It will be set to empty if multiple targets are involved. NEVER use it for trigger condition
     // judgement!!! It will not accurately reflect the real reason.
@@ -142,8 +143,8 @@ public:
 
     inline bool operator==(const CardMoveReason &other) const
     {
-        return m_reason == other.m_reason && m_playerId == other.m_playerId && m_targetId == other.m_targetId && m_skillName == other.m_skillName
-            && m_eventName == other.m_eventName;
+        return m_reason == other.m_reason && m_playerId == other.m_playerId && m_targetId == other.m_targetId
+            && m_skillName == other.m_skillName && m_eventName == other.m_eventName;
     }
 
     static const int S_REASON_UNKNOWN = 0x00;
@@ -238,7 +239,8 @@ struct CardsMoveStruct
         is_last_handcard = false;
     }
 
-    inline CardsMoveStruct(const QList<int> &ids, Player *from, Player *to, Player::Place from_place, Player::Place to_place, CardMoveReason reason)
+    inline CardsMoveStruct(const QList<int> &ids, Player *from, Player *to, Player::Place from_place, Player::Place to_place,
+                           CardMoveReason reason)
     {
         this->card_ids = ids;
         this->from_place = from_place;
@@ -266,7 +268,8 @@ struct CardsMoveStruct
             this->to_player_name = to->objectName();
     }
 
-    inline CardsMoveStruct(int id, Player *from, Player *to, Player::Place from_place, Player::Place to_place, CardMoveReason reason)
+    inline CardsMoveStruct(int id, Player *from, Player *to, Player::Place from_place, Player::Place to_place,
+                           CardMoveReason reason)
     {
         this->card_ids << id;
         this->from_place = from_place;
@@ -296,12 +299,14 @@ struct CardsMoveStruct
 
     inline bool operator==(const CardsMoveStruct &other) const
     {
-        return from == other.from && from_place == other.from_place && from_pile_name == other.from_pile_name && from_player_name == other.from_player_name;
+        return from == other.from && from_place == other.from_place && from_pile_name == other.from_pile_name
+            && from_player_name == other.from_player_name;
     }
 
     inline bool operator<(const CardsMoveStruct &other) const
     {
-        return from < other.from || from_place < other.from_place || from_pile_name < other.from_pile_name || from_player_name < other.from_player_name;
+        return from < other.from || from_place < other.from_place || from_pile_name < other.from_pile_name
+            || from_player_name < other.from_player_name;
     }
 
     QList<int> card_ids;

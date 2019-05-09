@@ -2503,12 +2503,14 @@ public:
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
     {
+        if (to_select->isEquipped())
+            return false;
         int sum = 0;
         foreach (const Card *c, selected)
             sum += c->getNumber();
         if (sum == 13)
             return false;
-        return sum + to_select->getNumber() <= 13 && to_select->getTypeId() != Card::TypeBasic;
+        return sum + to_select->getNumber() <= 13;
     }
 
     virtual const Card *viewAs(const QList<const Card *> &cards) const
@@ -2557,15 +2559,21 @@ bool ThNingguCard::targetFilter(const QList<const Player *> &targets, const Play
     return targets.isEmpty() && !to_select->hasFlag("ThNingguUsed") && to_select != Self;
 }
 
-void ThNingguCard::use(Room *room, ServerPlayer *, QList<ServerPlayer *> &targets) const
+void ThNingguCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
 {
-    room->setPlayerFlag(targets.first(), "ThNingguUsed");
+    ServerPlayer *target = targets.first();
+    room->setPlayerFlag(target, "ThNingguUsed");
 
     CardMoveReason reason(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), "thninggu", QString());
     room->throwCard(this, reason, NULL);
 
-    if (!room->askForCard(targets.first(), "^BasicCard", "@thninggu-discard"))
-        room->loseHp(targets.first());
+    const Card *card = room->askForCard(target, "^BasicCard", "@thninggu-give:" + source->objectName(), QVariant(), MethodNone);
+    if (card) {
+        CardMoveReason reason_g(CardMoveReason::S_REASON_GIVE, target->objectName(), source->objectName(), "thninggu",
+                                QString());
+        room->obtainCard(source, card, reason_g, false);
+    } else
+        room->loseHp(target);
 }
 
 class ThNingguVS : public OneCardViewAsSkill
@@ -3126,9 +3134,9 @@ public:
     virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const
     {
         TriggerList list;
-        if (player->getPhase() == Player::Play && !player->isKongcheng()) {
+        if (player->getPhase() == Player::Play && !player->isKongcheng() && Slash::IsAvailable(player)) {
             foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
-                if (p->inMyAttackRange(player) && Slash::IsAvailable(p))
+                if (p != player)
                     list.insert(p, QStringList(objectName()));
             }
         }
