@@ -826,47 +826,105 @@ public:
     }
 };
 
-ThDunjiaCard::ThDunjiaCard()
-{
-    will_throw = false;
-}
-
-bool ThDunjiaCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
-{
-    Card *chai = Sanguosha->cloneCard("dismantlement");
-    chai->addSubcards(subcards);
-    chai->deleteLater();
-    return chai && chai->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, chai);
-}
-
-const Card *ThDunjiaCard::validate(CardUseStruct &) const
-{
-    Card *chai = Sanguosha->cloneCard("dismantlement");
-    chai->addSubcards(subcards);
-    chai->setSkillName("thdunjia");
-    return chai;
-}
-
-class ThDunjia : public OneCardViewAsSkill
+class ThDunjia : public TriggerSkill
 {
 public:
     ThDunjia()
-        : OneCardViewAsSkill("thdunjia")
+        : TriggerSkill("thdunjia")
     {
-        response_or_use = true;
-        filter_pattern = "EquipCard";
+        events << TargetConfirming;
+        frequency = Frequent;
     }
 
-    virtual bool isEnabledAtPlay(const Player *player) const
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
-        return !player->hasUsed("ThDunjiaCard");
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (TriggerSkill::triggerable(player) && use.card->getTypeId() != Card::TypeSkill && use.to.length() == 1 && use.from
+            && use.from->isAlive() && use.from->getEquips().length() < player->getEquips().length())
+            return QStringList(objectName());
+        return QStringList();
     }
 
-    virtual const Card *viewAs(const Card *originalCard) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        Card *card = new ThDunjiaCard;
-        card->addSubcard(originalCard);
-        return card;
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        player->drawCards(1, objectName());
+        return false;
+    }
+};
+
+class ThQingming : public TriggerSkill
+{
+public:
+    ThQingming()
+        : TriggerSkill("thqingming")
+    {
+        events << TargetSpecified;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (TriggerSkill::triggerable(player)) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->isKindOf("Slash")) {
+                QStringList targets;
+                foreach (ServerPlayer *to, use.to) {
+                    if (to->getEquips().length() > player->getEquips().length())
+                        targets << to->objectName();
+                }
+                if (!targets.isEmpty())
+                    return QStringList(objectName() + "->" + targets.join("+"));
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *skill_target, QVariant &, ServerPlayer *player) const
+    {
+        if (player->askForSkillInvoke(objectName(), QVariant::fromValue(skill_target))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *p, QVariant &data, ServerPlayer *player) const
+    {
+        CardUseStruct use = data.value<CardUseStruct>();
+        use.nullified_list << p->objectName();
+        data = QVariant::fromValue(use);
+
+        QStringList choices;
+        QStringList cards;
+        cards << "rout"
+              << "snatch"
+              << "dismantlement"
+              << "duel";
+        foreach (QString card_name, cards) {
+            Card *card = Sanguosha->cloneCard(card_name);
+            card->setSkillName("_thqingming");
+            if (card->targetFilter(QList<const Player *>(), p, player))
+                choices << card_name;
+            delete card;
+        }
+
+        if (!choices.isEmpty()) {
+            QString choice = room->askForChoice(player, objectName(), choices.join("+"));
+            Card *card = Sanguosha->cloneCard(choice);
+            card->setSkillName("_thqingming");
+            card->deleteLater();
+            room->useCard(CardUseStruct(card, player, p));
+        }
+
+        return false;
     }
 };
 
@@ -2738,6 +2796,7 @@ TouhouYukiPackage::TouhouYukiPackage()
 
     General *yuki006 = new General(this, "yuki006", "yuki");
     yuki006->addSkill(new ThDunjia);
+    yuki006->addSkill(new ThQingming);
 
     General *yuki007 = new General(this, "yuki007", "yuki", 3);
     yuki007->addSkill(new ThChouce);
@@ -2808,7 +2867,6 @@ TouhouYukiPackage::TouhouYukiPackage()
 
     addMetaObject<ThMojiCard>();
     addMetaObject<ThYuanqiCard>();
-    addMetaObject<ThDunjiaCard>();
     addMetaObject<ThChouceCard>();
     addMetaObject<ThBingpuCard>();
     addMetaObject<ThDongmoCard>();

@@ -915,8 +915,8 @@ public:
         if (!TriggerSkill::triggerable(player))
             return QStringList();
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        if (move.card_ids.length() == 1 && move.from_places.contains(Player::PlaceTable)
-            && move.to_place == Player::DiscardPile && move.reason.m_reason == CardMoveReason::S_REASON_USE) {
+        if (move.card_ids.length() == 1 && move.from_places.contains(Player::PlaceTable) && move.to_place == Player::DiscardPile
+            && move.reason.m_reason == CardMoveReason::S_REASON_USE) {
             const Card *card = move.reason.m_extraData.value<const Card *>();
             if (!card || !card->isKindOf("SavageAssault"))
                 return QStringList();
@@ -1382,8 +1382,8 @@ IkZhihun::IkZhihun()
 
 bool IkZhihun::isEnabledAtResponse(const Player *player, const QString &pattern) const
 {
-    return pattern == "slash" || pattern == "jink"
-        || (pattern.contains("peach") && player->getMark("Global_PreventPeach") == 0) || pattern == "nullification";
+    return pattern == "slash" || pattern == "jink" || (pattern.contains("peach") && player->getMark("Global_PreventPeach") == 0)
+        || pattern == "nullification";
 }
 
 bool IkZhihun::isEnabledAtPlay(const Player *player) const
@@ -3355,8 +3355,7 @@ public:
             return QStringList();
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         if (player->getHp() > 0 && move.from && move.from->isAlive() && move.from_places.contains(Player::PlaceHand)
-            && ((move.reason.m_reason == CardMoveReason::S_REASON_DISMANTLE
-                 && move.reason.m_playerId != move.reason.m_targetId)
+            && ((move.reason.m_reason == CardMoveReason::S_REASON_DISMANTLE && move.reason.m_playerId != move.reason.m_targetId)
                 || (move.to && move.to != move.from && move.to_place == Player::PlaceHand
                     && move.reason.m_reason != CardMoveReason::S_REASON_GIVE
                     && move.reason.m_reason != CardMoveReason::S_REASON_SWAP)))
