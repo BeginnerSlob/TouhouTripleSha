@@ -193,6 +193,7 @@ public:
     static bool CompareByType(const Card *a, const Card *b);
     static Card *Clone(const Card *card);
     static QString Suit2String(Suit suit);
+    static Color Suit2Color(Suit suit);
     static const int S_UNKNOWN_CARD_ID;
 
     static const Card *Parse(const QString &str);

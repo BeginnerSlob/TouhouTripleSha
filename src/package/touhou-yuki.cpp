@@ -8,6 +8,7 @@
 #include "maneuvering.h"
 #include "room.h"
 #include "skill.h"
+#include "touhou-hana.h"
 
 class ThJianmo : public TriggerSkill
 {
@@ -647,48 +648,63 @@ ThMojiCard::ThMojiCard()
 
 bool ThMojiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
 {
-    if (Sanguosha->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_PLAY) {
-        Card *card = Sanguosha->cloneCard(user_string);
-        card->setSkillName("_thmoji");
-        card->addSubcard(this);
-        card->deleteLater();
+    if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+        Card *card = NULL;
+        if (!user_string.isEmpty()) {
+            card = Sanguosha->cloneCard(user_string.split("+").first());
+            card->setSkillName("_thmoji");
+            card->addSubcards(subcards);
+            card->deleteLater();
+        }
         return card && card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, card, targets);
-    }
-    Card *card = Sanguosha->cloneCard("slash");
+    } else if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE)
+        return false;
+
+    Card *card = Sanguosha->cloneCard(user_string.split("+").first());
     card->setSkillName("_thmoji");
-    card->addSubcard(this);
+    card->addSubcards(subcards);
     card->deleteLater();
     return card && card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, card, targets);
 }
 
 bool ThMojiCard::targetFixed() const
 {
-    if (Sanguosha->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_PLAY) {
-        Card *card = Sanguosha->cloneCard(user_string);
-        card->setSkillName("_thmoji");
-        card->addSubcard(this);
-        card->deleteLater();
+    if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+        Card *card = NULL;
+        if (!user_string.isEmpty()) {
+            card = Sanguosha->cloneCard(user_string.split("+").first());
+            card->setSkillName("_thmoji");
+            card->addSubcards(subcards);
+            card->deleteLater();
+        }
         return card && card->targetFixed();
-    }
-    Card *card = Sanguosha->cloneCard("slash");
+    } else if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE)
+        return true;
+
+    Card *card = Sanguosha->cloneCard(user_string.split("+").first());
     card->setSkillName("_thmoji");
-    card->addSubcard(this);
+    card->addSubcards(subcards);
     card->deleteLater();
     return card && card->targetFixed();
 }
 
 bool ThMojiCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const
 {
-    if (Sanguosha->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_PLAY) {
-        Card *card = Sanguosha->cloneCard(user_string);
-        card->setSkillName("_thmoji");
-        card->addSubcard(this);
-        card->deleteLater();
+    if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+        Card *card = NULL;
+        if (!user_string.isEmpty()) {
+            card = Sanguosha->cloneCard(user_string.split("+").first());
+            card->setSkillName("_thmoji");
+            card->addSubcards(subcards);
+            card->deleteLater();
+        }
         return card && card->targetsFeasible(targets, Self);
-    }
-    Card *card = Sanguosha->cloneCard("slash");
+    } else if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE)
+        return false;
+
+    Card *card = Sanguosha->cloneCard(user_string.split("+").first());
     card->setSkillName("_thmoji");
-    card->addSubcard(this);
+    card->addSubcards(subcards);
     card->deleteLater();
     return card && card->targetsFeasible(targets, Self);
 }
@@ -726,6 +742,11 @@ public:
     {
     }
 
+    virtual SkillDialog *getDialog() const
+    {
+        return ThMimengDialog::getInstance("thmoji", true, false);
+    }
+
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *) const
     {
         int n = qMin(2, Self->getHp());
@@ -734,90 +755,107 @@ public:
         return true;
     }
 
-    virtual bool isEnabledAtPlay(const Player *player) const
-    {
-        return Slash::IsAvailable(player) && player->getHp() > 0 && player->getCardCount() >= qMin(player->getHp(), 2);
-    }
-
-    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const
-    {
-        if (player->getHp() <= 0 || player->getCardCount() < qMin(player->getHp(), 2))
-            return false;
-        return pattern == "slash" || pattern == "jink";
-    }
-
     virtual const Card *viewAs(const QList<const Card *> &cards) const
     {
         if (cards.length() != qMin(2, Self->getHp()))
             return NULL;
 
-        if (Sanguosha->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_PLAY) {
+        if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE
+            || Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE) {
+            ThMojiCard *tianyan_card = new ThMojiCard;
+            QString pattern = Sanguosha->currentRoomState()->getCurrentCardUsePattern();
+            if (pattern == "peach+analeptic")
+                pattern = "analeptic";
+            tianyan_card->addSubcards(cards);
+            tianyan_card->setUserString(pattern);
+            return tianyan_card;
+        }
+
+        const Card *c = Self->tag["thmoji"].value<const Card *>();
+        if (c) {
             ThMojiCard *card = new ThMojiCard;
-            card->setUserString(Sanguosha->getCurrentCardUsePattern());
             card->addSubcards(cards);
+            card->setUserString(c->objectName());
             return card;
         }
 
-        ThMojiCard *card = new ThMojiCard;
-        card->setUserString("slash");
-        card->addSubcards(cards);
-        return card;
+        return NULL;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        if (player->getHp() < 1 || player->getCardCount() < qMin(player->getHp(), 2))
+            return false;
+
+        Slash *slash = new Slash(Card::NoSuit, 0);
+        slash->deleteLater();
+        if (slash->isAvailable(player))
+            return true;
+
+        Analeptic *analeptic = new Analeptic(Card::NoSuit, 0);
+        analeptic->deleteLater();
+        if (analeptic->isAvailable(player))
+            return true;
+
+        return false;
+    }
+
+    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const
+    {
+        if (player->getHp() < 1 || player->getCardCount() < qMin(player->getHp(), 2))
+            return false;
+
+        return pattern.contains("analeptic") || pattern == "jink" || pattern == "slash";
     }
 };
 
 ThYuanqiCard::ThYuanqiCard()
 {
     target_fixed = true;
-    will_throw = false;
-    handling_method = MethodNone;
 }
 
 void ThYuanqiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
 {
-    room->showCard(source, getEffectiveId());
+    Card::Suit suit = room->askForSuit(source, "thyuanqi");
     QList<int> card_ids = room->getNCards(1, false);
     CardMoveReason reason(CardMoveReason::S_REASON_TURNOVER, source->objectName(), "thyuanqi", QString());
     room->moveCardsAtomic(CardsMoveStruct(card_ids, NULL, Player::PlaceTable, reason), true);
-    const Card *card1 = Sanguosha->getCard(getEffectiveId());
-    const Card *card2 = Sanguosha->getCard(card_ids.first());
-    if (card1->sameColorWith(card2)) {
-        source->tag["ThYuanqiCards"] = QVariant::fromValue(IntList2VariantList(subcards + card_ids));
+    const Card *card = Sanguosha->getCard(card_ids.first());
+    if (card->getSuit() == suit) {
+        if (source->askForSkillInvoke("thyuanqi_draw", "yes"))
+            source->drawCards(2, objectName());
+    } else if (card->getColor() == Suit2Color(suit)) {
+        source->tag["ThYuanqiCards"] = QVariant::fromValue(IntList2VariantList(card_ids));
         ServerPlayer *target = room->askForPlayerChosen(source, room->getAlivePlayers(), "thyuanqi", "@thyuanqi", true);
         source->tag.remove("ThYuanqiCards");
         if (target) {
             QList<CardsMoveStruct> moves;
             CardMoveReason reason(CardMoveReason::S_REASON_GIVE, source->objectName(), target->objectName(), "thyuanqi",
                                   QString());
-            moves << CardsMoveStruct(subcards, target, Player::PlaceHand, reason);
             moves << CardsMoveStruct(card_ids, target, Player::PlaceHand, reason);
             room->moveCardsAtomic(moves, true);
-        } else {
-            QList<CardsMoveStruct> moves;
-            CardMoveReason reason(CardMoveReason::S_REASON_PUT, source->objectName(), "thyuanqi", QString());
-            moves << CardsMoveStruct(subcards, NULL, Player::DiscardPile, reason);
-            moves << CardsMoveStruct(card_ids, NULL, Player::DiscardPile, reason);
-            room->moveCardsAtomic(moves, true);
-
-            room->recover(source, RecoverStruct(source));
         }
-    } else
-        room->returnToTopDrawPile(card_ids);
+    }
+
+    if (room->getCardPlace(card_ids.first()) == Player::PlaceTable) {
+        QList<CardsMoveStruct> moves;
+        CardMoveReason reason(CardMoveReason::S_REASON_PUT, source->objectName(), "thyuanqi", QString());
+        moves << CardsMoveStruct(card_ids, NULL, Player::DiscardPile, reason);
+        room->moveCardsAtomic(moves, true);
+    }
 }
 
-class ThYuanqi : public OneCardViewAsSkill
+class ThYuanqi : public ZeroCardViewAsSkill
 {
 public:
     ThYuanqi()
-        : OneCardViewAsSkill("thyuanqi")
+        : ZeroCardViewAsSkill("thyuanqi")
     {
-        filter_pattern = ".";
     }
 
-    virtual const Card *viewAs(const Card *originalCard) const
+    virtual const Card *viewAs() const
     {
-        ThYuanqiCard *card = new ThYuanqiCard;
-        card->addSubcard(originalCard);
-        return card;
+        return new ThYuanqiCard;
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const

@@ -50,6 +50,22 @@ QString Card::Suit2String(Suit suit)
     }
 }
 
+Card::Color Card::Suit2Color(Suit suit)
+{
+    switch (suit) {
+    case Spade:
+    case Club:
+    case NoSuitBlack:
+        return Black;
+    case Heart:
+    case Diamond:
+    case NoSuitRed:
+        return Red;
+    default:
+        return Colorless;
+    }
+}
+
 bool Card::isRed() const
 {
     return getColor() == Red;
@@ -163,18 +179,7 @@ bool Card::sameColorWith(const Card *other) const
 
 Card::Color Card::getColor() const
 {
-    switch (getSuit()) {
-    case Spade:
-    case Club:
-    case NoSuitBlack:
-        return Black;
-    case Heart:
-    case Diamond:
-    case NoSuitRed:
-        return Red;
-    default:
-        return Colorless;
-    }
+    return Suit2Color(getSuit());
 }
 
 bool Card::isEquipped() const

@@ -870,6 +870,8 @@ bool ThMimengDialog::isButtonEnabled(const QString &button_name) const
     if (object_name == "thmimeng")
         allowings = "slash+thunder_slash+fire_slash+jink+peach+analeptic"
                     "+duel+fire_attack+savage_assault+collateral+iron_chain+dismantlement+rout+nullification";
+    if (object_name == "thmoji")
+        allowings = "slash+jink+analeptic";
     if (object_name == "ikxieke" && Self->aliveCount() == 2)
         ban_list << "Jink"
                  << "Analeptic"
