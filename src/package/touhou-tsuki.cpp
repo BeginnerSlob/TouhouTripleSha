@@ -379,19 +379,14 @@ public:
     }
 };
 
-class ThXueyiViewAsSkill : public OneCardViewAsSkill
+class ThXueyi : public OneCardViewAsSkill
 {
 public:
-    ThXueyiViewAsSkill()
+    ThXueyi()
         : OneCardViewAsSkill("thxueyi")
     {
         response_or_use = true;
         filter_pattern = ".|heart";
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const
-    {
-        return !player->hasFlag("ThXueyiUsed");
     }
 
     virtual const Card *viewAs(const Card *originalCard) const
@@ -400,25 +395,6 @@ public:
         le->addSubcard(originalCard);
         le->setSkillName(objectName());
         return le;
-    }
-};
-
-class ThXueyi : public TriggerSkill
-{
-public:
-    ThXueyi()
-        : TriggerSkill("thxueyi")
-    {
-        events << PreCardUsed;
-        view_as_skill = new ThXueyiViewAsSkill;
-    }
-
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
-    {
-        CardUseStruct use = data.value<CardUseStruct>();
-        if (use.card->isKindOf("Indulgence") && use.card->getSkillName() == "thxueyi")
-            room->setPlayerFlag(player, "ThXueyiUsed");
-        return QStringList();
     }
 };
 

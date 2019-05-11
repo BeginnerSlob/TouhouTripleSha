@@ -2428,7 +2428,7 @@ public:
         } else if (e == EventPhaseChanging && p->getMark(objectName()) > 0) {
             if (d.value<PhaseChangeStruct>().to == Player::NotActive)
                 p->setMark(objectName(), 0);
-        } else if (e == EventPhaseStart && TriggerSkill::triggerable(p) && p->getPhase() == Player::Finish
+        } else if (e == EventPhaseStart && TriggerSkill::triggerable(p) && p->getPhase() == Player::Discard
                    && p->getMark(objectName()) > 0 && !p->hasFlag("ThDieyingDisabled")) {
             return QStringList(objectName());
         }
@@ -2789,18 +2789,11 @@ public:
     ThShenhu()
         : TriggerSkill("thshenhu")
     {
-        events << Damage << Damaged << EventPhaseChanging;
+        events << Damage << Damaged;
     }
 
     virtual QStringList triggerable(TriggerEvent e, Room *room, ServerPlayer *player, QVariant &d, ServerPlayer *&) const
     {
-        if (e == EventPhaseChanging) {
-            if (d.value<PhaseChangeStruct>().to == Player::NotActive) {
-                foreach (ServerPlayer *p, room->getAlivePlayers())
-                    p->setFlags("-ThShenhuUsed");
-            }
-            return QStringList();
-        }
         if (TriggerSkill::triggerable(player) && !player->isKongcheng()) {
             foreach (const Player *p, room->getOtherPlayers(player)) {
                 if (!p->isKongcheng())
@@ -2814,14 +2807,13 @@ public:
     {
         QList<ServerPlayer *> targets;
         foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
-            if (!p->isKongcheng() && !p->hasFlag("ThShenhuUsed"))
+            if (!p->isKongcheng())
                 targets << p;
         }
         ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "@thshenhu", true, true);
         if (target) {
             room->broadcastSkillInvoke(objectName());
             player->tag["ThShenhuTarget"] = QVariant::fromValue(target);
-            target->setFlags("ThShenhuUsed");
             return true;
         }
         return false;
@@ -2836,10 +2828,7 @@ public:
             if (win) {
                 LureTiger *lure = new LureTiger(Card::NoSuit, 0);
                 lure->setSkillName("_thshenhu");
-                if (!player->isProhibited(target, lure))
-                    room->useCard(CardUseStruct(lure, player, target));
-                else
-                    delete lure;
+                room->useCard(CardUseStruct(lure, player, target));
             } else
                 target->drawCards(1, objectName());
         }
