@@ -244,9 +244,11 @@ public:
         }
 
         foreach (ServerPlayer *p, room->getAllPlayers(player)) {
-            if (p->isRemoved()) {
-                room->setPlayerProperty(p, "removed", false);
+            while (p->getMark("LureTigerTarget") > 0) {
+                if (p->isRemoved())
+                    room->setPlayerProperty(p, "removed", false);
                 room->removePlayerCardLimitation(p, "use", ".$0");
+                p->removeMark("LureTigerTarget");
             }
         }
 
@@ -339,6 +341,7 @@ void LureTiger::onEffect(const CardEffectStruct &effect) const
     if (!current || current->getPhase() == Player::NotActive || current->isDead())
         return;
 
+    effect.to->addMark("LureTigerTarget");
     room->setPlayerCardLimitation(effect.to, "use", ".", false);
     room->setPlayerProperty(effect.to, "removed", true);
     current->setFlags("LureTigerTurn");

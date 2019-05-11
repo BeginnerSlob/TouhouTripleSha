@@ -257,6 +257,7 @@ bool ThJinguoCard::targetsFeasible(const QList<const Player *> &targets, const P
 
 void ThJinguoCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
 {
+    source->addMark("thjinguo");
     if (subcardsLength() == 0) {
         room->setPlayerFlag(source, "thjinguo");
         room->acquireSkill(source, "thxueyi");
@@ -285,13 +286,12 @@ void ThJinguoCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
     }
 }
 
-class ThJinguoViewAsSkill : public ViewAsSkill
+class ThJinguo : public ViewAsSkill
 {
 public:
-    ThJinguoViewAsSkill()
+    ThJinguo()
         : ViewAsSkill("thjinguo")
     {
-        response_pattern = "@@thjinguo";
     }
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
@@ -307,32 +307,10 @@ public:
         card->addSubcards(cards);
         return card;
     }
-};
 
-class ThJinguo : public TriggerSkill
-{
-public:
-    ThJinguo()
-        : TriggerSkill("thjinguo")
+    virtual bool isEnabledAtPlay(const Player *player) const
     {
-        events << EventPhaseStart;
-        view_as_skill = new ThJinguoViewAsSkill;
-    }
-
-    virtual bool triggerable(const ServerPlayer *target) const
-    {
-        return TriggerSkill::triggerable(target) && target->getPhase() == Player::Play;
-    }
-
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
-    {
-        return room->askForUseCard(player, "@@thjinguo", "@thjinguo", -1, Card::MethodDiscard);
-    }
-
-    virtual bool effect(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const
-    {
-        player->addMark(objectName());
-        return false;
+        return !player->hasUsed("ThJinguoCard");
     }
 };
 
@@ -343,7 +321,6 @@ public:
         : TriggerSkill("#thjinguo")
     {
         events << EventPhaseChanging << EventPhaseEnd;
-        view_as_skill = new ThJinguoViewAsSkill;
         frequency = NotCompulsory;
     }
 
@@ -1702,8 +1679,7 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        ServerPlayer *target
-            = room->askForPlayerChosen(player, room->getAlivePlayers(), objectName(), "@thchenji", true, true);
+        ServerPlayer *target = room->askForPlayerChosen(player, room->getAlivePlayers(), objectName(), "@thchenji", true, true);
         if (target) {
             room->broadcastSkillInvoke(objectName());
             player->tag["ThChenjiTarget"] = QVariant::fromValue(target);

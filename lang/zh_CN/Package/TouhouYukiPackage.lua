@@ -81,6 +81,7 @@ return {
 	["thyuanqi"] = "缘起",
 	[":thyuanqi"] = "阶段技。你可以选择一种花色并亮出牌堆顶的一张牌，若花色相同，你可以摸两张牌；若颜色相同且花色不同，你可以将该牌交给一名角色。",
 	["thyuanqi_draw:yes"] = "你可以摸两张牌",
+	["@thyuanqi"] = "你可以将此牌交给一名角色，或者点“取消”将之置入弃牌堆",
 
 	["#yuki006"] = "凶兆的黑猫",
 	["yuki006"] = "橙",--雪 - 空 - 4血
@@ -175,6 +176,7 @@ return {
 	["thfusheng:draw"] = "摸一张牌",
 	["thfusheng:discard"] = "弃置一张牌",
 	["#ThFusheng"] = "%from 选择了 %arg",
+	["#thfusheng"] = "复声（给牌）",
 	["@thfusheng-give"] = "请将一张牌交给 %src",
 
 	["#yuki013"] = "骚灵乐团",

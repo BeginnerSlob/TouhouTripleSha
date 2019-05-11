@@ -2792,7 +2792,7 @@ public:
         events << Damage << Damaged;
     }
 
-    virtual QStringList triggerable(TriggerEvent e, Room *room, ServerPlayer *player, QVariant &d, ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *&) const
     {
         if (TriggerSkill::triggerable(player) && !player->isKongcheng()) {
             foreach (const Player *p, room->getOtherPlayers(player)) {
