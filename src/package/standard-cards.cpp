@@ -1439,7 +1439,7 @@ bool Dismantlement::targetFilter(const QList<const Player *> &targets, const Pla
         return targets.isEmpty();
     int total_num = 1 + Sanguosha->correctCardTarget(TargetModSkill::ExtraTarget, Self, this);
     bool include_judging = !(ServerInfo.GameMode == "02_1v1" && ServerInfo.GameRuleMode != "Classical");
-    return targets.length() < total_num && to_select->getCardCount(true, include_judging) > 0 && to_select != Self;
+    return targets.length() < total_num && Self->canDiscard(to_select, include_judging ? "hej" : "he") && to_select != Self;
 }
 
 void Dismantlement::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
