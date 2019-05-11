@@ -1876,7 +1876,7 @@ public:
         frequency = NotCompulsory;
     }
 
-    virtual bool triggeable(const ServerPlayer *target) const
+    virtual bool triggerable(const ServerPlayer *target) const
     {
         return target && target->isAlive() && target->hasFlag("ThFushengUsed") && target->getPhase() == Player::Discard
             && target->getHandcardNum() != qMax(target->getHp(), 0);
@@ -1886,6 +1886,7 @@ public:
     {
         Room *room = target->getRoom();
         room->sendCompulsoryTriggerLog(target, "thfusheng");
+        target->setFlags("-ThFushengUsed");
         QStringList targets;
         bool give = true;
         if (target->getHandcardNum() > qMax(target->getHp(), 0))

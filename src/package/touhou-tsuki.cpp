@@ -329,11 +329,12 @@ public:
         if (e == EventPhaseEnd) {
             if (player->getMark("thjinguo") > 0)
                 return QStringList(objectName());
-        } else if (player->hasFlag("thjinguo")) {
-            player->setFlags("-thjinguo");
+        } else {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            if (change.to == Player::NotActive)
+            if (change.to == Player::NotActive && player->hasFlag("thjinguo")) {
+                player->setFlags("-thjinguo");
                 room->detachSkillFromPlayer(player, "thxueyi", false, true);
+            }
         }
         return QStringList();
     }
