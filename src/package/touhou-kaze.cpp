@@ -2299,7 +2299,8 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
-        if (player->askForSkillInvoke(objectName(), data)) {
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (player->askForSkillInvoke(objectName(), QVariant::fromValue(use.to.first()))) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }

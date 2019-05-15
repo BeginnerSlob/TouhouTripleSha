@@ -1664,53 +1664,43 @@ sgs.thyanxing_keep_value = {
 --smart-ai.lua SmartAI:hasHeavySlashDamage
 --standard_cards-ai.lua SmartAI:canAttack
 
---埋火：阶段技。你可以将一张红色牌交给一名其他角色并选择一种花色，然后展示该角色全部的手牌，其中每有一张该花色的牌，该角色摸一张牌（至多摸三张）。
-local thmaihuo_skill = {}
-thmaihuo_skill.name = "thmaihuo"
-table.insert(sgs.ai_skills, thmaihuo_skill)
-thmaihuo_skill.getTurnUseCard = function(self)
-	if self.player:hasUsed("ThMaihuoCard") then
-		return
-	end
-	local cards = sgs.QList2Table(self.player:getHandcards())
-	if #cards == 0 then
-		return
-	end
-	self:sortByKeepValue(cards)
-	for _, c in ipairs(cards) do
-		if (c:isRed()) then
-			return sgs.Card_Parse("@ThMaihuoCard=" .. c:getEffectiveId())
-		end
-	end
-end
-
-sgs.ai_skill_use_func.ThMaihuoCard = function(card, use, self)
-	local targets = {}
-	for _, p in ipairs(self.friends_noself) do
-		if not self:willSkipPlayPhase(p) then
-			table.insert(targets, p)
-		end
-	end
-	if #targets == 0 then
-		return
-	end
-	self:sort(targets, "handcard")
-	for _, p in ipairs(targets) do
-		if p:getHandcardNum() > 1 or self:isWeak(p) then
-			use.card = card
-			if use.to then
-				use.to:append(p)
+--埋火：当你使用红色牌指定目标后，若此牌为你于此回合内使用的第一张牌，且若目标数为1，你可以选择一种花色▶该角色展示手牌，然后其摸X张牌（X为其手牌中此花色牌的数量与3中的较小值）。
+sgs.ai_skill_invoke.thmaihuo = function(self, data)
+	local target = data:toCardUse().to:first()
+	if target and self:isFriend(target) then
+		local suits = {"spade", "heart", "club", "diamond"}
+		local num = 0;
+		for _, suit in ipairs(suits) do
+			local n = self:getSuitNum(suit, false, target)
+			if n > num then
+				num = n
+				sgs.thmaihuo_str = suit
 			end
-			return
 		end
+		if num == 0 then
+			sgs.thmaihuo_str = "diamond"
+		end
+		return true
 	end
+	return false
 end
 
 sgs.ai_skill_suit.thmaihuo = function(self)
-	return sgs.Sanguosha:getCard(self.player:getTag("ThMaihuoCard"):toInt()):getSuitString()
+	return sgs.thmaihuo_str
 end
 
-sgs.ai_card_intention.ThMaihuoCard = -70
+sgs.ai_choicemade_filter.skillInvoke.thmaihuo = function(self, player, promptlist)
+	local target = findPlayerByObjectName(self.room, promptlist[#promptlist - 1])
+	if promptlist[#promptlist] == "yes" then
+		if target then
+			sgs.updateIntention(player, target, -70)
+		end
+	elseif promptlist[#promptlist] == "no" then
+		if target then
+			sgs.updateIntention(player, target, 50)
+		end
+	end
+end
 
 --无念：锁定技，你即将造成的伤害均视为没有来源的伤害，未受伤且体力上限不为1的角色使用的【杀】和非延时类锦囊牌对你无效。
 --所有需要伤害来源的needDamage都要记得检测持有【无念】技能的attacker
