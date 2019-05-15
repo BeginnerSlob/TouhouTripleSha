@@ -720,7 +720,7 @@ end
 
 sgs.ai_playerchosen_intention.thliaogan = -50
 
---戋月：摸牌阶段或出牌阶段开始时，你可以视为使用一张【心网密葬】，该牌生效后，你可以选择一项：令目标角色获得被弃置的牌，且其此回合不能使用或打出该牌；或结束当前阶段。
+--戋月：摸牌/出牌阶段开始时，你可以视为使用【心网密葬】→当目标因执行此【心网密葬】的效果而弃置牌后，你可以选择一项：1.令其获取此牌▶其于此回合内不能使用或打出之；2.令其将人物牌横置，然后结束此阶段。
 sgs.ai_skill_use["@@thjianyue"] = function(self, prompt, method)
 	local dismantlement = sgs.cloneCard("dismantlement")
 	dismantlement:setSkillName("thjianyue")

@@ -977,9 +977,12 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *skill_target, QVariant &, ServerPlayer *player) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *skill_target, QVariant &data, ServerPlayer *player) const
     {
-        if (player->askForSkillInvoke(objectName(), QVariant::fromValue(skill_target))) {
+        player->tag["ThQingmingUse"] = data; //for AI
+        bool invoke = player->askForSkillInvoke(objectName(), QVariant::fromValue(skill_target));
+        player->tag.remove("ThQingmingUse");
+        if (invoke) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
@@ -1007,7 +1010,7 @@ public:
         }
 
         if (!choices.isEmpty()) {
-            QString choice = room->askForChoice(player, objectName(), choices.join("+"));
+            QString choice = room->askForChoice(player, objectName(), choices.join("+"), QVariant::fromValue(p));
             Card *card = Sanguosha->cloneCard(choice);
             card->setSkillName("_thqingming");
             card->deleteLater();
