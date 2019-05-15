@@ -114,10 +114,10 @@ function cardsView_thzuishang(self, player)
 	end
 	if #newcards < 2 then return end
 	sgs.ais[player:objectName()]:sortByKeepValue(newcards)
-	
+
 	local card_id1 = newcards[1]:getEffectiveId()
 	local card_id2 = newcards[2]:getEffectiveId()
-	
+
 	local card_str = ("analeptic:%s[%s:%s]=%d+%d"):format("thzuishang", "to_be_decided", 0, card_id1, card_id2)
 	return card_str
 end
@@ -309,7 +309,7 @@ sgs.thzhancao_keep_value = {
 	TrickCard = 5,
 }
 
---墨迹：当你需要使用或打出一张【杀】或【闪】时，你可以将等同于你体力值数量的牌以任意顺序置于牌堆顶（至多两张），视为你使用或打出一张【杀】或【闪】。
+--墨迹：当你需要使用/打出【杀】、【闪】或【酒】时，你可以将X张牌置于牌堆顶（X为你的体力值与2中的较小值）▶你视为使用/打出【杀】、【闪】或【酒】。
 sgs.draw_pile_thmoji = {} --for GlobalRecord
 
 local thmoji_skill = {}
@@ -335,7 +335,7 @@ thmoji_skill.getTurnUseCard = function(self)
 		and not (self.player:hasSkill("zhiji") and self.player:getMark("zhiji") == 0) then return end
 	local n = math.min(2, self.player:getHp())
 	if n < 1 or #newcards < n then return end
-	
+
 	local id_str = tostring(newcards[1]:getEffectiveId())
 
 	if n ~= 1 then
@@ -365,7 +365,7 @@ sgs.ai_skill_use_func.ThMojiCard = function(card, use, self)
 end
 
 sgs.ai_cardsview.thmoji = function(self, class_name, player)
-	if not ("Slash|Jink"):match(class_name) then
+	if not ("Slash|Jink|Analeptic"):match(class_name) then
 		return nil
 	end
 	local cards = self.player:getCards("he")
@@ -398,68 +398,34 @@ end
 
 sgs.ai_use_priority.ThMojiCard = sgs.ai_use_priority.Slash - 0.01
 
---缘起：出牌阶段限一次，你可以展示一张牌并亮出牌堆顶的一张牌，若这两张牌颜色相同，你选择一项：将这些牌置入弃牌堆，然后回复1点体力；或将这些牌交给一名角色。
-sgs.thyuanqi_target = nil
-
+--缘起：阶段技。你可以选择一种花色▶亮出牌堆顶的一张牌，然后若此牌的花色与你选择的花色：相同，你可以将之交给一名角色；不同且颜色相同，你可以摸两张牌。
 local thyuanqi_skill = {}
 thyuanqi_skill.name = "thyuanqi"
 table.insert(sgs.ai_skills, thyuanqi_skill)
 thyuanqi_skill.getTurnUseCard = function(self)
-	if self.player:isNude() then return end
 	if self.player:hasUsed("ThYuanqiCard") then return end
 
 	local function knowFirstCard(player, room)
 		return sgs.draw_pile_thmoji[player:objectName()] and table.contains(sgs.draw_pile_thmoji[player:objectName()], room:getDrawPile():first())
 	end
 
-	if not self.player:isWounded() then
-		if knowFirstCard(self.player, self.room) then
-			local first = sgs.Sanguosha:getCard(self.room:getDrawPile():first())
-			local cards = {}
-			for _, c in sgs.qlist(self.player:getCards("he")) do
-				if c:sameColorWith(fisrt) then
-					table.insert(cards, c)
-				end
-			end
-			if #cards == 0 then
-				return
-			end
-			local card, target = self:getCardNeedPlayer(cards, self.friends, false)
-			if card and target then
-				sgs.thyuanqi_target = target
-				return sgs.Card_Parse("@ThYuanqiCard=" .. card:getEffectiveId())
-			else
-				self:sortByKeepValue(cards)
-				sgs.thyuanqi_target = nil
-				return sgs.Card_Parse("@ThYuanqiCard=" .. cards[1]:getEffectiveId())
-			end
+	if knowFirstCard(self.player, self.room) then
+		local first = sgs.Sanguosha:getCard(self.room:getDrawPile():first())
+		local cards = {first}
+		local card, target = self:getCardNeedPlayer(cards, self.friends, false)
+		if card and target then
+			sgs.thyuanqi_target = target
+			sgs.thyuanqi_suitstr = first:getSuitString()
+			return sgs.Card_Parse("@ThYuanqiCard=.")
 		else
-			local cards = sgs.QList2Table(self.player:getCards("he"))
-			self:sortByKeepValue(cards)
 			sgs.thyuanqi_target = nil
-			return sgs.Card_Parse("@ThYuanqiCard=" .. cards[1]:getEffectiveId())
+			sgs.thyuanqi_suitstr = ""
+			return sgs.Card_Parse("@ThYuanqiCard=.")
 		end
 	else
-		if knowFirstCard(self.player, self.room) then
-			local first = sgs.Sanguosha:getCard(self.room:getDrawPile():first())
-			local cards = {}
-			for _, c in sgs.qlist(self.player:getCards("he")) do
-				if c:sameColorWith(fisrt) then
-					table.insert(cards, c)
-				end
-			end
-			if #cards == 0 then
-				return
-			end
-			self:sortByKeepValue(cards)
-			sgs.thyuanqi_target = nil
-			return sgs.Card_Parse("@ThYuanqiCard=" .. cards[1]:getEffectiveId())
-		else
-			local cards = sgs.QList2Table(self.player:getCards("he"))
-			self:sortByKeepValue(cards)
-			sgs.thyuanqi_target = nil
-			return sgs.Card_Parse("@ThYuanqiCard=" .. cards[1]:getEffectiveId())
-		end
+		sgs.thyuanqi_target = nil
+		sgs.thyuanqi_suitstr = ""
+		return sgs.Card_Parse("@ThYuanqiCard=.")
 	end
 end
 
@@ -467,9 +433,16 @@ sgs.ai_skill_use_func.ThYuanqiCard = function(card, use, self)
 	use.card = card
 end
 
+sgs.ai_skill_suit.thyuanqi = function(self)
+	if sgs.thyuanqi_suitstr and sgs.thyuanqi_suitstr ~= "" then
+		return sgs.thyuanqi_suitstr
+	end
+	local suits = {"spade", "heart", "club", "diamond"}
+	return suits[math.random(1, #suits)]
+end
+
 sgs.ai_skill_playerchosen.thyuanqi = function(self, targets)
 	if sgs.thyuanqi_target and targets:contains(sgs.thyuanqi_target) then return sgs.thyuanqi_target end
-	if self.player:isWounded() then return nil end
 	local int_list = self.player:getTag("ThYuanqiCards"):toIntList()
 	local cards = {}
 	for _, id in sgs.qlist(int_list) do
@@ -477,65 +450,70 @@ sgs.ai_skill_playerchosen.thyuanqi = function(self, targets)
 	end
 	local _, target = self:getCardNeedPlayer(cards, self.friends, false)
 	if target and targets:contains(target) then return target end
-	self:sort(self.friends_noself, "handcard")
-	for _, p in ipairs(self.friends_noself) do
+	self:sort(self.friends, "handcard")
+	for _, p in ipairs(self.friends) do
 		if targets:contains(p) then
 			return p
 		end
 	end
-	return nil
+	return targets.at(math.random(0, targets:length() - 1))
 end
+
+sgs.ai_skill_invoke.thyuanqi_draw = true
 
 sgs.ai_playerchosen_intention.thyuanqi = -30
 
---遁甲：出牌阶段限三次，你可以将一张【杀】当【心网密葬】使用；若该角色被此牌所弃置的牌为【闪】，你对其造成1点伤害。
-local thdunjia_skill = {}
-thdunjia_skill.name = "thdunjia"
-table.insert(sgs.ai_skills, thdunjia_skill)
-thdunjia_skill.getTurnUseCard = function(self, inclusive)
-	local cards = self.player:getCards("he")
-	for _, id in sgs.qlist(getWoodenOxPile(self.player)) do
-		cards:prepend(sgs.Sanguosha:getCard(id))
+--遁甲：当你成为其他角色使用的牌的目标后，若目标数为1，且若其装备区里的牌少于你，你可以摸一张牌。
+sgs.ai_skill_invoke.thdunjia = function(self, data)
+	if self:needKongcheng(self.player, true) then
+		return self.player:getPhase() == sgs.Player_Play
 	end
-	cards = sgs.QList2Table(cards)
+	return true
+end
 
-	local slash_card
-	self:sortByUseValue(cards, true)
+--晴明：当你使用【杀】指定其他角色为目标后，若其装备区里的牌多于你，你可以令此【杀】对其无效，然后视为你对其使用【木隐妖岚】、【妙手探云】、【心网密葬】或【碎月绮斗】。
+sgs.ai_skill_invoke.thqingming = function(self, data)
+	local target = data:toPlayer()
+	local use = self.player:getTag("ThQingmingUse"):toCardUse()
+	if not self:slashisEffective(use.card, target, self.player) and self:isEnemy(target) then
+		return true
+	end
+	if self:getCardsNum("Jink", target, self.player) >= 1 then
+		return true
+	end
+	return self:isEnemy(target) and math.random(1, 3) == 1
+end
 
-	for _, card in ipairs(cards) do
-		if (card:isKindOf("Slash") or card:isKindOf("EquipCard")) and ((self:getUseValue(card) < sgs.ai_use_value.Dismantlement) or inclusive or self:getOverflow() > 0) then
-			local shouldUse = true
-
-			local dummy_use = { isDummy = true }
-			if card:isKindOf("Slash") and self:getCardsNum("Slash") == 1 then
-				self:useBasicCard(card, dummy_use)
-				if dummy_use.card then
-					shouldUse = false
-				end
-			end
-
-			if shouldUse then
-				slash_card = card
-				break
+sgs.ai_skill_choice.thqingming = function(self, choices, data)
+	local target = data:toPlayer()
+	if string.find("duel") then
+		local duel = sgs.cloneCard("duel")
+		if self:hasTrickEffective(duel, target, self.player) then
+			if self:getCardsNum("Slash", "he", true) > getCardsNum("Slash", target, self.player) then
+				return "duel"
 			end
 		end
 	end
-
-	if slash_card then
-		local suit = slash_card:getSuitString()
-		local number = slash_card:getNumberString()
-		local card_id = slash_card:getEffectiveId()
-		local card_str = ("dismantlement:thdunjia[%s:%s]=%d"):format(suit, number, card_id)
-		local dismantlement = sgs.Card_Parse(card_str)
-
-		assert(dismantlement)
-
-		return dismantlement
+	if string.find("snatch") then
+		local snatch = sgs.cloneCard("snatch")
+		if self:hasTrickEffective(snatch, target, self.player) then
+			return "snatch"
+		end
 	end
-end
-
-function sgs.ai_cardneed.thdunjia(to, card, self)
-	return (card:isKindOf("Slash") or card:isKindOf("EquipCard")) and getKnownCard(to, self.player, "Slash|EquipCard", nil, "he") < 3
+	if string.find("rout") then
+		local rout = sgs.cloneCard("rout")
+		if self:hasTrickEffective(rout, target, self.player) then
+			return "rout"
+		end
+	end
+	if string.find("dismantlement") then
+		local dismantlement = sgs.cloneCard("dismantlement")
+		if self:hasTrickEffective(dismantlement, target, self.player) then
+			return "dismantlement"
+		end
+	end
+	local table1 = table.concat(choices, "+")
+	return table1[math.random(1, #table1)]
 end
 
 --筹策:你于出牌阶段使用的第一张牌，或点数比你此阶段使用的前一张牌大的牌，可以无视合法性指定一名角色为目标。
@@ -677,7 +655,7 @@ sgs.ai_choicemade_filter.cardChosen.thchuiji = sgs.ai_choicemade_filter.cardChos
 --灵压：每当其他角色于你的回合使用红色牌，在结算后你可以令其选择一项：令你摸一张牌；或令你弃置其一张牌。
 sgs.ai_skill_invoke.thlingya = true
 
-sgs.ai_skill_choice.thlingya = function(self, choices, data)	
+sgs.ai_skill_choice.thlingya = function(self, choices, data)
 	local yukari = data:toPlayer()
 	if yukari and string.find(choices, "discard") then
 		if self:isEnemy(yukari) then
@@ -1205,7 +1183,7 @@ sgs.ai_skill_invoke.thweiguang = function(self, data)
 			end
 			if lightning == 0 then
 				return false
-		    end
+				end
 			return self:hasWizard(self.enemies, true) or self.player:getMark("@bright") > 1
 		end
 	elseif phase == sgs.Player_Draw then
@@ -1421,18 +1399,18 @@ sgs.ai_skill_playerchosen.thlingdie = function(self, targets)
 	self.enemies = sgs.reverse(self.enemies)
 
 	for _, enemy in ipairs(self.enemies) do
-		if not enemy:isKongcheng() and self:objectiveLevel(enemy) > 0 
+		if not enemy:isKongcheng() and self:objectiveLevel(enemy) > 0
 				and (getKnownNum(enemy) ~= enemy:getHandcardNum()) then
 			return enemy
 		end
 	end
-	
+
 	local players = sgs.QList2Table(self.room:getOtherPlayers(self.player))
 	self:sort(players, "handcard")
 	players = sgs.reverse(players)
 	for _, p in ipairs(players) do
 		if not self:isFriend(p) then
-			if not p:isKongcheng() and self:objectiveLevel(p) > 0 
+			if not p:isKongcheng() and self:objectiveLevel(p) > 0
 					and (getKnownNum(p) ~= p:getHandcardNum()) then
 				return p
 			end
@@ -1440,7 +1418,7 @@ sgs.ai_skill_playerchosen.thlingdie = function(self, targets)
 	end
 
 	for _, p in ipairs(players) do
-		if not p:isKongcheng() and self:objectiveLevel(p) > 0 
+		if not p:isKongcheng() and self:objectiveLevel(p) > 0
 				and (getKnownNum(p) ~= p:getHandcardNum()) then
 			return p
 		end
