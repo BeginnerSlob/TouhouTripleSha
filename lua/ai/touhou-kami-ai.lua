@@ -819,17 +819,39 @@ sgs.ai_card_intention.ThJinluCard = 80
 --狂戾：每当你的人物牌翻面时，你可以摸一张牌。
 --thicket-ai.lua toTurnOver
 
---愈心：摸牌阶段开始时，你可以放弃摸牌，改为从牌堆顶亮出两张牌并获得之，若这两张牌均为红色，你可以指定一名角色并令其回复1点体力。
+--愈心：摸牌阶段开始时，你可以放弃摸牌▶亮出牌堆顶的两张牌，然后获取这些牌，若这些牌均为红色，你可以令一名角色选择一项：1.回复1点体力；2.摸一张牌。
 sgs.ai_skill_invoke.thyuxin = function(self, data)
+	local draw_pile = self.room:getDrawPile()
+	if draw_pile:length() < 2 then
+		return true
+	end
+	local id1 = self.room:getDrawPile():first()
+	local id2 = self.room:getDrawPile():at(1)
+	local card1 = sgs.Sanguosha:getCard(id1)
+	local card2 = sgs.Sanguosha:getCard(id2)
+	if card1:hasFlag("visible") and card2:hasFlag("visible") and not (card1:isRed() and card2:isRed()) then
+		return false
+	end
 	local target = self:findPlayerToRecover()
 	if target then
 		return true
+	else
+		return math.random(1, 2) == 1
 	end
-	return false
 end
 
 sgs.ai_skill_playerchosen.thyuxin = function(self, targets)
-	return self:findPlayerToRecover(1, targets)
+	local target = self:findPlayerToRecover(1, targets)
+	if target then
+		sgs.thyuxin_str = "recover"
+		return target
+	end
+	sgs.thyuxin_str = "draw"
+	return self:findPlayerToDraw(true, 1)
+end
+
+sgs.ai_skill_choice.thyuxin = function(self, choices, data)
+	return sgs.thyuxin_str
 end
 
 sgs.ai_playerchosen_intention.thyuxin = -100

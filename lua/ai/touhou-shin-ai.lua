@@ -472,12 +472,15 @@ function SmartAI:isThYishiCard(card, from)
 	return false
 end
 
---魔具：锁定技，摸牌阶段，若你的装备区有武器牌，你摸牌的数量改为你攻击范围的数量（至少摸两张）；出牌阶段，当你使用【杀】指定一名角色为目标后，若你的装备区有防具牌，此【杀】不可以被【闪】响应；你的装备区每有一张坐骑牌，你的手牌上限便+1。
+--魔具：锁定技。①摸牌阶段，若你的装备区里有武器牌，你改为摸X张牌（X为你装备区里的武器牌的攻击范围与2中的较大值）。②当你于出牌阶段内使用【杀】指定一个目标后，若你的装备区里有防具牌，你令此【杀】不是【闪】的合法目标。③你的手牌上限+X（X为你装备区里的坐骑牌数量）。
 function sgs.ai_cardneed.thmoju(to, card, self)
 	return (isCard("Slash", card, to) and getKnownCard(to, self.player, "Slash", true) == 0)
 			or (card:isKindOf("Weapon") and sgs.weapon_range[weapon:getClassName()] > 2)
 			or (card:isKindOf("Armor") and getKnownCard(to, self.player, "Armor", true) == 0)
 end
+
+--鼓振：锁定技。当你的装备区改变后，其他角色于你的下回合开始之前不能弃置你装备区里的非宝物牌。
+--无
 
 --莲影：出牌阶段限一次，你可以弃置两张牌，若如此做，你获得技能“赤莲”和“疾步”，直到回合结束。
 local thlianying_skill = {}
