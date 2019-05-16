@@ -42,6 +42,146 @@ end
 --二重:觉醒技，若你回合外的两个连续的回合内，当前回合角色均未使用【杀】，且第二个回合的回合结束时，若你已受伤，你须减少1点体力上限，并获得技能“幻法”和“祝祭”。
 --无
 
+--幻法：出牌阶段限一次，你可以将一张红桃手牌交给一名其他角色，然后你获得该角色的一张牌并将该牌交给除该角色外的一名角色。
+local thhuanfa_skill = {}
+thhuanfa_skill.name = "thhuanfa"
+table.insert(sgs.ai_skills, thhuanfa_skill)
+thhuanfa_skill.getTurnUseCard = function(self)
+	if not self.player:hasUsed("ThHuanfaCard") then
+		return sgs.Card_Parse("@ThHuanfaCard=.")
+	end
+end
+
+sgs.ai_skill_use_func.ThHuanfaCard = function(card, use, self)
+	local cards = self.player:getHandcards()
+	cards = sgs.QList2Table(cards)
+	self:sortByKeepValue(cards)
+
+	local target
+	for _, friend in ipairs(self.friends_noself) do
+		if friend:hasSkills(sgs.lose_equip_skill) and not friend:getEquips():isEmpty() and not friend:hasSkill("manjuan") then
+			target = friend
+			break
+		end
+	end
+	if not target then
+		for _, enemy in ipairs(self.enemies) do
+			if self:getDangerousCard(enemy) then
+				target = enemy
+				break
+			end
+		end
+	end
+	if not target then
+		for _, friend in ipairs(self.friends_noself) do
+			if self:needToThrowArmor(friend) and not friend:hasSkill("manjuan") then
+				target = friend
+				break
+			end
+		end
+	end
+	if not target then
+		self:sort(self.enemies, "handcard")
+		for _, enemy in ipairs(self.enemies) do
+			if self:getValuableCard(enemy) then
+				target = enemy
+				break
+			end
+			if target then break end
+
+			local cards = sgs.QList2Table(enemy:getHandcards())
+			local flag = string.format("%s_%s_%s", "visible", self.player:objectName(), enemy:objectName())
+			if not enemy:isKongcheng() and not enemy:hasSkills("ikyindie+ikguiyue") then
+				for _, cc in ipairs(cards) do
+					if (cc:hasFlag("visible") or cc:hasFlag(flag)) and (cc:isKindOf("Peach") or cc:isKindOf("Analeptic")) then
+						target = enemy
+						break
+					end
+				end
+			end
+			if target then break end
+
+			if self:getValuableCard(enemy) then
+				target = enemy
+				break
+			end
+			if target then break end
+		end
+	end
+	if not target then
+		for _, friend in ipairs(self.friends_noself) do
+			if friend:hasSkills("ikyindie+ikguiyue") and not friend:hasSkill("manjuan") then
+				target = friend
+				break
+			end
+		end
+	end
+	if not target then
+		for _, enemy in ipairs(self.enemies) do
+			if not enemy:isNude() and enemy:hasSkill("manjuan") then
+				target = enemy
+				break
+			end
+		end
+	end
+
+	if target then
+		local heart_card
+		if self:isFriend(target) then
+			for _, card in ipairs(cards) do
+				if card:getSuit() == sgs.Card_Heart then
+					heart_card = card
+					break
+				end
+			end
+		else
+			for _, card in ipairs(cards) do
+				if card:getSuit() == sgs.Card_Heart and not isCard("Peach", card, target) and not isCard("ExNihilo", card, target) then
+					heart_card = card
+					break
+				end
+			end
+		end
+
+		if heart_card then
+			use.card = sgs.Card_Parse("@ThHuanfaCard=" .. heart_card:getEffectiveId())
+			if use.to then use.to:append(target) end
+		end
+	end
+end
+
+sgs.ai_skill_playerchosen.thhuanfa = function(self, targets)
+	for _, player in sgs.qlist(targets) do
+		if (player:getHandcardNum() <= 2 or player:getHp() < 2) and self:isFriend(player) and not self:needKongcheng(player, true) and not player:hasSkill("manjuan") then
+			return player
+		end
+	end
+	for _, player in sgs.qlist(targets) do
+		if self:isFriend(player) and not self:needKongcheng(player, true) and not player:hasSkill("manjuan") then
+			return player
+		end
+	end
+	return self.player
+end
+
+sgs.ai_card_intention.ThHuanfaCard = function(self, card, from, tos)
+	local rcard = sgs.Sanguosha:getCard(card:getEffectiveId())
+	if self:isValuableCard(rcard) then return end
+	local to = tos[1]
+	if not to:hasSkill("manjuan") and (self:needToThrowArmor(to) or (to:hasSkills(sgs.lose_equip_skill) and not to:getEquips():isEmpty()) or to:hasSkill("ikyindie")) then
+	else
+		sgs.updateIntention(from, to, 40)
+	end
+end
+
+sgs.thhuanfa_suit_value = {
+	heart = 3.9
+}
+
+sgs.ai_cardneed.thhuanfa = function(to, card)
+	return card:getSuit() == sgs.Card_Heart
+end
+
 --春度：君主技，每当其他雪势力角色使用的红桃基本牌结算后置入弃牌堆时，你可弃置一张手牌获得之。
 sgs.ai_skill_cardask["@thchundu"] = function(self, data, pattern)
 	local card = data:toMoveOneTime().reason.m_extraData:toCard()
@@ -860,187 +1000,38 @@ end
 --凛寒：当你使用或者打出一张【闪】时，你可以摸一张牌。
 sgs.ai_skill_invoke.thlinhan = true
 
---复声：锁定技，其他角色每令你回复1点体力，该角色摸一张牌；每当你受到一次伤害后，伤害来源须交给你一张红桃手牌，否则失去1点体力。
-sgs.ai_skill_cardask["@thfusheng-heart"] = function(self, data)
-	if self:needToLoseHp() then return "." end
-	local damage = data:toDamage()
-	if self:isFriend(damage.to) then return end
+--复声：摸牌阶段开始前，你可以跳过摸牌阶段▶令所有其他角色各选择一项：1.令你摸一张牌；2.令你弃置一张牌。若如此做，弃牌阶段开始时，若你的手牌数：大于体力值，你依次将一张牌交给令你摸牌的角色；小于体力值，令你弃置牌的角色将一张牌交给你。
+sgs.ai_skill_invoke.thfusheng = function(self, data)
+	return #self.friends_noself > #self.enemies
+end
 
-	local cards = self.player:getHandcards()
-	for _, card in sgs.qlist(cards) do
-		if card:getSuit() == sgs.Card_Heart
-			and not (isCard("Peach", card, self.player) or (isCard("ExNihilo", card, self.player) and self.player:getPhase() == sgs.Player_Play)) then
-			return card:getEffectiveId()
+sgs.ai_skill_choice.thfusheng = function(self, choices, data)
+	local target = data:toPlayer()
+	if self:isEnemy(target) then
+		if string.find(choices, "discard") then
+			return "discard"
 		end
 	end
-	return "."
+	if self:isFriend(target) then
+		return "draw"
+	end
+	return self:getOverflow(target) > 0 and self:getOverflow() > 0 and string.find(choices, "discard") and "discard" or "draw"
 end
 
-function sgs.ai_slash_prohibit.thfusheng(self, from, to, card)
-	if not to:hasSkill("thfusheng") then return false end
-	if from:hasSkill("ikxuwu") or from:getMark("thshenyou") > 0 or (from:hasSkill("ikwanhun") and from:distanceTo(to) > 0 and from:distanceTo(to) < 2) then return false end
-	if from:hasFlag("IkJieyouUsed") then return false end
-	if self:needToLoseHp(from) then return false end
-	if from:getHp() > 3 then return false end
+sgs.ai_skill_cardask["@thfusheng-give"] = function(self, data, pattern, target)
+	local cards = self.player:getCards("he")
 
-	local n = 0
-	local cards = from:getHandcards()
-	for _, hcard in sgs.qlist(cards) do
-		if hcard:getSuit() == sgs.Card_Heart and not (isCard("Peach", hcard, to) or isCard("ExNihilo", hcard, to)) then
-			if not hcard:isKindOf("Slash") then return false end
-			n = n + 1
-			if n > 1 then return false end
+	local cards = sgs.QList2Table(self.player:getCards("he"))
+	if self:isFriend(target) then
+		local c, p = self:getCardNeedPlayer(cards, { target })
+		if p then
+			return c:toString()
 		end
+		self:sortByKeepValue(cards, true)
+		return "$" .. cards[1]:getEffectiveId()
 	end
-	if n == 1 then return card:getSuit() == sgs.Card_Heart end
-	return self:isWeak(from)
-end
-
-sgs.ai_need_damaged.thfusheng = function(self, attacker, player)
-	if attacker and self:isEnemy(attacker, player) and self:isWeak(attacker) then
-		return true
-	end
-	return false
-end
-
---幻法：出牌阶段限一次，你可以将一张红桃手牌交给一名其他角色，然后你获得该角色的一张牌并将该牌交给除该角色外的一名角色。
-local thhuanfa_skill = {}
-thhuanfa_skill.name = "thhuanfa"
-table.insert(sgs.ai_skills, thhuanfa_skill)
-thhuanfa_skill.getTurnUseCard = function(self)
-	if not self.player:hasUsed("ThHuanfaCard") then
-		return sgs.Card_Parse("@ThHuanfaCard=.")
-	end
-end
-
-sgs.ai_skill_use_func.ThHuanfaCard = function(card, use, self)
-	local cards = self.player:getHandcards()
-	cards = sgs.QList2Table(cards)
 	self:sortByKeepValue(cards)
-
-	local target
-	for _, friend in ipairs(self.friends_noself) do
-		if friend:hasSkills(sgs.lose_equip_skill) and not friend:getEquips():isEmpty() and not friend:hasSkill("manjuan") then
-			target = friend
-			break
-		end
-	end
-	if not target then
-		for _, enemy in ipairs(self.enemies) do
-			if self:getDangerousCard(enemy) then
-				target = enemy
-				break
-			end
-		end
-	end
-	if not target then
-		for _, friend in ipairs(self.friends_noself) do
-			if self:needToThrowArmor(friend) and not friend:hasSkill("manjuan") then
-				target = friend
-				break
-			end
-		end
-	end
-	if not target then
-		self:sort(self.enemies, "handcard")
-		for _, enemy in ipairs(self.enemies) do
-			if self:getValuableCard(enemy) then
-				target = enemy
-				break
-			end
-			if target then break end
-
-			local cards = sgs.QList2Table(enemy:getHandcards())
-			local flag = string.format("%s_%s_%s", "visible", self.player:objectName(), enemy:objectName())
-			if not enemy:isKongcheng() and not enemy:hasSkills("ikyindie+ikguiyue") then
-				for _, cc in ipairs(cards) do
-					if (cc:hasFlag("visible") or cc:hasFlag(flag)) and (cc:isKindOf("Peach") or cc:isKindOf("Analeptic")) then
-						target = enemy
-						break
-					end
-				end
-			end
-			if target then break end
-
-			if self:getValuableCard(enemy) then
-				target = enemy
-				break
-			end
-			if target then break end
-		end
-	end
-	if not target then
-		for _, friend in ipairs(self.friends_noself) do
-			if friend:hasSkills("ikyindie+ikguiyue") and not friend:hasSkill("manjuan") then
-				target = friend
-				break
-			end
-		end
-	end
-	if not target then
-		for _, enemy in ipairs(self.enemies) do
-			if not enemy:isNude() and enemy:hasSkill("manjuan") then
-				target = enemy
-				break
-			end
-		end
-	end
-
-	if target then
-		local heart_card
-		if self:isFriend(target) then
-			for _, card in ipairs(cards) do
-				if card:getSuit() == sgs.Card_Heart then
-					heart_card = card
-					break
-				end
-			end
-		else
-			for _, card in ipairs(cards) do
-				if card:getSuit() == sgs.Card_Heart and not isCard("Peach", card, target) and not isCard("ExNihilo", card, target) then
-					heart_card = card
-					break
-				end
-			end
-		end
-
-		if heart_card then
-			use.card = sgs.Card_Parse("@ThHuanfaCard=" .. heart_card:getEffectiveId())
-			if use.to then use.to:append(target) end
-		end
-	end
-end
-
-sgs.ai_skill_playerchosen.thhuanfa = function(self, targets)
-	for _, player in sgs.qlist(targets) do
-		if (player:getHandcardNum() <= 2 or player:getHp() < 2) and self:isFriend(player) and not self:needKongcheng(player, true) and not player:hasSkill("manjuan") then
-			return player
-		end
-	end
-	for _, player in sgs.qlist(targets) do
-		if self:isFriend(player) and not self:needKongcheng(player, true) and not player:hasSkill("manjuan") then
-			return player
-		end
-	end
-	return self.player
-end
-
-sgs.ai_card_intention.ThHuanfaCard = function(self, card, from, tos)
-	local rcard = sgs.Sanguosha:getCard(card:getEffectiveId())
-	if self:isValuableCard(rcard) then return end
-	local to = tos[1]
-	if not to:hasSkill("manjuan") and (self:needToThrowArmor(to) or (to:hasSkills(sgs.lose_equip_skill) and not to:getEquips():isEmpty()) or to:hasSkill("ikyindie")) then
-	else
-		sgs.updateIntention(from, to, 40)
-	end
-end
-
-sgs.thhuanfa_suit_value = {
-	heart = 3.9
-}
-
-sgs.ai_cardneed.thhuanfa = function(to, card)
-	return card:getSuit() == sgs.Card_Heart
+	return "$" .. cards[1]:getEffectiveId()
 end
 
 --骚葬：弃牌阶段结束时，你每于此阶段弃置了一种类别的牌，你可以依次弃置一名其他角色的一张手牌。

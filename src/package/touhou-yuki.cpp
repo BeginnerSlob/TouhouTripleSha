@@ -1847,7 +1847,7 @@ public:
             choices << "draw";
             if (player->canDiscard(player, "he"))
                 choices << "discard";
-            QString choice = room->askForChoice(p, objectName(), choices.join("+"));
+            QString choice = room->askForChoice(p, objectName(), choices.join("+"), QVariant::fromValue(player));
             LogMessage log;
             log.type = "#ThFusheng";
             log.from = p;
