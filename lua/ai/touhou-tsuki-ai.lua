@@ -114,9 +114,9 @@ sgs.ai_skill_use_func.ThYejunCard = function(card, use, self)
 end
 
 --[[禁果：阶段技。你可以选择一项：
-1. 弃置一张红桃手牌并获得一名其他角色的两张牌（不足则全部获得），然后该角色回复1点体力；
-2. 获得技能“血呓”（阶段技。你可以将一张红桃牌当【春雪幻梦】使用。）直到回合结束。
-若你发动“禁果”，此阶段结束时，你需展示所有手牌并弃置其中的红桃手牌。]]
+1.弃置一张♥牌并选择一名其他角色▶你获取该角色的两张牌，然后其回复1点体力；
+2.获得于此回合内的〖血呓〗〈你可以将一张♥牌当【春雪幻梦】使用〉。
+若如此做，出牌阶段结束时，你展示手牌，然后弃置其中所有♥牌。]]
 local thjinguo_skill = {}
 thjinguo_skill.name = "thjinguo"
 table.insert(sgs.ai_skills, thjinguo_skill)
@@ -154,14 +154,11 @@ end
 sgs.ai_use_priority.ThJinguoCard = 10
 sgs.ai_card_intention.ThJinguoCard = 30
 
---血呓：阶段技。你可以将红桃牌当【春雪幻梦】使用。
+--血呓：你可以将一张♥牌当【春雪幻梦】使用。
 local thxueyi_skill = {}
 thxueyi_skill.name = "thxueyi"
 table.insert(sgs.ai_skills, thxueyi_skill)
 thxueyi_skill.getTurnUseCard = function(self, inclusive)
-	if self.player:hasFlag("ThXueyiUsed") then
-		return nil
-	end
 	local cards = self.player:getCards("he")
 	for _, id in sgs.qlist(getWoodenOxPile(self.player)) do
 		local c = sgs.Sanguosha:getCard(id)
@@ -221,8 +218,10 @@ sgs.thjinguo_suit_value = {
 	heart = 3.9
 }
 
---恋迷：觉醒技，准备阶段开始时，若你装备区里的牌的数量大于你的体力值，你须减少1点体力上限，然后获得技能“狂骨”。
---无
+--恋迷：觉醒技。准备阶段开始时，若你装备区里的牌数大于你的体力值，你减1点体力上限，然后获得〖狂骨〗。
+function sgs.ai_cardneed.thlianmi(to, card)
+	return to:getMark("@lianmi") == 0 and card:isKindOf("EquipCard")
+end
 
 --狂气：出牌阶段，当你使用【杀】或【碎月绮斗】对目标角色造成伤害时，你可以选择一项：弃置一张【桃】、【酒】或装备牌；或失去1点体力。若如此做，则此伤害+1。
 sgs.ai_skill_use["@@thkuangqi"] = function(self, prompt, method)
