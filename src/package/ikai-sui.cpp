@@ -368,8 +368,8 @@ public:
 
     virtual bool triggerable(const ServerPlayer *target) const
     {
-        return PhaseChangeSkill::triggerable(target) && target->getPhase() == Player::Finish
-            && target->getMark("@jiuming") == 0 && target->getMark("ikjiuming_damage") >= 3;
+        return PhaseChangeSkill::triggerable(target) && target->getPhase() == Player::Finish && target->getMark("@jiuming") == 0
+            && target->getMark("ikjiuming_damage") >= 3;
     }
 
     virtual bool onPhaseChange(ServerPlayer *player) const
@@ -5704,8 +5704,8 @@ public:
                     = room->askForExchange(ask_who, objectName(), n, n, true, "@ikyanhuo-return:" + player->objectName());
                 if (!card)
                     return false;
-                CardMoveReason reason2(CardMoveReason::S_REASON_GIVE, ask_who->objectName(), player->objectName(),
-                                       objectName(), QString());
+                CardMoveReason reason2(CardMoveReason::S_REASON_GIVE, ask_who->objectName(), player->objectName(), objectName(),
+                                       QString());
                 room->obtainCard(player, card, reason2, false);
                 delete card;
             }
@@ -5814,13 +5814,18 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
     {
-        QString choice = room->askForChoice(ask_who, objectName(), "draw+letdraw");
-        if (choice == "draw") {
-            ask_who->drawCards(1, objectName());
-            ask_who->gainMark("@forgive");
-        } else {
-            player->drawCards(2, objectName());
+        if (ask_who == player) {
+            player->drawCards(1, objectName());
             player->gainMark("@forgive");
+        } else {
+            QString choice = room->askForChoice(ask_who, objectName(), "draw+letdraw");
+            if (choice == "draw") {
+                ask_who->drawCards(1, objectName());
+                ask_who->gainMark("@forgive");
+            } else {
+                player->drawCards(1, objectName());
+                player->gainMark("@forgive");
+            }
         }
         return false;
     }
@@ -6626,8 +6631,8 @@ public:
             return false;
 
         QList<int> original_lihui = lihui_card;
-        while (room->askForYiji(kongrong, lihui_card, objectName(), false, true, true, -1, QList<ServerPlayer *>(),
-                                move.reason, "@iklihui-distribute", true)) {
+        while (room->askForYiji(kongrong, lihui_card, objectName(), false, true, true, -1, QList<ServerPlayer *>(), move.reason,
+                                "@iklihui-distribute", true)) {
             if (kongrong->isDead())
                 break;
         }
@@ -8965,8 +8970,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     addMetaObject<IkLianzhenCard>();
     addMetaObject<IkYouxiaCard>();
 
-    skills << new IkAnshen << new IkAnshenRecord << new IkLinbuFilter << new IkBingling
-           << new IkBinglingMaxCards;
+    skills << new IkAnshen << new IkAnshenRecord << new IkLinbuFilter << new IkBingling << new IkBinglingMaxCards;
     related_skills.insertMulti("ikanshen", "#ikanshen-record");
     related_skills.insertMulti("ikbingling", "#ikbingling-max-cards");
 }
