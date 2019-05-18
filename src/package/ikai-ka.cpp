@@ -637,16 +637,13 @@ public:
                 player->tag["IkHualanRecord"] = QVariant::fromValue(list);
             }
         } else if (player->getPhase() == Player::Discard) {
-            QVariantList list = player->tag["IkHualanRecord"].toList();
-            if (!list.isEmpty()) {
-                foreach (ServerPlayer *p, room->getAllPlayers()) {
-                    int n = p->getMark("ikhualan");
-                    if (n > 0) {
-                        QStringList skills;
-                        for (int i = 0; i < n; ++i)
-                            skills << objectName();
-                        skill_list.insert(p, skills);
-                    }
+            foreach (ServerPlayer *p, room->getAllPlayers()) {
+                int n = p->getMark("ikhualan");
+                if (n > 0) {
+                    QStringList skills;
+                    for (int i = 0; i < n; ++i)
+                        skills << objectName();
+                    skill_list.insert(p, skills);
                 }
             }
         }
@@ -658,7 +655,23 @@ public:
         room->sendCompulsoryTriggerLog(ask_who, "ikhualan");
         room->broadcastSkillInvoke("ikhualan");
         QVariantList list = player->tag["IkHualanRecord"].toList();
-        ask_who->drawCards(list.length(), "ikhualan");
+        if (list.length() > 0)
+            ask_who->drawCards(list.length(), "ikhualan");
+        else {
+            QStringList choices;
+            choices << "draw";
+            Slash *slash = new Slash(Card::NoSuit, 0);
+            slash->setSkillName("_ikhualan");
+            if (ask_who->canSlash(player, slash, false))
+                choices << "slash";
+            else
+                delete slash;
+            QString choice = room->askForChoice(ask_who, "ikhualan", choices.join("+"));
+            if (choice == "slash")
+                room->useCard(CardUseStruct(slash, ask_who, player));
+            else
+                ask_who->drawCards(1, "ikhualan");
+        }
         return false;
     }
 };
@@ -1394,8 +1407,7 @@ public:
             if (card_ex) {
                 CardMoveReason reason1(CardMoveReason::S_REASON_PUT, player->objectName(), objectName(), QString());
                 CardMoveReason reason2(CardMoveReason::S_REASON_DRAW, player->objectName(), objectName(), QString());
-                CardsMoveStruct move1(card_ex->getEffectiveId(), player, NULL, Player::PlaceUnknown, Player::DrawPile,
-                                      reason1);
+                CardsMoveStruct move1(card_ex->getEffectiveId(), player, NULL, Player::PlaceUnknown, Player::DrawPile, reason1);
                 CardsMoveStruct move2(ids, player, player, Player::PlaceUnknown, Player::PlaceHand, reason2);
 
                 QList<CardsMoveStruct> moves;
@@ -3068,8 +3080,7 @@ const Card *IkLixinCard::validate(CardUseStruct &card_use) const
         room->setPlayerFlag(wenyang, "IkLixinDisabled");
     if (!targets.isEmpty()) {
         ServerPlayer *target = room->askForPlayerChosen(wenyang, targets, "iklixin", "@iklixin");
-        CardMoveReason reason(CardMoveReason::S_REASON_GIVE, wenyang->objectName(), target->objectName(), "iklixin",
-                              QString());
+        CardMoveReason reason(CardMoveReason::S_REASON_GIVE, wenyang->objectName(), target->objectName(), "iklixin", QString());
         room->obtainCard(target, this, reason);
     } else
         return NULL;
@@ -3109,8 +3120,7 @@ const Card *IkLixinCard::validateInResponse(ServerPlayer *wenyang) const
         room->setPlayerFlag(wenyang, "IkLixinDisabled");
     if (!targets.isEmpty()) {
         ServerPlayer *target = room->askForPlayerChosen(wenyang, targets, "iklixin", "@iklixin");
-        CardMoveReason reason(CardMoveReason::S_REASON_GIVE, wenyang->objectName(), target->objectName(), "iklixin",
-                              QString());
+        CardMoveReason reason(CardMoveReason::S_REASON_GIVE, wenyang->objectName(), target->objectName(), "iklixin", QString());
         room->obtainCard(target, this, reason);
     } else
         return NULL;
@@ -3943,8 +3953,9 @@ public:
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         if (room->getTag("FirstRound").toBool() || player->getMark(objectName()) >= 2)
             return QStringList();
-        if (move.to == player && (move.to_place == Player::PlaceHand || move.to_place == Player::PlaceEquip
-                                  || move.to_place == Player::PlaceDelayedTrick)) {
+        if (move.to == player
+            && (move.to_place == Player::PlaceHand || move.to_place == Player::PlaceEquip
+                || move.to_place == Player::PlaceDelayedTrick)) {
             QList<int> ids;
             foreach (int id, move.card_ids) {
                 if (room->getCardOwner(id) == player && room->getCardPlace(id) == move.to_place)
@@ -6741,8 +6752,7 @@ public:
 
     virtual bool triggerable(const ServerPlayer *target) const
     {
-        return PhaseChangeSkill::triggerable(target) && target->getPhase() == Player::Finish
-            && target->canDiscard(target, "h");
+        return PhaseChangeSkill::triggerable(target) && target->getPhase() == Player::Finish && target->canDiscard(target, "h");
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
@@ -6849,7 +6859,9 @@ IkaiKaPackage::IkaiKaPackage()
     General *wind045 = new General(this, "wind045", "kaze");
     wind045->addSkill(new IkHualan);
     wind045->addSkill(new IkHualanDraw);
+    wind045->addSkill(new SlashNoDistanceLimitSkill("ikhualan"));
     related_skills.insertMulti("ikhualan", "#ikhualan-draw");
+    related_skills.insertMulti("ikhualan", "#ikhualan-slash-ndl");
 
     General *wind047 = new General(this, "wind047", "kaze", 3);
     wind047->addSkill(new IkTianhua);

@@ -65,6 +65,8 @@ return {
 	["@ikhualan"] = "你可以发动“花岚”",
 	["~ikhualan"] = "选择一至三张手牌→点击确定",
 	["#ikhualan-draw"] = "花岚（摸牌）",
+	["ikhualan:draw"] = "摸一张牌",
+	["ikhualan:slash"] = "对其使用一张无视距离的【杀】",
 
 	["#wind047"] = "焰弓的空舰",
 	["wind047"] = "加贺",--风 - 空 - 3血
