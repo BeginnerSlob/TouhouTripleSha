@@ -2076,6 +2076,9 @@ public:
         if (!card)
             return false;
 
+        if (card_ids.contains(card->getEffectiveId()))
+            card_ids.removeOne(card->getEffectiveId());
+
         if (!card_ids.isEmpty()) {
             QList<CardsMoveStruct> exchangeMove;
             CardsMoveStruct qiebaoMove;
