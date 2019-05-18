@@ -685,6 +685,15 @@ function SmartAI:useCardSlash(card, use)
 			end
 		end
 	end
+	for _, enemy in ipairs(self.enemies) do
+		if not self:slashIsEffective(card, enemy) then
+			use.card = card
+			if use.to and canAppendTarget(enemy) then
+				use.to:append(enemy)
+			end
+			if not use.to or self.slash_targets <= use.to:length() then return end
+		end
+	end
 end
 
 sgs.ai_skill_use.slash = function(self, prompt)

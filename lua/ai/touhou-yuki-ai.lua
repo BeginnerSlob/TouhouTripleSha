@@ -615,10 +615,10 @@ end
 sgs.ai_skill_invoke.thqingming = function(self, data)
 	local target = data:toPlayer()
 	local use = self.player:getTag("ThQingmingUse"):toCardUse()
-	if not self:slashisEffective(use.card, target, self.player) and self:isEnemy(target) then
+	if not self:slashIsEffective(use.card, target, self.player) and self:isEnemy(target) then
 		return true
 	end
-	if self:getCardsNum("Jink", target, self.player) >= 1 then
+	if getCardsNum("Jink", target, self.player) >= 1 then
 		return true
 	end
 	return self:isEnemy(target) and math.random(1, 3) == 1
@@ -626,7 +626,7 @@ end
 
 sgs.ai_skill_choice.thqingming = function(self, choices, data)
 	local target = data:toPlayer()
-	if string.find("duel") then
+	if string.find(choices, "duel") then
 		local duel = sgs.cloneCard("duel")
 		if self:hasTrickEffective(duel, target, self.player) then
 			if self:getCardsNum("Slash", "he", true) > getCardsNum("Slash", target, self.player) then
@@ -634,19 +634,19 @@ sgs.ai_skill_choice.thqingming = function(self, choices, data)
 			end
 		end
 	end
-	if string.find("snatch") then
+	if string.find(choices, "snatch") then
 		local snatch = sgs.cloneCard("snatch")
 		if self:hasTrickEffective(snatch, target, self.player) then
 			return "snatch"
 		end
 	end
-	if string.find("rout") then
+	if string.find(choices, "rout") then
 		local rout = sgs.cloneCard("rout")
 		if self:hasTrickEffective(rout, target, self.player) then
 			return "rout"
 		end
 	end
-	if string.find("dismantlement") then
+	if string.find(choices, "dismantlement") then
 		local dismantlement = sgs.cloneCard("dismantlement")
 		if self:hasTrickEffective(dismantlement, target, self.player) then
 			return "dismantlement"
