@@ -132,7 +132,7 @@ sgs.ai_skill_use_func.ThJinguoCard = function(card, use, self)
 			table.insert(hearts, c)
 		end
 	end
-	if #hearts > 0 and #heart < 3 then
+	if #hearts > 0 and #hearts < 3 then
 		self:sortByKeepValue(hearts)
 		if not isCard("Peach", hearts[1], self.player) then
 			local str = "@ThJinguoCard=" .. hearts[1]:getEffectiveId()
