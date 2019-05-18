@@ -869,6 +869,13 @@ ThYuanqiCard::ThYuanqiCard()
 void ThYuanqiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
 {
     Card::Suit suit = room->askForSuit(source, "thyuanqi");
+
+    LogMessage log;
+    log.type = "#ChooseSuit";
+    log.from = source;
+    log.arg = Suit2String(suit);
+    room->sendLog(log);
+
     QList<int> card_ids = room->getNCards(1, false);
     CardMoveReason reason(CardMoveReason::S_REASON_TURNOVER, source->objectName(), "thyuanqi", QString());
     room->moveCardsAtomic(CardsMoveStruct(card_ids, NULL, Player::PlaceTable, reason), true);

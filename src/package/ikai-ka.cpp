@@ -3690,7 +3690,7 @@ public:
         DamageStruct damage = data.value<DamageStruct>();
         QString choice = Card::Suit2String(room->askForSuit(damage.from, objectName()));
         LogMessage log;
-        log.type = "#IkSaoxiaoChoice";
+        log.type = "#ChooseSuit";
         log.from = damage.from;
         log.arg = choice;
         room->sendLog(log);

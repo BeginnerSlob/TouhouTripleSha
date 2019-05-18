@@ -305,7 +305,6 @@ return {
 	["@ikqile"] = "你可以发动“气乐”",
 	["iksaoxiao"] = "骚嚣",
 	[":iksaoxiao"] = "每当你受到一次伤害，在结算后，你可以令伤害来源选择一种花色，然后你可以选择一张花色不同的手牌，并令一名角色使用之。",
-	["#IkSaoxiaoChoice"] = "%from 选择了 %arg",
 	["@iksaoxiao"] = "你可以选择一张花色不同的手牌",
 	["@iksaoxiao-choose"] = "你可以令一名角色使用此牌",
 	["@iksaoxiao-use"] = "请使用该牌",
