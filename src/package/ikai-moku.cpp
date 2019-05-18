@@ -4226,10 +4226,11 @@ public:
         CardUseStruct use = data.value<CardUseStruct>();
         if (use.card->isKindOf("Slash")) {
             if (triggerEvent == TargetSpecified) {
-                foreach (ServerPlayer *p, use.to)
-                    if (p->isFemale())
+                foreach (ServerPlayer *p, use.to) {
+                    if (p != player)
                         return QStringList(objectName());
-            } else if (triggerEvent == TargetConfirmed && use.from->isFemale()) {
+                }
+            } else if (triggerEvent == TargetConfirmed && use.from != player) {
                 if (use.to.contains(player))
                     return QStringList(objectName());
             }
@@ -4247,14 +4248,14 @@ public:
         int index = 0;
         if (triggerEvent == TargetSpecified) {
             foreach (ServerPlayer *p, use.to) {
-                if (p->isFemale()) {
+                if (p != player) {
                     if (jink_list.at(index).toInt() == 1)
                         jink_list.replace(index, QVariant(2));
                 }
                 index++;
             }
             use.from->tag["Jink_" + use.card->toString()] = QVariant::fromValue(jink_list);
-        } else if (triggerEvent == TargetConfirmed && use.from->isFemale()) {
+        } else if (triggerEvent == TargetConfirmed) {
             foreach (ServerPlayer *p, use.to) {
                 if (p == player) {
                     if (jink_list.at(index).toInt() == 1)
