@@ -326,9 +326,6 @@ int Player::distanceTo(const Player *other, int distance_fix) const
     if ((hasSkill("thguimen") && other->isChained()) || (other->hasSkill("thguimen") && isChained()))
         return 1;
 
-    if (hasSkill("ikhuisuo") && other->getHp() < getHp())
-        return 1;
-
     if (fixed_distance.contains(other)) {
         QList<int> distance_list = fixed_distance.values(other);
         int min = 10000;

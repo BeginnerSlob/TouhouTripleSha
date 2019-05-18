@@ -8105,6 +8105,72 @@ public:
     }
 };
 
+IkHuisuoCard::IkHuisuoCard()
+{
+    will_throw = false;
+    handling_method = MethodNone;
+}
+
+void IkHuisuoCard::onEffect(const CardEffectStruct &effect) const
+{
+    Room *room = effect.from->getRoom();
+    effect.from->tag["IkHuisuoTarget"] = QVariant::fromValue(effect.to);
+    room->setFixedDistance(effect.from, effect.to, 1);
+}
+
+class IkHuisuoVS : public OneCardViewAsSkill
+{
+public:
+    IkHuisuoVS()
+        : OneCardViewAsSkill("ikhuisuo")
+    {
+        filter_pattern = "Slash";
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return !player->hasUsed("IkHuisuoCard");
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const
+    {
+        Card *card = new IkHuisuoCard;
+        card->addSubcard(originalCard);
+        return card;
+    }
+};
+
+class IkHuisuo : public TriggerSkill
+{
+public:
+    IkHuisuo()
+        : TriggerSkill("ikhuisuo")
+    {
+        events << EventPhaseChanging << Death;
+        view_as_skill = new IkHuisuoVS;
+    }
+
+    virtual QStringList triggerable(TriggerEvent e, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (!player->tag["IkHuisuoTarget"].value<ServerPlayer *>())
+            return QStringList();
+        if (e == EventPhaseChanging) {
+            PhaseChangeStruct change = data.value<PhaseChangeStruct>();
+            if (change.to != Player::NotActive)
+                return QStringList();
+        } else if (e == Death) {
+            DeathStruct death = data.value<DeathStruct>();
+            if (death.who != player)
+                return QStringList();
+        }
+        ServerPlayer *target = player->tag["IkHuisuoTarget"].value<ServerPlayer *>();
+        player->tag.remove("IkHuisuoTarget");
+        if (target)
+            room->removeFixedDistance(player, target, 1);
+        return QStringList();
+    }
+};
+
 IkCangliuCard::IkCangliuCard()
 {
     target_fixed = true;
@@ -8206,7 +8272,7 @@ public:
     IkCangliu()
         : TriggerSkill("ikcangliu")
     {
-        events << EventPhaseChanging << CardsMoveOneTime << Death;
+        events << EventPhaseChanging << Death;
         view_as_skill = new IkCangliuVS;
     }
 
@@ -8219,13 +8285,6 @@ public:
                 foreach (ServerPlayer *p, room->getAlivePlayers())
                     room->setPlayerMark(p, "ikcangliucount", 0);
             }
-        } else if (triggerEvent == CardsMoveOneTime) {
-            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if (player->getMark("IkCangliuInvoke") > 0
-                && ((move.to == player && move.to_place == Player::PlaceHand)
-                    || (move.from == player && move.from_places.contains(Player::PlaceHand)
-                        && player->getMark("jnlinglie") == 0)))
-                room->setPlayerMark(player, "IkCangliuInvoke", 0);
         } else if (triggerEvent == Death) {
             if (player->getMark("IkCangliuInvoke") > 0)
                 room->setPlayerMark(player, "IkCangliuInvoke", 0);
@@ -8908,7 +8967,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     luna050->addSkill(new IkHuangzhen);
 
     General *luna052 = new General(this, "luna052", "tsuki");
-    luna052->addSkill(new Skill("ikhuisuo", Skill::Compulsory));
+    luna052->addSkill(new IkHuisuo);
     luna052->addSkill(new IkCangliu);
 
     General *luna059 = new General(this, "luna059", "tsuki", 3);
@@ -8965,6 +9024,7 @@ IkaiSuiPackage::IkaiSuiPackage()
     addMetaObject<IkKouzhuCard>();
     addMetaObject<IkJiaojinCard>();
     addMetaObject<IkSheqieCard>();
+    addMetaObject<IkHuisuoCard>();
     addMetaObject<IkCangliuCard>();
     addMetaObject<IkCangliuSlash>();
     addMetaObject<IkLianzhenCard>();

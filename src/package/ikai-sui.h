@@ -448,6 +448,16 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
+class IkHuisuoCard : public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE IkHuisuoCard();
+
+    virtual void onEffect(const CardEffectStruct &effect) const;
+};
+
 class IkCangliuCard : public SkillCard
 {
     Q_OBJECT
