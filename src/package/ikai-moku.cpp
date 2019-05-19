@@ -2842,6 +2842,76 @@ public:
     }
 };
 
+class IkDiewu : public TriggerSkill
+{
+public:
+    IkDiewu()
+        : TriggerSkill("ikdiewu")
+    {
+        events << CardsMoveOneTime;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (TriggerSkill::triggerable(player) && player->getHp() > 0) {
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (move.from != player && move.from_places.contains(Player::PlaceHand) && move.to_place == Player::DiscardPile
+                && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD)
+                return QStringList(objectName());
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        if (player->askForSkillInvoke(objectName(),
+                                      QVariant::fromValue((ServerPlayer *)data.value<CardsMoveOneTimeStruct>().from))) {
+            room->broadcastSkillInvoke(objectName());
+            room->loseHp(player);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *) const
+    {
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+        ServerPlayer *target = (ServerPlayer *)move.from;
+        if (target && target->isAlive() && !target->isKongcheng()) {
+            QList<int> card_ids;
+            DummyCard get_back;
+            foreach (int id, move.card_ids) {
+                int index = move.card_ids.indexOf(id);
+                if (move.from_places[index] == Player::PlaceHand)
+                    card_ids << id;
+                if (room->getCardPlace(id) == Player::DiscardPile)
+                    get_back.addSubcard(id);
+            }
+            const Card *dummy
+                = room->askForExchange(target, objectName(), card_ids.length(), card_ids.length(), false, "@ikdiewwu", false);
+            if (!dummy) {
+                QList<int> hands = target->handCards();
+                qShuffle(hands);
+                dummy = new DummyCard(hands.mid(0, card_ids.length()));
+            }
+            CardMoveReason reason1(CardMoveReason::S_REASON_PUT, target->objectName(), objectName(), QString());
+            CardMoveReason reason2(CardMoveReason::S_REASON_RECYCLE, target->objectName(), objectName(), QString());
+            QList<CardsMoveStruct> moves;
+            moves << CardsMoveStruct(dummy->getSubcards(), NULL, Player::DiscardPile, reason1);
+            moves << CardsMoveStruct(get_back.getSubcards(), target, Player::PlaceHand, reason2);
+
+            LogMessage log;
+            log.type = "$MoveToDiscardPile";
+            log.from = target;
+            log.card_str = IntList2StringList(dummy->getSubcards()).join("+");
+            room->sendLog(log);
+
+            room->moveCardsAtomic(moves, true);
+        }
+        return true;
+    }
+};
+
 IkZhuoshiCard::IkZhuoshiCard()
 {
     will_throw = false;
@@ -6184,6 +6254,7 @@ IkaiMokuPackage::IkaiMokuPackage()
 
     General *snow009 = new General(this, "snow009", "yuki");
     snow009->addSkill(new IkLiangban);
+    snow009->addSkill(new IkDiewu);
 
     General *snow010 = new General(this, "snow010", "yuki", 3);
     snow010->addSkill(new IkZhuoshi);

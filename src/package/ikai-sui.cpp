@@ -8114,6 +8114,8 @@ IkHuisuoCard::IkHuisuoCard()
 void IkHuisuoCard::onEffect(const CardEffectStruct &effect) const
 {
     Room *room = effect.from->getRoom();
+    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, effect.from->objectName(), effect.to->objectName(), "ikhuisuo", QString());
+    room->obtainCard(effect.to, this, reason, true);
     effect.from->tag["IkHuisuoTarget"] = QVariant::fromValue(effect.to);
     room->setFixedDistance(effect.from, effect.to, 1);
 }
