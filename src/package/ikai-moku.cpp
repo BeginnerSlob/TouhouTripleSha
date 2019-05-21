@@ -2888,7 +2888,7 @@ public:
                     get_back.addSubcard(id);
             }
             const Card *dummy
-                = room->askForExchange(target, objectName(), card_ids.length(), card_ids.length(), false, "@ikdiewwu", false);
+                = room->askForExchange(target, objectName(), card_ids.length(), card_ids.length(), false, "@ikdiewu", false);
             if (!dummy) {
                 QList<int> hands = target->handCards();
                 qShuffle(hands);
