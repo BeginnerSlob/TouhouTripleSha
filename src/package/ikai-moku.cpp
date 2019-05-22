@@ -2882,10 +2882,11 @@ public:
             DummyCard get_back;
             foreach (int id, move.card_ids) {
                 int index = move.card_ids.indexOf(id);
-                if (move.from_places[index] == Player::PlaceHand)
+                if (move.from_places[index] == Player::PlaceHand) {
                     card_ids << id;
-                if (room->getCardPlace(id) == Player::DiscardPile)
-                    get_back.addSubcard(id);
+                    if (room->getCardPlace(id) == Player::DiscardPile)
+                        get_back.addSubcard(id);
+                }
             }
             const Card *dummy
                 = room->askForExchange(target, objectName(), card_ids.length(), card_ids.length(), false, "@ikdiewu", false);
