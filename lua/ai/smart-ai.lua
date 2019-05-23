@@ -9,7 +9,7 @@ math.randomseed(tostring(os.time()):reverse():sub(1, 6))
 -- SmartAI is the base class for all other specialized AI classes
 SmartAI = (require "middleclass").class("SmartAI")
 
-version = "TouhouTripleSha AI 20160316 (V0.41)"
+version = "TouhouTripleSha AI 20190523 (V0.42)"
 -- original_version = "QSanguosha AI 20140901 (V1.414213562 Alpha)"
 --- this function is only function that exposed to the host program
 --- and it clones an AI instance by general name
