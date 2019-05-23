@@ -2080,15 +2080,12 @@ public:
             card_ids.removeOne(card->getEffectiveId());
 
         if (!card_ids.isEmpty()) {
-            QList<CardsMoveStruct> exchangeMove;
             CardsMoveStruct qiebaoMove;
-
             if (move || card->isRed()) {
                 qiebaoMove.to = player;
                 qiebaoMove.to_place = Player::PlaceHand;
                 qiebaoMove.card_ids = card_ids;
-                exchangeMove.push_back(qiebaoMove);
-                room->moveCardsAtomic(exchangeMove, false);
+                room->moveCardsAtomic(qiebaoMove, false);
             }
         }
 
@@ -2100,20 +2097,15 @@ public:
         TriggerList skill_list;
         if (triggerEvent == CardUsed) {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (use.to.isEmpty())
+            if (use.to.isEmpty() || !use.card->isKindOf("Peach"))
                 return skill_list;
 
-            bool invoke = false;
             foreach (ServerPlayer *to, use.to) {
                 if (to == use.from)
                     continue;
-                invoke = true;
-                break;
-            }
-
-            if (invoke && use.card->isKindOf("Peach")) {
                 foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName()))
                     skill_list.insert(p, QStringList(objectName()));
+                break;
             }
         } else if (triggerEvent == BeforeCardsMove && TriggerSkill::triggerable(player)) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
