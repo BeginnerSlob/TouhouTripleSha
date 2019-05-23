@@ -108,27 +108,27 @@
 <context>
     <name>Card</name>
     <message>
-        <location filename="../src/core/card.cpp" line="320"/>
+        <location filename="../src/core/card.cpp" line="325"/>
         <source>NoSuitRed</source>
         <translation>红色</translation>
     </message>
     <message>
-        <location filename="../src/core/card.cpp" line="324"/>
+        <location filename="../src/core/card.cpp" line="329"/>
         <source>NoSuitBlack</source>
         <translation>黑色</translation>
     </message>
     <message>
-        <location filename="../src/core/card.cpp" line="328"/>
+        <location filename="../src/core/card.cpp" line="333"/>
         <source>NoSuit</source>
         <translation>无色</translation>
     </message>
     <message>
-        <location filename="../src/core/card.cpp" line="396"/>
+        <location filename="../src/core/card.cpp" line="401"/>
         <source>&lt;b&gt;[%1]&lt;/b&gt; %2</source>
         <translation>&lt;b&gt;【%1】&lt;/b&gt; %2</translation>
     </message>
     <message>
-        <location filename="../src/core/card.cpp" line="833"/>
+        <location filename="../src/core/card.cpp" line="838"/>
         <source>Subcard must not be virtual card!</source>
         <translation>子卡不能是虚拟卡牌 !</translation>
     </message>
@@ -227,17 +227,17 @@
         <translation>选择人物</translation>
     </message>
     <message>
-        <location filename="../src/dialog/choosegeneraldialog.cpp" line="235"/>
+        <location filename="../src/dialog/choosegeneraldialog.cpp" line="229"/>
         <source>Your role is %1</source>
         <translation>你的身份是 %1</translation>
     </message>
     <message>
-        <location filename="../src/dialog/choosegeneraldialog.cpp" line="237"/>
+        <location filename="../src/dialog/choosegeneraldialog.cpp" line="231"/>
         <source>The lord has chosen %1. Your seat is %2. %3</source>
         <translation>君主选择了 %1，你处于 %2号位，%3</translation>
     </message>
     <message>
-        <location filename="../src/dialog/choosegeneraldialog.cpp" line="261"/>
+        <location filename="../src/dialog/choosegeneraldialog.cpp" line="255"/>
         <source>Free choose ...</source>
         <translation>自由选将 ...</translation>
     </message>
@@ -768,46 +768,46 @@
 <context>
     <name>ConnectionDialog</name>
     <message>
-        <location filename="../src/dialog/connectiondialog_android.ui" line="17"/>
-        <location filename="../src/dialog/connectiondialog_android.ui" line="29"/>
         <location filename="../src/dialog/connectiondialog.ui" line="17"/>
         <location filename="../src/dialog/connectiondialog.ui" line="29"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="17"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="29"/>
         <source>Connection setup</source>
         <translation>连接设置</translation>
     </message>
     <message>
-        <location filename="../src/dialog/connectiondialog_android.ui" line="76"/>
         <location filename="../src/dialog/connectiondialog.ui" line="76"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="76"/>
         <source>Change avatar</source>
         <translation>修改头像</translation>
     </message>
     <message>
-        <location filename="../src/dialog/connectiondialog_android.ui" line="41"/>
         <location filename="../src/dialog/connectiondialog.ui" line="41"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="41"/>
         <source>Avatar:</source>
         <translation>头像:</translation>
     </message>
     <message>
-        <location filename="../src/dialog/connectiondialog_android.ui" line="135"/>
         <location filename="../src/dialog/connectiondialog.ui" line="141"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="135"/>
         <source>Host:</source>
         <translation>主机:</translation>
     </message>
     <message>
-        <location filename="../src/dialog/connectiondialog_android.ui" line="118"/>
         <location filename="../src/dialog/connectiondialog.ui" line="154"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="118"/>
         <source>Name:</source>
         <translation>名称:</translation>
     </message>
     <message>
-        <location filename="../src/dialog/connectiondialog_android.ui" line="102"/>
         <location filename="../src/dialog/connectiondialog.ui" line="102"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="102"/>
         <source>Clear history</source>
         <translation>清除历史记录</translation>
     </message>
     <message>
-        <location filename="../src/dialog/connectiondialog_android.ui" line="89"/>
         <location filename="../src/dialog/connectiondialog.ui" line="89"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="89"/>
         <source>Detect LAN ...</source>
         <translation>探测局域网 ...</translation>
     </message>
@@ -827,20 +827,20 @@
         <translation>密码:</translation>
     </message>
     <message>
-        <location filename="../src/dialog/connectiondialog_android.ui" line="190"/>
         <location filename="../src/dialog/connectiondialog.ui" line="257"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="190"/>
         <source>Connect</source>
         <translation>连接</translation>
     </message>
     <message>
-        <location filename="../src/dialog/connectiondialog_android.ui" line="203"/>
         <location filename="../src/dialog/connectiondialog.ui" line="270"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="203"/>
         <source>Reconnection</source>
         <translation>断线重连</translation>
     </message>
     <message>
-        <location filename="../src/dialog/connectiondialog_android.ui" line="177"/>
         <location filename="../src/dialog/connectiondialog.ui" line="244"/>
+        <location filename="../src/dialog/connectiondialog_android.ui" line="177"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
@@ -1508,17 +1508,17 @@
 <context>
     <name>FreeChooseDialog</name>
     <message>
-        <location filename="../src/dialog/choosegeneraldialog.cpp" line="301"/>
+        <location filename="../src/dialog/choosegeneraldialog.cpp" line="295"/>
         <source>Free choose generals</source>
         <translation>自由选择人物</translation>
     </message>
     <message>
-        <location filename="../src/dialog/choosegeneraldialog.cpp" line="329"/>
+        <location filename="../src/dialog/choosegeneraldialog.cpp" line="323"/>
         <source>OK</source>
         <translation>确定</translation>
     </message>
     <message>
-        <location filename="../src/dialog/choosegeneraldialog.cpp" line="332"/>
+        <location filename="../src/dialog/choosegeneraldialog.cpp" line="326"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
@@ -1618,13 +1618,13 @@
     </message>
     <message>
         <location filename="../src/dialog/generaloverview.ui" line="208"/>
-        <location filename="../src/dialog/generaloverview.cpp" line="550"/>
+        <location filename="../src/dialog/generaloverview.cpp" line="551"/>
         <source>Illustrator</source>
         <translation>画师</translation>
     </message>
     <message>
         <location filename="../src/dialog/generaloverview.ui" line="257"/>
-        <location filename="../src/dialog/generaloverview.cpp" line="667"/>
+        <location filename="../src/dialog/generaloverview.cpp" line="668"/>
         <source>Search...</source>
         <translation>搜索...</translation>
     </message>
@@ -1634,70 +1634,70 @@
         <translation>配音</translation>
     </message>
     <message>
-        <location filename="../src/dialog/generaloverview.cpp" line="535"/>
-        <location filename="../src/dialog/generaloverview.cpp" line="543"/>
+        <location filename="../src/dialog/generaloverview.cpp" line="536"/>
+        <location filename="../src/dialog/generaloverview.cpp" line="544"/>
         <source>Official</source>
         <translation>官方</translation>
     </message>
     <message>
-        <location filename="../src/dialog/generaloverview.cpp" line="268"/>
+        <location filename="../src/dialog/generaloverview.cpp" line="269"/>
         <source>Effects</source>
         <translation>配音</translation>
     </message>
     <message>
-        <location filename="../src/dialog/generaloverview.cpp" line="313"/>
+        <location filename="../src/dialog/generaloverview.cpp" line="314"/>
         <source>Male</source>
         <translation>空属性</translation>
     </message>
     <message>
-        <location filename="../src/dialog/generaloverview.cpp" line="313"/>
+        <location filename="../src/dialog/generaloverview.cpp" line="314"/>
         <source>Female</source>
         <translation>幻属性</translation>
     </message>
     <message>
-        <location filename="../src/dialog/generaloverview.cpp" line="313"/>
+        <location filename="../src/dialog/generaloverview.cpp" line="314"/>
         <source>NoGender</source>
         <translation>无性别</translation>
     </message>
     <message>
-        <location filename="../src/dialog/generaloverview.cpp" line="330"/>
-        <location filename="../src/dialog/generaloverview.cpp" line="345"/>
+        <location filename="../src/dialog/generaloverview.cpp" line="331"/>
+        <location filename="../src/dialog/generaloverview.cpp" line="346"/>
         <source>This general is hidden</source>
         <translation>该人物被隐藏， 不会出现在选将列表中</translation>
     </message>
     <message>
-        <location filename="../src/dialog/generaloverview.cpp" line="338"/>
-        <location filename="../src/dialog/generaloverview.cpp" line="340"/>
+        <location filename="../src/dialog/generaloverview.cpp" line="339"/>
+        <location filename="../src/dialog/generaloverview.cpp" line="341"/>
         <source>This general is a lord</source>
         <translation>该人物是君主人物</translation>
     </message>
     <message>
-        <location filename="../src/dialog/generaloverview.cpp" line="361"/>
+        <location filename="../src/dialog/generaloverview.cpp" line="362"/>
         <source>This is an Lua extension</source>
         <translation>该包为Lua扩展包</translation>
     </message>
     <message>
-        <location filename="../src/dialog/generaloverview.cpp" line="481"/>
+        <location filename="../src/dialog/generaloverview.cpp" line="482"/>
         <source>Copy lines</source>
         <translation>复制台词</translation>
     </message>
     <message>
-        <location filename="../src/dialog/generaloverview.cpp" line="523"/>
+        <location filename="../src/dialog/generaloverview.cpp" line="524"/>
         <source>Death</source>
         <translation>阵亡</translation>
     </message>
     <message>
-        <location filename="../src/dialog/generaloverview.cpp" line="548"/>
+        <location filename="../src/dialog/generaloverview.cpp" line="549"/>
         <source>References</source>
         <translation>出处</translation>
     </message>
     <message>
-        <location filename="../src/dialog/generaloverview.cpp" line="663"/>
+        <location filename="../src/dialog/generaloverview.cpp" line="664"/>
         <source>Warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="../src/dialog/generaloverview.cpp" line="663"/>
+        <location filename="../src/dialog/generaloverview.cpp" line="664"/>
         <source>No generals are found</source>
         <translation>未找到符合要求的人物</translation>
     </message>
@@ -1710,113 +1710,113 @@
 <context>
     <name>GeneralSearch</name>
     <message>
-        <location filename="../src/dialog/generaloverview.cpp" line="26"/>
+        <location filename="../src/dialog/generaloverview.cpp" line="27"/>
         <source>Search...</source>
         <translation>搜索...</translation>
     </message>
     <message>
-        <location filename="../src/dialog/generaloverview.cpp" line="41"/>
+        <location filename="../src/dialog/generaloverview.cpp" line="42"/>
         <source>Include hidden generals</source>
         <translation>包含隐藏人物</translation>
     </message>
     <message>
-        <location filename="../src/dialog/generaloverview.cpp" line="45"/>
+        <location filename="../src/dialog/generaloverview.cpp" line="46"/>
         <source>Nickname</source>
         <translation>称号</translation>
     </message>
     <message>
-        <location filename="../src/dialog/generaloverview.cpp" line="46"/>
+        <location filename="../src/dialog/generaloverview.cpp" line="47"/>
         <source>Input characters included by the nickname. &apos;?&apos; and &apos;*&apos; is available. Every nickname meets the condition if the line is empty.</source>
         <translation>输入人物称号，可以使用&apos;?&apos;与&apos;*&apos;通配符</translation>
     </message>
     <message>
-        <location filename="../src/dialog/generaloverview.cpp" line="51"/>
+        <location filename="../src/dialog/generaloverview.cpp" line="52"/>
         <source>Name</source>
         <translation>名称</translation>
     </message>
     <message>
-        <location filename="../src/dialog/generaloverview.cpp" line="52"/>
+        <location filename="../src/dialog/generaloverview.cpp" line="53"/>
         <source>Input characters included by the name. &apos;?&apos; and &apos;*&apos; is available. Every name meets the condition if the line is empty.</source>
         <translation>输入人物名称，可以使用&apos;?&apos;与&apos;*&apos;通配符</translation>
     </message>
     <message>
-        <location filename="../src/dialog/generaloverview.cpp" line="57"/>
+        <location filename="../src/dialog/generaloverview.cpp" line="58"/>
         <source>MaxHp Min</source>
         <translation>体力上限（最小值）</translation>
     </message>
     <message>
-        <location filename="../src/dialog/generaloverview.cpp" line="59"/>
+        <location filename="../src/dialog/generaloverview.cpp" line="60"/>
         <source>MaxHp Max</source>
         <translation>体力上限（最大值）</translation>
     </message>
     <message>
-        <location filename="../src/dialog/generaloverview.cpp" line="75"/>
+        <location filename="../src/dialog/generaloverview.cpp" line="76"/>
         <source>Gender</source>
         <translation>特殊属性</translation>
     </message>
     <message>
-        <location filename="../src/dialog/generaloverview.cpp" line="82"/>
+        <location filename="../src/dialog/generaloverview.cpp" line="83"/>
         <source>Male</source>
         <translation>空属性</translation>
     </message>
     <message>
-        <location filename="../src/dialog/generaloverview.cpp" line="87"/>
+        <location filename="../src/dialog/generaloverview.cpp" line="88"/>
         <source>Female</source>
         <translation>幻属性</translation>
     </message>
     <message>
-        <location filename="../src/dialog/generaloverview.cpp" line="92"/>
+        <location filename="../src/dialog/generaloverview.cpp" line="93"/>
         <source>NoGender</source>
         <translation>特属性</translation>
     </message>
     <message>
-        <location filename="../src/dialog/generaloverview.cpp" line="110"/>
+        <location filename="../src/dialog/generaloverview.cpp" line="111"/>
         <source>Kingdoms</source>
         <translation>势力</translation>
     </message>
     <message>
-        <location filename="../src/dialog/generaloverview.cpp" line="111"/>
+        <location filename="../src/dialog/generaloverview.cpp" line="112"/>
         <source>Select kingdoms. Every kingdom meets the condition if none is selected.</source>
         <translation>选择人物势力，若未选择任何势力则所有势力均符合条件</translation>
     </message>
     <message>
-        <location filename="../src/dialog/generaloverview.cpp" line="58"/>
-        <location filename="../src/dialog/generaloverview.cpp" line="60"/>
+        <location filename="../src/dialog/generaloverview.cpp" line="59"/>
+        <location filename="../src/dialog/generaloverview.cpp" line="61"/>
         <source>Set lowerlimit and upperlimit of max HP. 0 ~ 0 meets all conditions.</source>
         <translation>设置人物体力上限范围，若最小值与最大值均为0则所有人物符合条件（若最大值小于最小值，则按最小值计算）</translation>
     </message>
     <message>
-        <location filename="../src/dialog/generaloverview.cpp" line="76"/>
+        <location filename="../src/dialog/generaloverview.cpp" line="77"/>
         <source>Select genders. Every gender meets the condition if none is selected</source>
         <translation>选择人物特殊属性，若未选择任何属性则所有属性均符合条件</translation>
     </message>
     <message>
-        <location filename="../src/dialog/generaloverview.cpp" line="137"/>
+        <location filename="../src/dialog/generaloverview.cpp" line="138"/>
         <source>Packages</source>
         <translation>包</translation>
     </message>
     <message>
-        <location filename="../src/dialog/generaloverview.cpp" line="138"/>
+        <location filename="../src/dialog/generaloverview.cpp" line="139"/>
         <source>Select packages. Every package meets the condition if none is selected.</source>
         <translation>选择人物包，若未选择任何包则所有包均符合条件</translation>
     </message>
     <message>
-        <location filename="../src/dialog/generaloverview.cpp" line="143"/>
+        <location filename="../src/dialog/generaloverview.cpp" line="144"/>
         <source>Select All</source>
         <translation>全选</translation>
     </message>
     <message>
-        <location filename="../src/dialog/generaloverview.cpp" line="145"/>
+        <location filename="../src/dialog/generaloverview.cpp" line="146"/>
         <source>Unselect All</source>
         <translation>全不选</translation>
     </message>
     <message>
-        <location filename="../src/dialog/generaloverview.cpp" line="184"/>
+        <location filename="../src/dialog/generaloverview.cpp" line="185"/>
         <source>Clear</source>
         <translation>清除</translation>
     </message>
     <message>
-        <location filename="../src/dialog/generaloverview.cpp" line="185"/>
+        <location filename="../src/dialog/generaloverview.cpp" line="186"/>
         <source>OK</source>
         <translation>确定</translation>
     </message>
@@ -2547,7 +2547,7 @@
 <context>
     <name>Player</name>
     <message>
-        <location filename="../src/core/player.cpp" line="1279"/>
+        <location filename="../src/core/player.cpp" line="1285"/>
         <source>No skills</source>
         <translation>无技能</translation>
     </message>
@@ -2866,32 +2866,32 @@
 <context>
     <name>Room</name>
     <message>
-        <location filename="../src/server/room.cpp" line="2485"/>
+        <location filename="../src/server/room.cpp" line="2486"/>
         <source>disconnected</source>
         <translation>断开</translation>
     </message>
     <message>
-        <location filename="../src/server/room.cpp" line="2893"/>
+        <location filename="../src/server/room.cpp" line="2894"/>
         <source>Computer %1</source>
         <translation>电脑 %1</translation>
     </message>
     <message>
-        <location filename="../src/server/room.cpp" line="2513"/>
+        <location filename="../src/server/room.cpp" line="2514"/>
         <source>&lt;font color=#000000&gt;Player &lt;b&gt;%1&lt;/b&gt; left the game&lt;/font&gt;</source>
         <translation>&lt;font color=#000000&gt;玩家 %1 离开了游戏&lt;/font&gt;</translation>
     </message>
     <message>
-        <location filename="../src/server/room.cpp" line="2705"/>
+        <location filename="../src/server/room.cpp" line="2706"/>
         <source>wrongpassword</source>
         <translation>密码错误</translation>
     </message>
     <message>
-        <location filename="../src/server/room.cpp" line="2898"/>
+        <location filename="../src/server/room.cpp" line="2899"/>
         <source>Hello, I&apos;m a robot</source>
         <translation>大家好，我是一个机器人</translation>
     </message>
     <message>
-        <location filename="../src/server/room.cpp" line="2943"/>
+        <location filename="../src/server/room.cpp" line="2944"/>
         <source>&lt;font color=#EEB422&gt;Player &lt;b&gt;%1&lt;/b&gt; joined the game&lt;/font&gt;</source>
         <translation>&lt;font color=#EEB422&gt;玩家 &lt;b&gt;%1&lt;/b&gt; 加入了游戏&lt;/font&gt;</translation>
     </message>
@@ -2926,14 +2926,14 @@
         <translation>玩家序号应为 %1 而不是 %2</translation>
     </message>
     <message>
-        <location filename="../src/server/room.cpp" line="5258"/>
+        <location filename="../src/server/room.cpp" line="5260"/>
         <source>Card cannot be parsed:
  %1</source>
         <translation>卡牌字符串无法解析:
 %1</translation>
     </message>
     <message>
-        <location filename="../src/server/room.cpp" line="6837"/>
+        <location filename="../src/server/room.cpp" line="6839"/>
         <source>&lt;font color=#EEB422&gt;The network delay of player &lt;b&gt;%1&lt;/b&gt; is %2 milliseconds.&lt;/font&gt;</source>
         <translation>&lt;font color=#EEB422&gt;玩家 &lt;b&gt;%1&lt;/b&gt; 的网络延迟为 %2 毫秒&lt;/font&gt;</translation>
     </message>
