@@ -981,7 +981,7 @@ void MainWindow::on_actionAbout_GPLv3_triggered()
 void MainWindow::checkUpdate()
 {
     static QNetworkAccessManager *qnam = new QNetworkAccessManager(this);
-    reply = qnam->get(QNetworkRequest(QUrl("http://update.kirito.moe/UpdateInfo")));
+    reply = qnam->get(QNetworkRequest(QUrl("https://beginnerslob.github.io/TTSUpdate/UpdateInfo")));
     connect(reply, &QNetworkReply::finished, this, &MainWindow::httpFinished);
 }
 
