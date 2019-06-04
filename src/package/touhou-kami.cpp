@@ -2585,7 +2585,7 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        ServerPlayer *target = room->askForPlayerChosen(player, room->getAlivePlayers(), objectName(), "@thzhizun", true);
+        ServerPlayer *target = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName(), "@thzhizun", true);
         if (target) {
             QStringList kingdomList = Sanguosha->getKingdoms();
             kingdomList.removeOne("kami");
