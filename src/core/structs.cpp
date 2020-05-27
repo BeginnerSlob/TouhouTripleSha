@@ -82,22 +82,23 @@ DamageStruct::DamageStruct()
     , damage(1)
     , nature(Normal)
     , chain(false)
-    , trigger_chain(false)
-    , transfer(false)
-    , by_user(true)
-    , reason(QString())
-    , transfer_reason(QString())
-{
-}
-
-DamageStruct::DamageStruct(const Card *card, ServerPlayer *from, ServerPlayer *to, int damage, DamageStruct::Nature nature)
-    : chain(false)
-    , trigger_chain(false)
     , transfer(false)
     , by_user(true)
     , reason(QString())
     , transfer_reason(QString())
     , prevented(false)
+    , invoke_skills(QStringList())
+{
+}
+
+DamageStruct::DamageStruct(const Card *card, ServerPlayer *from, ServerPlayer *to, int damage, DamageStruct::Nature nature)
+    : chain(false)
+    , transfer(false)
+    , by_user(true)
+    , reason(QString())
+    , transfer_reason(QString())
+    , prevented(false)
+    , invoke_skills(QStringList())
 {
     this->card = card;
     this->from = from;
@@ -109,11 +110,11 @@ DamageStruct::DamageStruct(const Card *card, ServerPlayer *from, ServerPlayer *t
 DamageStruct::DamageStruct(const QString &reason, ServerPlayer *from, ServerPlayer *to, int damage, DamageStruct::Nature nature)
     : card(NULL)
     , chain(false)
-    , trigger_chain(false)
     , transfer(false)
     , by_user(true)
     , transfer_reason(QString())
     , prevented(false)
+    , invoke_skills(QStringList())
 {
     this->from = from;
     this->to = to;

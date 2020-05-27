@@ -30,12 +30,12 @@ struct DamageStruct
     int damage;
     Nature nature;
     bool chain;
-    bool trigger_chain;
     bool transfer;
     bool by_user;
     QString reason;
     QString transfer_reason;
     bool prevented;
+    QStringList invoke_skills;
 
     QString getReason() const;
 };

@@ -405,7 +405,7 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *play
 
         // Chain ==========
         if (damage.nature != DamageStruct::Normal && player->isChained() && !damage.chain)
-            damage.trigger_chain = true;
+            damage.invoke_skills << "chain";
         // ================
 
         data = QVariant::fromValue(damage);
@@ -465,9 +465,9 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *play
         DamageStruct damage = data.value<DamageStruct>();
         if (damage.prevented)
             break;
-        if (damage.nature != DamageStruct::Normal && player->isChained() && (damage.chain || damage.trigger_chain))
+        if (damage.nature != DamageStruct::Normal && player->isChained() && (damage.chain || damage.invoke_skills.contains("chain")))
             room->setPlayerProperty(player, "chained", false);
-        if (damage.trigger_chain) {
+        if (damage.invoke_skills.contains("chain")) {
             if (damage.nature != DamageStruct::Normal && !damage.chain) {
                 QList<ServerPlayer *> chained_players;
                 if (room->getCurrent()->isDead())

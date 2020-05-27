@@ -984,8 +984,7 @@ bool ExtraFeintAttackCard::targetsFeasible(const QList<const Player *> &targets,
     return coll->targetsFeasible(targets, Self);
 }
 
-bool ExtraFeintAttackCard::targetFilter(const QList<const Player *> &targets, const Player *to_select,
-                                        const Player *Self) const
+bool ExtraFeintAttackCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
 {
     const Card *coll = Card::Parse(Self->property("extra_collateral").toString());
     if (!coll)
@@ -2551,8 +2550,8 @@ public:
             int i = 0;
             foreach (int card_id, move.card_ids) {
                 if (Sanguosha->getCard(card_id)->getSuit() == Card::Club
-                    && ((move.reason.m_reason == CardMoveReason::S_REASON_JUDGEDONE
-                         && move.from_places[i] == Player::PlaceJudge && move.to_place == Player::DiscardPile)
+                    && ((move.reason.m_reason == CardMoveReason::S_REASON_JUDGEDONE && move.from_places[i] == Player::PlaceJudge
+                         && move.to_place == Player::DiscardPile)
                         || (move.reason.m_reason != CardMoveReason::S_REASON_JUDGEDONE
                             && room->getCardOwner(card_id) == move.from
                             && (move.from_places[i] == Player::PlaceHand || move.from_places[i] == Player::PlaceEquip))))
@@ -2668,12 +2667,19 @@ public:
         view_as_skill = new IkJiushiViewAsSkill;
     }
 
-    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data,
+                                    ServerPlayer *&) const
     {
         if (triggerEvent == PreDamageDone) {
-            player->tag["PredamagedFace"] = !player->faceUp();
+            DamageStruct damage = data.value<DamageStruct>();
+            if (!player->faceUp()) {
+                if (!damage.invoke_skills.contains(objectName())) {
+                    damage.invoke_skills << objectName();
+                    data = QVariant::fromValue(damage);
+                }
+            }
         } else if (triggerEvent == DamageComplete && TriggerSkill::triggerable(player)) {
-            if (player->tag.value("PredamagedFace").toBool() && !player->faceUp())
+            if (data.value<DamageStruct>().invoke_skills.contains(objectName()) && !player->faceUp())
                 return QStringList(objectName());
         }
         return QStringList();
@@ -4077,8 +4083,7 @@ public:
                 damage.card->setFlags("IkXinjueDamage");
         } else if (!player->hasFlag("Global_ProcessBroken")) {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card->isKindOf("Slash") && use.card->getSkillName() == "ikxinjue"
-                && !use.card->hasFlag("IkXinjueDamage")) {
+            if (use.card->isKindOf("Slash") && use.card->getSkillName() == "ikxinjue" && !use.card->hasFlag("IkXinjueDamage")) {
                 ServerPlayer *hs = room->getTag("IkXinjueUser").value<ServerPlayer *>();
                 room->removeTag("IkXinjueUser");
                 if (hs)
@@ -7465,12 +7470,15 @@ public:
             }
         } else if (triggerEvent == PreDamageDone) {
             DamageStruct damage = data.value<DamageStruct>();
-            if (damage.from)
-                damage.from->tag["IkQileiRecord"]
-                    = damage.card && damage.card->isKindOf("ThunderSlash") && damage.nature == DamageStruct::Thunder;
+            if (damage.card && damage.card->isKindOf("ThunderSlash") && damage.nature == DamageStruct::Thunder) {
+                if (!damage.invoke_skills.contains(objectName())) {
+                    damage.invoke_skills << objectName();
+                    data = QVariant::fromValue(damage);
+                }
+            }
         } else if (triggerEvent == DamageComplete) {
             DamageStruct damage = data.value<DamageStruct>();
-            if (TriggerSkill::triggerable(damage.from) && damage.from->tag["IkQileiRecord"].toBool()) {
+            if (TriggerSkill::triggerable(damage.from) && damage.invoke_skills.contains(objectName())) {
                 ask_who = damage.from;
                 skill << objectName();
             }

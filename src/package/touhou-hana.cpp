@@ -607,19 +607,31 @@ public:
     ThTingwu()
         : TriggerSkill("thtingwu")
     {
-        events << DamageComplete << EventPhaseChanging;
+        events << DamageComplete << EventPhaseChanging << PreDamageDone;
     }
 
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *, ServerPlayer *player, QVariant &data,
                                     ServerPlayer *&ask_who) const
     {
-        DamageStruct damage = data.value<DamageStruct>();
-        if (triggerEvent == EventPhaseChanging)
+        if (triggerEvent == PreDamageDone) {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (player && !player->isChained() && damage.nature == DamageStruct::Thunder && player != damage.from && damage.from
+                && damage.from->getPhase() == Player::Play) {
+                if (!damage.invoke_skills.contains(objectName())) {
+                    damage.invoke_skills << objectName();
+                    data = QVariant::fromValue(damage);
+                }
+            }
+            return QStringList();
+        } else if (triggerEvent == EventPhaseChanging)
             player->setMark(objectName(), 0);
-        else if (TriggerSkill::triggerable(damage.from) && damage.from->getPhase() == Player::Play && !player->isChained()
-                 && damage.nature == DamageStruct::Thunder && damage.from->getMark(objectName()) < 2) {
-            ask_who = damage.from;
-            return QStringList(objectName());
+        else {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (TriggerSkill::triggerable(damage.from) && damage.to && damage.to->isAlive()
+                && damage.invoke_skills.contains(objectName()) && damage.from->getMark(objectName()) < 2) {
+                ask_who = damage.from;
+                return QStringList(objectName());
+            }
         }
 
         return QStringList();

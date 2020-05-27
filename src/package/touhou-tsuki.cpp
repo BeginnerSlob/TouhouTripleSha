@@ -2895,10 +2895,11 @@ public:
         events << Damage;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
         QStringList skills;
-        if (player->getKingdom() == "tsuki" && player->tag.value("InvokeThYunyin", false).toBool()) {
+        DamageStruct damage = data.value<DamageStruct>();
+        if (player->getKingdom() == "tsuki" && damage.invoke_skills.contains("thyunyin")) {
             foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
                 if (p->hasLordSkill(objectName()))
                     skills << p->objectName() + "'" + objectName();
@@ -2964,9 +2965,13 @@ public:
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer *&) const
     {
         DamageStruct damage = data.value<DamageStruct>();
-        ServerPlayer *yilun = damage.from;
-        if (yilun)
-            yilun->tag["InvokeThYunyin"] = yilun->getKingdom() == "tsuki" && damage.card && damage.card->isKindOf("Slash");
+        ServerPlayer *from = damage.from;
+        if (from && from->getKingdom() == "tsuki" && damage.card && damage.card->isKindOf("Slash")) {
+            if (!damage.invoke_skills.contains("thyunyin")) {
+                damage.invoke_skills << "thyunyin";
+                data = QVariant::fromValue(damage);
+            }
+        }
         return QStringList();
     }
 };

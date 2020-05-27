@@ -1324,8 +1324,9 @@ public:
             }
         } else {
             JudgeStruct *judge = data.value<JudgeStruct *>();
-            if (player->getPhase() == Player::Judge && (judge->reason == "indulgence" || judge->reason == "supply_shortage"
-                                                        || judge->reason == "lightning" || judge->reason == "purple_song"))
+            if (player->getPhase() == Player::Judge
+                && (judge->reason == "indulgence" || judge->reason == "supply_shortage" || judge->reason == "lightning"
+                    || judge->reason == "purple_song"))
                 return QStringList(objectName());
         }
         return QStringList();
@@ -2660,8 +2661,7 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *) const
     {
         foreach (ServerPlayer *player, room->getAlivePlayers()) {
-            QStringList old_file
-                = room->getAchievementData(player, key, false).toString().split("\n", QString::SkipEmptyParts);
+            QStringList old_file = room->getAchievementData(player, key, false).toString().split("\n", QString::SkipEmptyParts);
             QList<QDate> dates;
             QList<QStringList> names;
             if (old_file.length() > 1) {

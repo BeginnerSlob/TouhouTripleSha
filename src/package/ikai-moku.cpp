@@ -177,20 +177,18 @@ public:
         if (triggerEvent == PreDamageDone) {
             DamageStruct damage = data.value<DamageStruct>();
             ServerPlayer *weiyan = damage.from;
-            if (weiyan) {
-                if (weiyan->distanceTo(damage.to) != -1 && weiyan->distanceTo(damage.to) <= 1 && weiyan != player)
-                    weiyan->tag["InvokeIkKuanggu"] = damage.damage;
-                else
-                    weiyan->tag.remove("InvokeIkKuanggu");
+            if (weiyan && weiyan->distanceTo(player) != -1 && weiyan->distanceTo(player) <= 1 && weiyan != player) {
+                if (!damage.invoke_skills.contains(objectName())) {
+                    damage.invoke_skills << objectName();
+                    data = QVariant::fromValue(damage);
+                }
             }
             return QStringList();
         }
         if (!TriggerSkill::triggerable(player))
             return QStringList();
-        bool ok = false;
-        int recorded_damage = player->tag["InvokeIkKuanggu"].toInt(&ok);
         DamageStruct damage = data.value<DamageStruct>();
-        if (ok && recorded_damage > 0) {
+        if (damage.invoke_skills.contains(objectName())) {
             QStringList skills;
             for (int i = 0; i < damage.damage; i++)
                 skills << objectName();
@@ -4384,12 +4382,13 @@ public:
         events << Damage;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
         QStringList skill_list;
-        if (player->tag.value("InvokeIkWuhua", false).toBool()) {
+        DamageStruct damage = data.value<DamageStruct>();
+        if (player->getKingdom() == "tsuki" && damage.invoke_skills.contains("ikwuhua")) {
             foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
-                if (p->hasLordSkill("ikwuhua"))
+                if (p->hasLordSkill(objectName()))
                     skill_list << p->objectName() + "'" + objectName();
             }
         }
@@ -4444,9 +4443,13 @@ public:
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer *&) const
     {
         DamageStruct damage = data.value<DamageStruct>();
-        ServerPlayer *qun = damage.from;
-        if (qun)
-            qun->tag["InvokeIkWuhua"] = qun->getKingdom() == "tsuki";
+        ServerPlayer *from = damage.from;
+        if (from && from->getKingdom() == "tsuki") {
+            if (!damage.invoke_skills.contains("ikwuhua")) {
+                damage.invoke_skills << "ikwuhua";
+                data = QVariant::fromValue(damage);
+            }
+        }
         return QStringList();
     }
 };
