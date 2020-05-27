@@ -1144,9 +1144,11 @@ bool ThYouyaCard::targetFilter(const QList<const Player *> &selected, const Play
 void ThYouyaCard::onEffect(const CardEffectStruct &effect) const
 {
     Room *room = effect.from->getRoom();
+    if (effect.from->isDead())
+        return;
     if (!room->askForCard(effect.to, "jink", "@thyouya-jink:" + effect.from->objectName(), QVariant(), Card::MethodResponse,
                           effect.from)) {
-        if (!effect.to->isNude()) {
+        if (!effect.to->isNude() && effect.from->isAlive()) {
             int card_id = room->askForCardChosen(effect.from, effect.to, "he", "thyouya");
             room->obtainCard(effect.from, card_id, false);
         }
