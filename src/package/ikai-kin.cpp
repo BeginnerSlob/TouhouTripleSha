@@ -2768,9 +2768,11 @@ public:
             if (dummy->subcardsLength() > 0)
                 room->throwCard(dummy, target, player);
             delete dummy;
-            if (not_equip == 0 || !player->canDiscard(player, "he") || player->getCardCount() < not_equip
-                || !room->askForDiscard(player, objectName(), not_equip, not_equip, true, true))
-                target->drawCards(n, objectName());
+            if (not_equip == 0 || !player->canDiscard(player, "he") || player->getCardCount() < not_equip) {
+                QString prompt = QString("@ikpiaohu-discard::%1:%2:%3").arg(target->objectName()).arg(not_equip).arg(n);
+                if (!room->askForDiscard(player, objectName(), not_equip, not_equip, true, true, prompt))
+                    target->drawCards(n, objectName());
+            }
         }
 
         return false;
