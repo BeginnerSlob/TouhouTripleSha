@@ -2789,6 +2789,12 @@ public:
         events << Predamage;
     }
 
+    virtual QStringList triggerable(TriggerEvent e, Room *r, ServerPlayer *p, QVariant &d, ServerPlayer *&aw) const
+    {
+        DamageStruct damage = d.value<DamageStruct>();
+        return TriggerSkill::triggerable(e, r, damage.from, d, aw);
+    }
+
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *zhangchunhua, QVariant &data, ServerPlayer *) const
     {
         DamageStruct damage = data.value<DamageStruct>();

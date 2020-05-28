@@ -2384,7 +2384,9 @@ public:
         if (!TriggerSkill::triggerable(player))
             return QStringList();
         if (triggerEvent == Predamage) {
-            return QStringList(objectName());
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.from == player)
+                return QStringList(objectName());
         } else if (triggerEvent == CardEffected) {
             CardEffectStruct effect = data.value<CardEffectStruct>();
             if ((effect.card->isNDTrick() || effect.card->isKindOf("Slash")) && !effect.from->isWounded()
