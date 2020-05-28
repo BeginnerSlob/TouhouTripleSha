@@ -15,6 +15,7 @@ CommonTranslationTable = {
 	["oppphskill"] = "阶段技。",
 	["lianwuskill"] = "连舞技。",
 	["onlyskill"] = "专属技。",
+	["changeskill"] = "转换技。",
 
 	["Pairs"] = "双将",
 	["XMode"] = "血战到底",

@@ -2789,7 +2789,7 @@ public:
         events << Predamage;
     }
 
-    virtual QStringList triggerable(TriggerEvent e, Room *r, ServerPlayer *p, QVariant &d, ServerPlayer *&aw) const
+    virtual QStringList triggerable(TriggerEvent e, Room *r, ServerPlayer *, QVariant &d, ServerPlayer *&aw) const
     {
         DamageStruct damage = d.value<DamageStruct>();
         return TriggerSkill::triggerable(e, r, damage.from, d, aw);

@@ -27,6 +27,7 @@ config = {
 		oppphskill = "#008000",
 		lianwuskill = "#91ACD5",
 		onlyskill = "#9ED600",
+		changeskill = "#80FFFF",
 	},
 
 	package_names = {

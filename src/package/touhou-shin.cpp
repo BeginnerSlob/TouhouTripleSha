@@ -3204,6 +3204,96 @@ public:
     }
 };
 
+ThRuizhiCard::ThRuizhiCard()
+{
+}
+
+bool ThRuizhiCard::targetFilter(const QList<const Player *> &targets, const Player *, const Player *) const
+{
+    return targets.isEmpty();
+}
+
+void ThRuizhiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
+{
+    targets.first()->drawCards(3, "thruizhi");
+    room->setPlayerProperty(source, "thruizhi_step", 2);
+}
+
+class ThRuizhiVS : public OneCardViewAsSkill
+{
+public:
+    ThRuizhiVS()
+        : OneCardViewAsSkill("thruizhi")
+    {
+        filter_pattern = ".!";
+        response_pattern = "@@thruizhi";
+    }
+
+    virtual const Card *viewAs(const Card *originalcard) const
+    {
+        ThRuizhiCard *card = new ThRuizhiCard;
+        card->addSubcard(originalcard);
+        return card;
+    }
+};
+
+class ThRuizhi : public TriggerSkill
+{
+public:
+    ThRuizhi()
+        : TriggerSkill("thruizhi")
+    {
+        events << Damaged;
+        view_as_skill = new ThRuizhiVS;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const
+    {
+        if (!TriggerSkill::triggerable(target))
+            return false;
+        if (target->getSkillStep(objectName()) == 2) {
+            foreach (const Player *p, target->getAliveSiblings()) {
+                if (p->canDiscard(p, "he"))
+                    return true;
+            }
+        }
+        return true;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        if (player->getSkillStep(objectName()) < 2) {
+            room->askForUseCard(player, "@@thruizhi", "@thruizhi", -1, Card::MethodDiscard);
+            return false;
+        }
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        if (player->getSkillStep(objectName()) < 2)
+            return false;
+
+        int n = 0;
+        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+            if (!p->canDiscard(p, "he"))
+                continue;
+            if (room->askForDiscard(p, objectName(), 1, 1, true, true)) {
+                n++;
+                if (n == 2 && player->isWounded())
+                    room->recover(player, RecoverStruct(player));
+            }
+        }
+
+        room->setPlayerProperty(player, "thruizhi_step", 1);
+        return false;
+    }
+};
+
 TouhouShinPackage::TouhouShinPackage()
     : Package("touhou-shin")
 {
@@ -3330,6 +3420,9 @@ TouhouShinPackage::TouhouShinPackage()
     shin024->addSkill(new ThYuchi);
     shin024->addSkill(new ThSancai);
 
+    General *shin025 = new General(this, "shin025", "kaze");
+    shin025->addSkill(new ThRuizhi);
+
     addMetaObject<ThLuanshenCard>();
     addMetaObject<ThLianyingCard>();
     addMetaObject<ThMumiCard>();
@@ -3343,6 +3436,7 @@ TouhouShinPackage::TouhouShinPackage()
     addMetaObject<ThNingguCard>();
     addMetaObject<ThAiminCard>();
     addMetaObject<ThRenmoCard>();
+    addMetaObject<ThRuizhiCard>();
 
     skills << new ThBaochuiRecord << new ThChipin << new ThAimin << new ThAiminTrigger;
     related_skills.insertMulti("thaimin", "#thaimin");
