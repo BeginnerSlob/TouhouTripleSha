@@ -4814,9 +4814,9 @@ public:
         return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *owner) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *owner) const
     {
-        if (room->askForCard(owner, "^BasicCard", "@ikjilian", data, objectName())) {
+        if (room->askForCard(owner, "^BasicCard", "@ikjilian:" + player->objectName(), data, objectName())) {
             room->broadcastSkillInvoke(objectName());
             return true;
         }
