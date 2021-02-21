@@ -1632,7 +1632,6 @@ public:
         } else if (triggerEvent == EventPhaseStart) {
             room->sendCompulsoryTriggerLog(ask_who, objectName());
             room->broadcastSkillInvoke(objectName());
-            room->setPlayerMark(ask_who, "@shine", 0);
             QList<ServerPlayer *> targets;
             foreach (ServerPlayer *p, room->getOtherPlayers(ask_who))
                 if (ask_who->canSlash(p, NULL, false))
