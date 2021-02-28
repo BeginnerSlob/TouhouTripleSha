@@ -6059,14 +6059,17 @@ public:
                     if (!p->tag["IkYixiangTargets"].toStringList().isEmpty()) {
                         QStringList targets = p->tag["IkYixiangTargets"].toStringList();
                         p->tag.remove("IkYixiangTargets");
-                        foreach (QString target, targets)
-                            room->removeFixedDistance(p, room->findPlayer(target), 1);
+                        foreach (QString target, targets) {
+                            ServerPlayer *tar = room->findPlayer(target);
+                            if (tar->isAlive())
+                                room->removeFixedDistance(p, tar, 1);
+                        }
                     }
                 }
             }
         } else {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if (TriggerSkill::triggerable(player) && player != move.from) {
+            if (TriggerSkill::triggerable(player) && player != move.from && move.from && move.from->isAlive()) {
                 if (move.from_places.contains(Player::PlaceHand) && move.is_last_handcard) {
                     ServerPlayer *current = room->getCurrent();
                     if (current && current->isAlive() && current->getPhase() != Player::NotActive) {
@@ -8114,7 +8117,8 @@ IkHuisuoCard::IkHuisuoCard()
 void IkHuisuoCard::onEffect(const CardEffectStruct &effect) const
 {
     Room *room = effect.from->getRoom();
-    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, effect.from->objectName(), effect.to->objectName(), "ikhuisuo", QString());
+    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, effect.from->objectName(), effect.to->objectName(), "ikhuisuo",
+                          QString());
     room->obtainCard(effect.to, this, reason, true);
     effect.from->tag["IkHuisuoTarget"] = QVariant::fromValue(effect.to);
     room->setFixedDistance(effect.from, effect.to, 1);
