@@ -160,4 +160,14 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
+class ThCanfeiCard : public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThCanfeiCard();
+
+    virtual void onUse(Room *room, const CardUseStruct &card_use) const;
+};
+
 #endif // TOUHOUSHIN_H

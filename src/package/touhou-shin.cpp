@@ -3294,6 +3294,124 @@ public:
     }
 };
 
+ThCanfeiCard::ThCanfeiCard()
+{
+    will_throw = false;
+    target_fixed = true;
+    handling_method = MethodRecast;
+}
+
+void ThCanfeiCard::onUse(Room *room, const CardUseStruct &card_use) const
+{
+    ServerPlayer *source = card_use.from;
+    CardMoveReason reason(CardMoveReason::S_REASON_RECAST, source->objectName());
+    reason.m_skillName = "thcanfei";
+    room->moveCardTo(this, source, NULL, Player::DiscardPile, reason);
+    room->setEmotion(source, "effects/recast");
+
+    LogMessage log;
+    log.type = "#UseCard_Recast";
+    log.from = source;
+    log.card_str = card_use.card->toString();
+    room->sendLog(log);
+
+    source->drawCards(subcardsLength(), "thcanfei");
+
+    room->setPlayerFlag(source, QString("ThCanfei%1").arg(Sanguosha->getCard(subcards.first())->getNumber()));
+    if (subcardsLength() > 1)
+        room->setPlayerFlag(source, QString("ThCanfei%1").arg(Sanguosha->getCard(subcards.last())->getNumber()));
+
+    room->setPlayerFlag(source, "ThCanfeiUsed");
+}
+
+class ThCanfeiVS : public ViewAsSkill
+{
+public:
+    ThCanfeiVS()
+        : ViewAsSkill("thcanfei")
+    {
+        response_pattern = "@@thcanfei";
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
+    {
+        if (selected.length() > 1)
+            return false;
+
+        if (selected.isEmpty())
+            return !to_select->isEquipped();
+
+        return to_select->getNumber() != selected.first()->getNumber();
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const
+    {
+        if (!cards.isEmpty()) {
+            ThCanfeiCard *card = new ThCanfeiCard;
+            card->addSubcards(cards);
+            return card;
+        }
+
+        return NULL;
+    }
+};
+
+class ThCanfei : public TriggerSkill
+{
+public:
+    ThCanfei()
+        : TriggerSkill("thcanfei")
+    {
+        events << EventPhaseStart;
+        view_as_skill = new ThCanfeiVS;
+    }
+
+    virtual bool triggerable(const ServerPlayer *target) const
+    {
+        return TriggerSkill::triggerable(target) && target->getPhase() == Player::Start;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *player) const
+    {
+        return room->askForUseCard(player, "@@thcanfei", "@thcanfei", -1, Card::MethodRecast);
+    }
+};
+
+class ThCanfeiDistance : public DistanceSkill
+{
+public:
+    ThCanfeiDistance()
+        : DistanceSkill("#thcanfei-distance")
+    {
+        frequency = NotCompulsory;
+    }
+
+    virtual int getCorrect(const Player *from, const Player *to) const
+    {
+        if (from->hasFlag("ThCanfeiUsed"))
+            return -1;
+        return 0;
+    }
+};
+
+class ThCanfeiTargetMod : public TargetModSkill
+{
+public:
+    ThCanfeiTargetMod()
+        : TargetModSkill("#thcanfei-tar")
+    {
+        frequency = NotCompulsory;
+        pattern = "BasicCard,TrickCard+^DelayedTrick";
+    }
+
+    virtual int getExtraTargetNum(const Player *from, const Card *card) const
+    {
+        if (from->hasFlag(QString("ThCanfei%1").arg(card->getNumber())))
+            return 1;
+        return 0;
+    }
+};
+
 TouhouShinPackage::TouhouShinPackage()
     : Package("touhou-shin")
 {
@@ -3423,6 +3541,17 @@ TouhouShinPackage::TouhouShinPackage()
     General *shin025 = new General(this, "shin025", "kaze");
     shin025->addSkill(new ThRuizhi);
 
+    /*General *shin026;
+    General *shin027;
+    General *shin028;*/
+
+    General *shin029 = new General(this, "shin029", "kaze");
+    shin029->addSkill(new ThCanfei);
+    shin029->addSkill(new ThCanfeiDistance);
+    shin029->addSkill(new ThCanfeiTargetMod);
+    related_skills.insertMulti("thcanfei", "#thcanfei-distance");
+    related_skills.insertMulti("thcanfei", "#thcanfei-tar");
+
     addMetaObject<ThLuanshenCard>();
     addMetaObject<ThLianyingCard>();
     addMetaObject<ThMumiCard>();
@@ -3437,6 +3566,7 @@ TouhouShinPackage::TouhouShinPackage()
     addMetaObject<ThAiminCard>();
     addMetaObject<ThRenmoCard>();
     addMetaObject<ThRuizhiCard>();
+    addMetaObject<ThCanfeiCard>();
 
     skills << new ThBaochuiRecord << new ThChipin << new ThAimin << new ThAiminTrigger;
     related_skills.insertMulti("thaimin", "#thaimin");
