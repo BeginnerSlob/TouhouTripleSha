@@ -3368,7 +3368,7 @@ public:
 
     virtual bool triggerable(const ServerPlayer *target) const
     {
-        return TriggerSkill::triggerable(target) && target->getPhase() == Player::Start;
+        return TriggerSkill::triggerable(target) && target->getPhase() == Player::Play;
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *player) const
@@ -3386,7 +3386,7 @@ public:
         frequency = NotCompulsory;
     }
 
-    virtual int getCorrect(const Player *from, const Player *to) const
+    virtual int getCorrect(const Player *from, const Player *) const
     {
         if (from->hasFlag("ThCanfeiUsed"))
             return -1;
