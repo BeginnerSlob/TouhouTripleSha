@@ -3324,6 +3324,7 @@ void ThCanfeiCard::onUse(Room *room, const CardUseStruct &card_use) const
     room->setPlayerFlag(source, "ThCanfeiUsed");
 }
 
+#include "ikai-kin.h"
 class ThCanfeiVS : public ViewAsSkill
 {
 public:
@@ -3335,6 +3336,10 @@ public:
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
     {
+        const Card *coll = Card::Parse(Self->property("extra_collateral").toString());
+        if (coll)
+            return false;
+
         if (selected.length() > 1)
             return false;
 
@@ -3346,6 +3351,13 @@ public:
 
     virtual const Card *viewAs(const QList<const Card *> &cards) const
     {
+        const Card *coll = Card::Parse(Self->property("extra_collateral").toString());
+        if (coll) {
+            if (coll->isKindOf("Collateral"))
+                return new ExtraCollateralCard;
+            else
+                return new ExtraFeintAttackCard;
+        }
         if (!cards.isEmpty()) {
             ThCanfeiCard *card = new ThCanfeiCard;
             card->addSubcards(cards);
@@ -3362,18 +3374,133 @@ public:
     ThCanfei()
         : TriggerSkill("thcanfei")
     {
-        events << EventPhaseStart;
+        events << EventPhaseStart << PreCardUsed;
         view_as_skill = new ThCanfeiVS;
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const
+    virtual QStringList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data,
+                                    ServerPlayer *&ask_who) const
     {
-        return TriggerSkill::triggerable(target) && target->getPhase() == Player::Play;
+        if (event == EventPhaseStart) {
+            if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Play && !player->isKongcheng())
+                return QStringList(objectName());
+        } else {
+            if (!player || player->isDead() || !player->hasFlag("ThCanfeiUsed"))
+                return QStringList();
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (player->hasFlag(QString("ThCanfei%1").arg(use.card->getNumber()))
+                && (use.card->isKindOf("ExNihilo") || use.card->isKindOf("Collateral") || use.card->isKindOf("FeintAttack"))) {
+                if (use.card->isKindOf("ExNihilo")) {
+                    foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                        if (!use.to.contains(p) && !room->isProhibited(player, p, use.card))
+                            return QStringList(objectName());
+                    }
+                } else if (use.card->isKindOf("Collateral")) {
+                    foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                        if (use.to.contains(p) || room->isProhibited(player, p, use.card))
+                            continue;
+                        if (use.card->targetFilter(QList<const Player *>(), p, player))
+                            return QStringList(objectName());
+                    }
+                } else if (use.card->isKindOf("FeintAttack")) {
+                    foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                        if (use.to.contains(p) || room->isProhibited(player, p, use.card))
+                            continue;
+                        if (use.card->targetFilter(QList<const Player *>(), p, player))
+                            return QStringList(objectName());
+                    }
+                }
+            }
+        }
+        return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *player) const
+    virtual bool cost(TriggerEvent event, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *player) const
     {
-        return room->askForUseCard(player, "@@thcanfei", "@thcanfei", -1, Card::MethodRecast);
+        if (event == EventPhaseStart) {
+            return room->askForUseCard(player, "@@thcanfei", "@thcanfei", -1, Card::MethodRecast);
+        } else {
+            CardUseStruct use = data.value<CardUseStruct>();
+            ServerPlayer *extra = NULL;
+            if (use.card->isKindOf("ExNihilo")) {
+                QList<ServerPlayer *> targets;
+                foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                    if (!use.to.contains(p) && !room->isProhibited(player, p, use.card))
+                        targets << p;
+                }
+                extra = room->askForPlayerChosen(player, targets, objectName(), "@thyongye-add:::" + use.card->objectName(),
+                                                 true);
+            } else if (use.card->isKindOf("Collateral") || use.card->isKindOf("FeintAttack")) {
+                QStringList tos;
+                foreach (ServerPlayer *t, use.to)
+                    tos.append(t->objectName());
+                room->setPlayerProperty(player, "extra_collateral", use.card->toString());
+                room->setPlayerProperty(player, "extra_collateral_current_targets", tos.join("+"));
+                bool used = room->askForUseCard(player, "@@thcanfei", "@thyongye-add:::" + use.card->objectName());
+                room->setPlayerProperty(player, "extra_collateral", QString());
+                room->setPlayerProperty(player, "extra_collateral_current_targets", QString());
+                if (!used)
+                    return false;
+                foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                    if (p->hasFlag("ExtraCollateralTarget")) {
+                        p->setFlags("-ExtraCollateralTarget");
+                        extra = p;
+                        break;
+                    }
+                }
+            }
+            if (extra) {
+                room->broadcastSkillInvoke(objectName());
+                player->tag["ThCanfeiTarget"] = QVariant::fromValue(extra);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent event, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *player) const
+    {
+        if (event == EventPhaseStart)
+            return false;
+        CardUseStruct use = data.value<CardUseStruct>();
+        ServerPlayer *extra = player->tag["ThCanfeiTarget"].value<ServerPlayer *>();
+        player->tag.remove("ThCanfeiTarget");
+        if (extra) {
+            use.to.append(extra);
+            room->sortByActionOrder(use.to);
+            data = QVariant::fromValue(use);
+
+            LogMessage log;
+            log.type = "#ThYongyeAdd";
+            log.from = player;
+            log.to << extra;
+            log.arg = objectName();
+            log.card_str = use.card->toString();
+            room->sendLog(log);
+            room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, player->objectName(), extra->objectName());
+
+            if (use.card->isKindOf("Collateral")) {
+                ServerPlayer *victim = extra->tag["collateralVictim"].value<ServerPlayer *>();
+                if (victim) {
+                    LogMessage log;
+                    log.type = "#CollateralSlash";
+                    log.from = player;
+                    log.to << victim;
+                    room->sendLog(log);
+                    room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, extra->objectName(), victim->objectName());
+                }
+            } else if (use.card->isKindOf("FeintAttack")) {
+                ServerPlayer *victim = extra->tag["feintTarget"].value<ServerPlayer *>();
+                if (victim) {
+                    LogMessage log;
+                    log.type = "#FeintAttackWest";
+                    log.from = player;
+                    log.to << victim;
+                    room->sendLog(log);
+                    room->doAnimate(QSanProtocol::S_ANIMATE_INDICATE, extra->objectName(), victim->objectName());
+                }
+            }
+        }
     }
 };
 
@@ -3401,7 +3528,7 @@ public:
         : TargetModSkill("#thcanfei-tar")
     {
         frequency = NotCompulsory;
-        pattern = "BasicCard,TrickCard+^DelayedTrick";
+        pattern = "BasicCard,SingleTargetTrick"; // deal with Ex Nihilo and Collateral later
     }
 
     virtual int getExtraTargetNum(const Player *from, const Card *card) const
