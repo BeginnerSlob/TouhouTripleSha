@@ -3501,6 +3501,7 @@ public:
                 }
             }
         }
+        return false;
     }
 };
 
@@ -3528,7 +3529,7 @@ public:
         : TargetModSkill("#thcanfei-tar")
     {
         frequency = NotCompulsory;
-        pattern = "BasicCard,SingleTargetTrick"; // deal with Ex Nihilo and Collateral later
+        pattern = "BasicCard,SingleTargetTrick,IronChain,LureTiger"; // deal with Ex Nihilo and Collateral later
     }
 
     virtual int getExtraTargetNum(const Player *from, const Card *card) const
