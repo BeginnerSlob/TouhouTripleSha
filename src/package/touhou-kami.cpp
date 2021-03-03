@@ -2967,6 +2967,169 @@ public:
     }
 };
 
+ThShuangfengCard::ThShuangfengCard()
+{
+    target_fixed = true;
+}
+
+void ThShuangfengCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
+{
+    QList<int> card_ids = room->getNCards(4 + source->getMark("@mountain"), false);
+    CardMoveReason reason1(CardMoveReason::S_REASON_TURNOVER, source->objectName(), "thshuangfeng", QString());
+    room->moveCardsAtomic(CardsMoveStruct(card_ids, NULL, Player::PlaceTable, reason1), true);
+
+    QMap<QString, QList<int> > choices;
+    foreach (int id, card_ids) {
+        QString str = Sanguosha->getCard(id)->getType();
+        if (str == "skill")
+            continue;
+        if (!choices.contains(str))
+            choices.insert(str, QList<int>());
+        choices[str] << id;
+    }
+
+    QString type = room->askForChoice(source, "thshuangfeng", choices.keys().join("+"),
+                                      QVariant::fromValue(IntList2VariantList(card_ids)));
+
+    DummyCard *dummy = new DummyCard;
+    dummy->addSubcards(choices[type]);
+    choices.remove(type);
+    CardMoveReason reason2(CardMoveReason::S_REASON_NATURAL_ENTER, source->objectName(), "thshuangfeng", QString());
+    room->throwCard(dummy, reason2, NULL);
+    delete dummy;
+
+    if (!choices.isEmpty()) {
+        QList<int> remains;
+        foreach (QString str, choices.keys()) {
+            remains << choices[str];
+        }
+        CardMoveReason reason3(CardMoveReason::S_REASON_PUT, QString());
+        room->moveCardsAtomic(CardsMoveStruct(remains, NULL, NULL, Player::PlaceTable, Player::DrawPile, reason3), true);
+        room->askForGuanxing(source, remains, Room::GuanxingDownOnly);
+    }
+}
+
+class ThShuangfeng : public ZeroCardViewAsSkill
+{
+public:
+    ThShuangfeng()
+        : ZeroCardViewAsSkill("thshuangfeng")
+    {
+    }
+
+    virtual const Card *viewAs() const
+    {
+        return new ThShuangfengCard;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return !player->hasUsed("ThShuangfengCard") && !player->hasUsed("ThXianhuCard");
+    }
+};
+
+ThXianhuCard::ThXianhuCard()
+{
+    target_fixed = true;
+}
+
+void ThXianhuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
+{
+    QList<int> discard_pile = room->getDiscardPile();
+    qShuffle(discard_pile);
+    QList<int> card_ids = discard_pile;
+    int n = 4 + source->getMark("@lake");
+    if (card_ids.length() > n)
+        card_ids = card_ids.mid(0, 4);
+    CardMoveReason reason1(CardMoveReason::S_REASON_TURNOVER, source->objectName(), "thxianhu", QString());
+    room->moveCardsAtomic(CardsMoveStruct(card_ids, NULL, Player::PlaceTable, reason1), true);
+
+    QMap<QString, QList<int> > choices;
+    foreach (int id, card_ids) {
+        QString str = Sanguosha->getCard(id)->getSuitString();
+        if (str.contains("no_suit"))
+            continue;
+        if (!choices.contains(str))
+            choices.insert(str, QList<int>());
+        choices[str] << id;
+    }
+
+    QString suit
+        = room->askForChoice(source, "thxianhu", choices.keys().join("+"), QVariant::fromValue(IntList2VariantList(card_ids)));
+
+    DummyCard *dummy = new DummyCard;
+    dummy->addSubcards(choices[suit]);
+    choices.remove(suit);
+    room->obtainCard(source, dummy, true);
+    delete dummy;
+
+    if (!choices.isEmpty()) {
+        QList<int> remains;
+        foreach (QString str, choices.keys()) {
+            remains << choices[str];
+        }
+        CardMoveReason reason3(CardMoveReason::S_REASON_PUT, QString());
+        room->moveCardsAtomic(CardsMoveStruct(remains, NULL, NULL, Player::PlaceTable, Player::DrawPile, reason3), true);
+        room->askForGuanxing(source, remains, Room::GuanxingDownOnly);
+    }
+}
+
+class ThXianhu : public ZeroCardViewAsSkill
+{
+public:
+    ThXianhu()
+        : ZeroCardViewAsSkill("thshuangfeng")
+    {
+    }
+
+    virtual const Card *viewAs() const
+    {
+        return new ThXianhuCard;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return !player->hasUsed("ThShuangfengCard") && !player->hasUsed("ThXianhuCard");
+    }
+};
+
+class ThXingyong : public MasochismSkill
+{
+public:
+    ThXingyong()
+        : MasochismSkill("thxingyong")
+    {
+        frequency = Frequent;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        QStringList skill;
+        if (!TriggerSkill::triggerable(player))
+            return skill;
+        DamageStruct damage = data.value<DamageStruct>();
+        for (int i = 0; i < damage.damage; ++i)
+            skill << objectName();
+        return skill;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual void onDamaged(ServerPlayer *player, const DamageStruct &) const
+    {
+        Room *room = player->getRoom();
+        QString choice = room->askForChoice(player, objectName(), "@moutain+@lake", QVariant());
+        player->gainMark(choice, 1);
+    }
+};
+
 TouhouKamiPackage::TouhouKamiPackage()
     : Package("touhou-kami")
 {
@@ -3067,6 +3230,12 @@ TouhouKamiPackage::TouhouKamiPackage()
     related_skills.insertMulti("thhuanxiang", "#thhuanxiang-prevent");
     related_skills.insertMulti("thhuanxiang", "#thhuanxiang-prohibit");
 
+    General *kami017 = new General(this, "kami017", "kami");
+    kami017->addSkill(new ThShuangfeng);
+    kami017->addSkill(new ThXianhu);
+    kami017->addSkill(new ThXingyong);
+    //kami017->addSkill(new ThZaishen);
+
     addMetaObject<ThShenfengCard>();
     addMetaObject<ThGugaoCard>();
     addMetaObject<ThLeshiCard>();
@@ -3080,6 +3249,8 @@ TouhouKamiPackage::TouhouKamiPackage()
     addMetaObject<ThBingzhangCard>();
     addMetaObject<ThSiqiangCard>();
     addMetaObject<ThJiefuCard>();
+    addMetaObject<ThShuangfengCard>();
+    addMetaObject<ThXianhuCard>();
 
     skills << new ThKuangmo;
 }

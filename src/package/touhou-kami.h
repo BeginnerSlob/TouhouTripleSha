@@ -173,4 +173,24 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
+class ThShuangfengCard : public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThShuangfengCard();
+
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
+class ThXianhuCard : public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThXianhuCard();
+
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
 #endif // TOUHOUKAMI_H
