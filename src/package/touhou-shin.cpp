@@ -3331,28 +3331,24 @@ public:
     ThCanfeiVS()
         : ViewAsSkill("thcanfei")
     {
-        response_pattern = "@@thcanfei";
     }
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
     {
-        const Card *coll = Card::Parse(Self->property("extra_collateral").toString());
-        if (coll)
+        if (Sanguosha->getCurrentCardUsePattern() == "@@thcanfeiuse")
             return false;
 
-        if (selected.length() > 1)
+        if (selected.length() > 1 || to_select->isEquipped())
             return false;
 
-        if (selected.isEmpty())
-            return !to_select->isEquipped();
-
-        return to_select->getNumber() != selected.first()->getNumber();
+        return selected.isEmpty() || to_select->getNumber() != selected.first()->getNumber();
     }
 
     virtual const Card *viewAs(const QList<const Card *> &cards) const
     {
-        const Card *coll = Card::Parse(Self->property("extra_collateral").toString());
-        if (coll) {
+        if (Sanguosha->getCurrentCardUsePattern() == "@@thcanfeiuse") {
+            const Card *coll = Card::Parse(Self->property("extra_collateral").toString());
+            Q_ASSERT(coll);
             if (coll->isKindOf("Collateral"))
                 return new ExtraCollateralCard;
             else
@@ -3365,6 +3361,16 @@ public:
         }
 
         return NULL;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *) const
+    {
+        return false;
+    }
+
+    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const
+    {
+        return pattern == "@@thcanfei" || pattern == "@@thcanfeiuse";
     }
 };
 
@@ -3389,8 +3395,9 @@ public:
                 return QStringList();
             CardUseStruct use = data.value<CardUseStruct>();
             if (player->hasFlag(QString("ThCanfei%1").arg(use.card->getNumber()))
-                && (use.card->isKindOf("ExNihilo") || use.card->isKindOf("Collateral") || use.card->isKindOf("FeintAttack"))) {
-                if (use.card->isKindOf("ExNihilo")) {
+                && (use.card->isKindOf("Peach") || use.card->isKindOf("Analeptic") || use.card->isKindOf("ExNihilo")
+                    || use.card->isKindOf("Collateral") || use.card->isKindOf("FeintAttack"))) {
+                if (use.card->isKindOf("Peach") || use.card->isKindOf("Analeptic") || use.card->isKindOf("ExNihilo")) {
                     foreach (ServerPlayer *p, room->getAlivePlayers()) {
                         if (!use.to.contains(p) && !room->isProhibited(player, p, use.card))
                             return QStringList(objectName());
@@ -3422,7 +3429,7 @@ public:
         } else {
             CardUseStruct use = data.value<CardUseStruct>();
             ServerPlayer *extra = NULL;
-            if (use.card->isKindOf("ExNihilo")) {
+            if (use.card->isKindOf("Peach") || use.card->isKindOf("Analeptic") || use.card->isKindOf("ExNihilo")) {
                 QList<ServerPlayer *> targets;
                 foreach (ServerPlayer *p, room->getAlivePlayers()) {
                     if (!use.to.contains(p) && !room->isProhibited(player, p, use.card))
@@ -3436,7 +3443,7 @@ public:
                     tos.append(t->objectName());
                 room->setPlayerProperty(player, "extra_collateral", use.card->toString());
                 room->setPlayerProperty(player, "extra_collateral_current_targets", tos.join("+"));
-                bool used = room->askForUseCard(player, "@@thcanfei", "@thyongye-add:::" + use.card->objectName());
+                bool used = room->askForUseCard(player, "@@thcanfeiuse", "@thyongye-add:::" + use.card->objectName());
                 room->setPlayerProperty(player, "extra_collateral", QString());
                 room->setPlayerProperty(player, "extra_collateral_current_targets", QString());
                 if (!used)
