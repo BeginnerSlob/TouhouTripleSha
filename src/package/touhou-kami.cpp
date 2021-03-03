@@ -3003,7 +3003,7 @@ void ThShuangfengCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer 
         foreach (QString str, choices.keys()) {
             remains << choices[str];
         }
-        CardMoveReason reason3(CardMoveReason::S_REASON_PUT, QString());
+        CardMoveReason reason3(CardMoveReason::S_REASON_PUT, source->objectName(), "thshuangfeng", QString());
         room->moveCardsAtomic(CardsMoveStruct(remains, NULL, NULL, Player::PlaceTable, Player::DrawPile, reason3), true);
         room->askForGuanxing(source, remains, Room::GuanxingDownOnly);
     }
@@ -3068,7 +3068,7 @@ void ThXianhuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
         foreach (QString str, choices.keys()) {
             remains << choices[str];
         }
-        CardMoveReason reason3(CardMoveReason::S_REASON_PUT, QString());
+        CardMoveReason reason3(CardMoveReason::S_REASON_PUT, source->objectName(), "thxianhu", QString());
         room->moveCardsAtomic(CardsMoveStruct(remains, NULL, NULL, Player::PlaceTable, Player::DrawPile, reason3), true);
         room->askForGuanxing(source, remains, Room::GuanxingDownOnly);
     }
@@ -3078,7 +3078,7 @@ class ThXianhu : public ZeroCardViewAsSkill
 {
 public:
     ThXianhu()
-        : ZeroCardViewAsSkill("thshuangfeng")
+        : ZeroCardViewAsSkill("thxianhu")
     {
     }
 
@@ -3127,6 +3127,116 @@ public:
         Room *room = player->getRoom();
         QString choice = room->askForChoice(player, objectName(), "@moutain+@lake", QVariant());
         player->gainMark(choice, 1);
+    }
+};
+
+class ThZaishen : public TriggerSkill
+{
+public:
+    ThZaishen()
+        : TriggerSkill("thzaishen")
+    {
+        events << EventPhaseChanging << CardsMoveOneTime << AfterSwapPile;
+        frequency = Limited;
+        limit_mark = "@zaishen";
+    }
+
+    virtual TriggerList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const
+    {
+        TriggerList skill_list;
+        if (event == EventPhaseChanging) {
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
+                QList<int> &draw_pile = room->getDrawPile();
+                foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                    if (p->getMark("@zaishen") < 1)
+                        continue;
+                    if (draw_pile == VariantList2IntList(p->tag["ThZaishenCards"].toList()).toSet().toList()) {
+                        foreach (int id, draw_pile) {
+                            const Card *card = Sanguosha->getCard(id);
+                            if (!p->isCardLimited(card, Card::MethodUse, false) && !p->isProhibited(player, card)) {
+                                skill_list.insert(p, QStringList(objectName()));
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        } else if (event == AfterSwapPile) {
+            foreach (ServerPlayer *p, room->getAlivePlayers())
+                p->tag.remove("ThZaishenCards");
+            foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                if (p->getMark("@zaishenused") > 0)
+                    skill_list.insert(p, QStringList(objectName()));
+            }
+        } else {
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (move.from_places.contains(Player::DrawPile)) {
+                for (int i = 0; i < move.card_ids.length(); ++i) {
+                    if (move.from_places[i] == Player::DrawPile) {
+                        int id = move.card_ids[i];
+                        foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                            QList<int> list = VariantList2IntList(p->tag["ThZaishenCards"].toList());
+                            if (list.contains(id)) {
+                                list.removeAll(id);
+                                p->tag["ThZaishenCards"] = QVariant::fromValue(IntList2VariantList(list.toSet().toList()));
+                            }
+                        }
+                    }
+                }
+            }
+            if (move.to_place == Player::DrawPile) {
+                ServerPlayer *from = room->findPlayer(move.reason.m_playerId);
+                if (from) {
+                    QList<int> list = VariantList2IntList(from->tag["ThZaishenCards"].toList());
+                    list << move.card_ids;
+                    from->tag["ThZaishenCards"] = QVariant::fromValue(IntList2VariantList(list.toSet().toList()));
+                }
+            }
+        }
+    }
+
+    virtual bool cost(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    {
+        if (event == EventPhaseChanging) {
+            if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
+                room->broadcastSkillInvoke(objectName());
+                room->removePlayerMark(ask_who, "@zaishen");
+                room->addPlayerMark(ask_who, "@zaishenused");
+                return true;
+            }
+        } else
+            return true;
+
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    {
+        if (event == EventPhaseChanging) {
+            QList<int> &draw_pile = room->getDrawPile();
+            QMap<QString, QList<const Card *> > choices;
+            foreach (int id, draw_pile) {
+                const Card *card = Sanguosha->getCard(id);
+                QString obj_name = card->objectName();
+                if (obj_name.contains("slash"))
+                    obj_name = "slash";
+                if (!choices.contains(obj_name))
+                    choices.insert(obj_name, QList<const Card *>());
+                if (!ask_who->isCardLimited(card, Card::MethodUse, false) && !ask_who->isProhibited(player, card))
+                    choices[obj_name] << card;
+            }
+            if (!choices.isEmpty()) {
+                QString choice = room->askForChoice(ask_who, objectName(), choices.keys().join("+"));
+                foreach (const Card *card, choices[choice])
+                    room->useCard(CardUseStruct(card, ask_who, player, false));
+            }
+        } else {
+            room->sendCompulsoryTriggerLog(ask_who, objectName());
+            room->removePlayerMark(ask_who, "@zaishenused");
+            room->addPlayerMark(ask_who, "@zaishen");
+        }
+
+        return false;
     }
 };
 
@@ -3234,7 +3344,7 @@ TouhouKamiPackage::TouhouKamiPackage()
     kami017->addSkill(new ThShuangfeng);
     kami017->addSkill(new ThXianhu);
     kami017->addSkill(new ThXingyong);
-    //kami017->addSkill(new ThZaishen);
+    kami017->addSkill(new ThZaishen);
 
     addMetaObject<ThShenfengCard>();
     addMetaObject<ThGugaoCard>();
