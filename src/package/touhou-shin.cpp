@@ -3384,8 +3384,7 @@ public:
         view_as_skill = new ThCanfeiVS;
     }
 
-    virtual QStringList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data,
-                                    ServerPlayer *&ask_who) const
+    virtual QStringList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
         if (event == EventPhaseStart) {
             if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Play && !player->isKongcheng())
@@ -3429,7 +3428,15 @@ public:
         } else {
             CardUseStruct use = data.value<CardUseStruct>();
             ServerPlayer *extra = NULL;
-            if (use.card->isKindOf("Peach") || use.card->isKindOf("Analeptic") || use.card->isKindOf("ExNihilo")) {
+            if (use.card->isKindOf("Peach")) {
+                QList<ServerPlayer *> targets;
+                foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                    if (p->isWounded() && !use.to.contains(p) && !room->isProhibited(player, p, use.card))
+                        targets << p;
+                }
+                extra = room->askForPlayerChosen(player, targets, objectName(), "@thyongye-add:::" + use.card->objectName(),
+                                                 true);
+            } else if (use.card->isKindOf("Analeptic") || use.card->isKindOf("ExNihilo")) {
                 QList<ServerPlayer *> targets;
                 foreach (ServerPlayer *p, room->getAlivePlayers()) {
                     if (!use.to.contains(p) && !room->isProhibited(player, p, use.card))
