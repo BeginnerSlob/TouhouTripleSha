@@ -3125,7 +3125,7 @@ public:
     virtual void onDamaged(ServerPlayer *player, const DamageStruct &) const
     {
         Room *room = player->getRoom();
-        QString choice = room->askForChoice(player, objectName(), "@moutain+@lake", QVariant());
+        QString choice = room->askForChoice(player, objectName(), "@mountain+@lake", QVariant());
         player->gainMark(choice, 1);
     }
 };
