@@ -3331,11 +3331,13 @@ public:
     ThCanfeiVS()
         : ViewAsSkill("thcanfei")
     {
+        response_pattern = "@@thcanfei";
     }
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
     {
-        if (Sanguosha->getCurrentCardUsePattern() == "@@thcanfeiuse")
+        const Card *coll = Card::Parse(Self->property("extra_collateral").toString());
+        if (coll)
             return false;
 
         if (selected.length() > 1 || to_select->isEquipped())
@@ -3346,9 +3348,8 @@ public:
 
     virtual const Card *viewAs(const QList<const Card *> &cards) const
     {
-        if (Sanguosha->getCurrentCardUsePattern() == "@@thcanfeiuse") {
-            const Card *coll = Card::Parse(Self->property("extra_collateral").toString());
-            Q_ASSERT(coll);
+        const Card *coll = Card::Parse(Self->property("extra_collateral").toString());
+        if (coll) {
             if (coll->isKindOf("Collateral"))
                 return new ExtraCollateralCard;
             else
@@ -3361,16 +3362,6 @@ public:
         }
 
         return NULL;
-    }
-
-    virtual bool isEnabledAtPlay(const Player *) const
-    {
-        return false;
-    }
-
-    virtual bool isEnabledAtResponse(const Player *, const QString &pattern) const
-    {
-        return pattern == "@@thcanfei" || pattern == "@@thcanfeiuse";
     }
 };
 
@@ -3450,7 +3441,8 @@ public:
                     tos.append(t->objectName());
                 room->setPlayerProperty(player, "extra_collateral", use.card->toString());
                 room->setPlayerProperty(player, "extra_collateral_current_targets", tos.join("+"));
-                bool used = room->askForUseCard(player, "@@thcanfeiuse", "@thyongye-add:::" + use.card->objectName());
+                bool used = room->askForUseCard(player, "@@thcanfei", "@thyongye-add:::" + use.card->objectName(),
+                                                use.card->isKindOf("Collateral") ? 2 : 3);
                 room->setPlayerProperty(player, "extra_collateral", QString());
                 room->setPlayerProperty(player, "extra_collateral_current_targets", QString());
                 if (!used)
