@@ -3214,21 +3214,30 @@ public:
     {
         if (event == EventPhaseChanging) {
             QList<int> &draw_pile = room->getDrawPile();
-            QMap<QString, QList<const Card *> > choices;
+            QStringList choices;
             foreach (int id, draw_pile) {
                 const Card *card = Sanguosha->getCard(id);
                 QString obj_name = card->objectName();
                 if (obj_name.contains("slash"))
                     obj_name = "slash";
-                if (!choices.contains(obj_name))
-                    choices.insert(obj_name, QList<const Card *>());
+                if (choices.contains(obj_name))
+                    continue;
                 if (!ask_who->isCardLimited(card, Card::MethodUse, false) && !ask_who->isProhibited(player, card))
-                    choices[obj_name] << card;
+                    choices << obj_name;
             }
             if (!choices.isEmpty()) {
-                QString choice = room->askForChoice(ask_who, objectName(), choices.keys().join("+"));
-                foreach (const Card *card, choices[choice])
-                    room->useCard(CardUseStruct(card, ask_who, player, false));
+                QString choice = room->askForChoice(ask_who, objectName(), choices.join("+"));
+                foreach (int id, draw_pile) {
+                    if (room->getCardPlace(id) != Player::DrawPile)
+                        continue;
+                    const Card *card = Sanguosha->getCard(id);
+                    QString obj_name = card->objectName();
+                    if (obj_name.contains("slash"))
+                        obj_name = "slash";
+                    if (choice == obj_name && !ask_who->isCardLimited(card, Card::MethodUse, false)
+                        && !ask_who->isProhibited(player, card))
+                        room->useCard(CardUseStruct(card, ask_who, player, false));
+                }
             }
         } else {
             room->sendCompulsoryTriggerLog(ask_who, objectName());
