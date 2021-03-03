@@ -3193,6 +3193,8 @@ public:
                 }
             }
         }
+
+        return skill_list;
     }
 
     virtual bool cost(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
@@ -3210,7 +3212,7 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    virtual bool effect(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
     {
         if (event == EventPhaseChanging) {
             QList<int> &draw_pile = room->getDrawPile();
