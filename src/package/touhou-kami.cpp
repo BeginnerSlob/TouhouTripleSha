@@ -3040,7 +3040,7 @@ void ThXianhuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
     QList<int> card_ids = discard_pile;
     int n = 4 + source->getMark("@lake");
     if (card_ids.length() > n)
-        card_ids = card_ids.mid(0, 4);
+        card_ids = card_ids.mid(0, n);
     CardMoveReason reason1(CardMoveReason::S_REASON_TURNOVER, source->objectName(), "thxianhu", QString());
     room->moveCardsAtomic(CardsMoveStruct(card_ids, NULL, Player::PlaceTable, reason1), true);
 
