@@ -78,6 +78,7 @@ public:
     void onPlayerDiscardCards(const Card *card);
     void onPlayerReplyYiji(const Card *card, const Player *to);
     void onPlayerReplyGuanxing(const QList<int> &up_cards, const QList<int> &down_cards);
+    void onPlayerDoGuanxingStep(int from, int to);
     void onPlayerAssignRole(const QList<QString> &names, const QList<QString> &roles);
     QList<const ClientPlayer *> getPlayers() const;
     inline int getPlayerCount() const
@@ -143,6 +144,7 @@ public:
     void setAvailableCards(const QVariant &pile);
     void setCardFlag(const QVariant &pattern_str);
     void updateCard(const QVariant &arg);
+    void mirrorGuanxingStep(const QVariant &args);
 
     void fillAG(const QVariant &cards_str);
     void takeAG(const QVariant &take_str);
@@ -348,6 +350,10 @@ signals:
 
     void nullification_asked(bool asked);
     void surrender_enabled(bool enabled);
+
+    void mirror_guanxing_start(const QString &who, bool up_only, const QList<int> &cards);
+    void mirror_guanxing_move(int from, int to);
+    void mirror_guanxing_finish();
 
     void ag_filled(const QList<int> &card_ids, const QList<int> &disabled_ids);
     void ag_taken(ClientPlayer *taker, int card_id, bool move_cards);

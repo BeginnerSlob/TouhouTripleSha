@@ -1,29 +1,14 @@
 #ifndef _CARD_CONTAINER_H
 #define _CARD_CONTAINER_H
 
-class CardItem;
-class ClientPlayer;
+class Button;
 
 #include "carditem.h"
 #include "generic-cardcontainer-ui.h"
-#include "qsan-selectable-item.h"
 
 #include <QStack>
 
-class CloseButton : public QSanSelectableItem
-{
-    Q_OBJECT
-
-public:
-    CloseButton();
-
-protected:
-    virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
-    virtual void mouseReleaseEvent(QGraphicsSceneMouseEvent *event);
-
-signals:
-    void clicked();
-};
+class QSanCommandProgressBar;
 
 class CardContainer : public GenericCardContainer
 {
@@ -35,28 +20,37 @@ public:
     int getFirstEnabled() const;
     void startChoose();
     void startGongxin(const QList<int> &enabled_ids);
-    void addCloseButton();
+    void addConfirmButton();
     void view(const ClientPlayer *player);
     virtual QRectF boundingRect() const;
     ClientPlayer *m_currentPlayer;
-    virtual void paint(QPainter *, const QStyleOptionGraphicsItem *, QWidget *);
+    virtual void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget);
     bool retained();
 
 public slots:
     void fillCards(const QList<int> &card_ids = QList<int>(), const QList<int> &disabled_ids = QList<int>());
+    void fillGeneralCards(const QList<CardItem *> &card_items = QList<CardItem *>(), const QList<CardItem *> &disabled_item = QList<CardItem *>());
     void clear();
     void freezeCards(bool is_disable);
 
 protected:
-    QRectF _m_boundingRect;
+    //QRectF _m_boundingRect;
     virtual bool _addCardItems(QList<CardItem *> &card_items, const CardsMoveStruct &moveInfo);
+    Button *confirm_button;
+    int scene_width;
+    int itemCount;
+
+    static const int cardInterval = 3;
+    QGraphicsProxyWidget *progressBarItem;
+    QSanCommandProgressBar *progressBar;
 
 private:
     QList<CardItem *> items;
-    CloseButton *close_button;
-    QPixmap _m_background;
+    //CloseButton *close_button;
+    //QPixmap _m_background;
     QStack<QList<CardItem *> > items_stack;
     QStack<bool> retained_stack;
+    QList<int> ids;
 
     void _addCardItem(int card_id, const QPointF &pos);
 
@@ -70,28 +64,7 @@ signals:
     void item_gongxined(int card_id);
 };
 
-class GuanxingBox : public QSanSelectableItem
-{
-    Q_OBJECT
-
-public:
-    GuanxingBox();
-    void clear();
-    void reply();
-
-public slots:
-    void doGuanxing(const QList<int> &card_ids, bool up_only);
-    void adjust();
-
-private:
-    QList<CardItem *> up_items, down_items;
-    bool up_only;
-
-    static const int start_x = 76;
-    static const int start_y1 = 105;
-    static const int start_y2 = 249;
-    static const int middle_y = 173;
-    static const int skip = 102;
-};
+class CardItem;
+class ClientPlayer;
 
 #endif

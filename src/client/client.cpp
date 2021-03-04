@@ -208,6 +208,39 @@ void Client::updateCard(const QVariant &val)
     }
 }
 
+void Client::mirrorGuanxingStep(const QVariant &args)
+{
+    JsonArray arg = args.value<JsonArray>();
+    if (arg.isEmpty()) return;
+
+    GuanxingStep step = static_cast<GuanxingStep>(arg.at(0).toInt());
+    if (step == S_GUANXING_START) {
+        if (arg.size() >= 3) {
+            QString who = arg.at(1).toString();
+            bool upOnly = arg.at(2).toBool();
+
+            QList<int> cards;
+            if (JsonUtils::isNumber(arg.at(3))) {
+                int cardNum = arg.at(3).toInt();
+                for (int i = 0; i < cardNum; i++) {
+                    cards << -1;
+                }
+            } else {
+                JsonUtils::tryParse(arg.at(3), cards);
+            }
+            emit mirror_guanxing_start(who, upOnly, cards);
+        }
+    } else if (step == S_GUANXING_MOVE) {
+        if (arg.size() >= 3) {
+            int from = arg.at(1).toInt();
+            int to = arg.at(2).toInt();
+            emit mirror_guanxing_move(from, to);
+        }
+    } else if (step == S_GUANXING_FINISH) {
+        emit mirror_guanxing_finish();
+    }
+}
+
 void Client::signup()
 {
     if (replayer)
@@ -1927,6 +1960,25 @@ void Client::onPlayerReplyGuanxing(const QList<int> &up_cards, const QList<int> 
     replyToServer(S_COMMAND_SKILL_GUANXING, decks);
 
     setStatus(NotActive);
+
+    if (recorder) {
+        Packet packet(S_SRC_ROOM | S_TYPE_NOTIFICATION | S_DEST_CLIENT, S_COMMAND_MIRROR_GUANXING_STEP);
+        packet.setMessageBody(JsonArray() << S_GUANXING_FINISH);
+        recorder->recordLine(packet.toJson());
+    }
+}
+
+void Client::onPlayerDoGuanxingStep(int from, int to)
+{
+    JsonArray args;
+    args << S_GUANXING_MOVE << from << to;
+    notifyServer(S_COMMAND_MIRROR_GUANXING_STEP, args);
+
+    if (recorder) {
+        Packet packet(S_SRC_ROOM | S_TYPE_NOTIFICATION | S_DEST_CLIENT, S_COMMAND_MIRROR_GUANXING_STEP);
+        packet.setMessageBody(args);
+        recorder->recordLine(packet.toJson());
+    }
 }
 
 void Client::log(const QVariant &log_str)

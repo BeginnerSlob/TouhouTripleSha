@@ -254,6 +254,9 @@ public:
 
         // avatar size
         QSize m_tinyAvatarSize;
+
+        // Choose General Box
+        QSanSimpleTextFont m_chooseCardBoxDestPlaceFont;
     };
 
     enum GeneralIconSize
@@ -347,6 +350,20 @@ public:
 
     // Animations
     static const char *S_SKIN_KEY_ANIMATIONS;
+
+    // CardContainer
+    //static const char *S_SKIN_KEY_CARD_CONTAINER_TOP;
+    //static const char *S_SKIN_KEY_CARD_CONTAINER_MIDDLE;
+    //static const char *S_SKIN_KEY_CARD_CONTAINER_BOTTOM;
+    //static const char *S_SKIN_KEY_CARD_CONTAINER_FRAME;
+    static const char *S_SKIN_KEY_CHOOSE_CARD_BOX_DEST_PLACE;
+
+    // CardItem
+    //static const char *S_SKIN_KEY_CARD_TRANSFERABLE_ICON;
+
+    // GeneralCardItem
+    //static const char *S_SKIN_KEY_GENERAL_CARD_ITEM_COMPANION_FONT;
+    //static const char *S_SKIN_KEY_GENERAL_CARD_ITEM_COMPANION_ICON;
 
 protected:
     RoomLayout _m_roomLayout;

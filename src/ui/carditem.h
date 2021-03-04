@@ -67,7 +67,11 @@ public:
     }
     bool isEquipped() const;
 
-    void setFrozen(bool is_frozen);
+    void setFrozen(bool is_frozen, bool update_movable = true);
+    inline bool isFrozen()
+    {
+        return frozen;
+    }
 
     inline void showFootnote()
     {
@@ -90,6 +94,12 @@ public:
         emit clicked();
     }
 
+    void setOuterGlowEffectEnabled(const bool &willPlay);
+    bool isOuterGlowEffectEnabled() const;
+
+    void setOuterGlowColor(const QColor &color);
+    QColor getOuterGlowColor() const;
+
 protected:
     void _initialize();
     QAbstractAnimation *m_currentAnimation;
@@ -100,6 +110,9 @@ protected:
     double m_opacityAtHome;
     bool m_isSelected;
     bool _m_isUnknownGeneral;
+    bool auto_back, frozen;
+    QPointF _m_lastMousePressScenePos;
+
     static const int _S_CLICK_JITTER_TOLERANCE;
     static const int _S_MOVE_JITTER_TOLERANCE;
     virtual void mousePressEvent(QGraphicsSceneMouseEvent *event);
@@ -114,8 +127,9 @@ private:
     int m_cardId;
     QString _m_avatarName;
     QPointF home_pos;
-    QPointF _m_lastMousePressScenePos;
-    bool auto_back, frozen;
+    bool outerGlowEffectEnabled;
+    QColor outerGlowColor;
+    QGraphicsDropShadowEffect *outerGlowEffect;
     bool m_isShiny;
 
 signals:

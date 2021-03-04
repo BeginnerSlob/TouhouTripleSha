@@ -119,7 +119,7 @@ void ClientLogBox::appendLog(const QString &type, const QString &from_general, c
                 subcard_list << bold(subcard->getLogName(), Qt::yellow);
             }
 
-            QString subcard_str = subcard_list.join(", ");
+            QString subcard_str = subcard_list.join(bold(", ", Qt::yellow));
             if (card->getTypeId() == Card::TypeSkill && !card->isKindOf("YanxiaoCard")) {
                 const SkillCard *skill_card = qobject_cast<const SkillCard *>(card);
                 if (subcard_list.isEmpty() || !skill_card->willThrow())

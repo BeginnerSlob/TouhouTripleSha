@@ -12,6 +12,7 @@
 #include "choosetriggerorderbox.h"
 #include "distanceviewdialog.h"
 #include "engine.h"
+#include "guanxingbox.h"
 #include "ikai-moku.h"
 #include "indicatoritem.h"
 #include "pixmapanimation.h"
@@ -187,13 +188,16 @@ RoomScene::RoomScene(QMainWindow *main_window)
     connect(ClientInstance, &Client::assign_asked, this, &RoomScene::startAssign);
     connect(ClientInstance, &Client::start_in_xs, this, &RoomScene::startInXs);
 
-    guanxing_box = new GuanxingBox;
-    guanxing_box->hide();
-    addItem(guanxing_box);
-    guanxing_box->setZValue(20000.0);
+    m_guanxingBox = new GuanxingBox;
+    m_guanxingBox->hide();
+    addItem(m_guanxingBox);
+    m_guanxingBox->setZValue(20000.0);
 
-    connect(ClientInstance, &Client::guanxing, guanxing_box, &GuanxingBox::doGuanxing);
-    guanxing_box->moveBy(-120, 0);
+    connect(ClientInstance, &Client::guanxing, m_guanxingBox, &GuanxingBox::doGuanxing);
+    connect(ClientInstance, &Client::mirror_guanxing_start, m_guanxingBox, &GuanxingBox::mirrorGuanxingStart);
+    connect(ClientInstance, &Client::mirror_guanxing_move, m_guanxingBox, &GuanxingBox::mirrorGuanxingMove);
+    connect(ClientInstance, &Client::mirror_guanxing_finish, m_guanxingBox, &GuanxingBox::clear);
+    m_guanxingBox->moveBy(-120, 0);
 
     m_chooseOptionsBox = new ChooseOptionsBox;
     m_chooseOptionsBox->hide();
@@ -370,8 +374,7 @@ RoomScene::RoomScene(QMainWindow *main_window)
         start_game->setParentItem(control_panel);
         start_game->setToolTip(tr("Fill robots and start a new game"));
         start_game->setTransform(
-            QTransform::fromTranslate(-start_game->boundingRect().width() / 2, -start_game->boundingRect().height() / 2),
-            true);
+            QTransform::fromTranslate(-start_game->boundingRect().width() / 2, -start_game->boundingRect().height() / 2), true);
         start_game->setPos(0, 0);
         start_game->hide();
 
@@ -1018,11 +1021,14 @@ void RoomScene::updateTable()
         _m_commonLayout->m_cardNormalHeight);
     m_tablePile->adjustCards();
     card_container->setPos(m_tableCenterPos);
-    guanxing_box->setPos(m_tableCenterPos);
-    m_chooseOptionsBox->setPos(m_tableCenterPos - QPointF(m_chooseOptionsBox->boundingRect().width() / 2,
-                                                          m_chooseOptionsBox->boundingRect().height() / 2));
-    m_chooseTriggerOrderBox->setPos(m_tableCenterPos - QPointF(m_chooseTriggerOrderBox->boundingRect().width() / 2,
-                                                               m_chooseTriggerOrderBox->boundingRect().height() / 2));
+    m_guanxingBox->setPos(m_tableCenterPos
+                          - QPointF(m_guanxingBox->boundingRect().width() / 2, m_guanxingBox->boundingRect().height() / 2));
+    m_chooseOptionsBox->setPos(
+        m_tableCenterPos
+        - QPointF(m_chooseOptionsBox->boundingRect().width() / 2, m_chooseOptionsBox->boundingRect().height() / 2));
+    m_chooseTriggerOrderBox->setPos(
+        m_tableCenterPos
+        - QPointF(m_chooseTriggerOrderBox->boundingRect().width() / 2, m_chooseTriggerOrderBox->boundingRect().height() / 2));
     m_playerCardBox->setPos(
         m_tableCenterPos - QPointF(m_playerCardBox->boundingRect().width() / 2, m_playerCardBox->boundingRect().height() / 2));
     m_chooseSuitBox->setPos(
@@ -1364,8 +1370,7 @@ void RoomScene::updateTargetsEnablity(const Card *card)
                 isCollateral = true;
             else if (card->isKindOf("IkMiceCard")) {
                 const IkMiceCard *ikmice_card = qobject_cast<const IkMiceCard *>(card);
-                isCollateral
-                    = (ikmice_card->getUserString() == "collateral" || ikmice_card->getUserString() == "feint_attack");
+                isCollateral = (ikmice_card->getUserString() == "collateral" || ikmice_card->getUserString() == "feint_attack");
             }
         }
         bool prohibitFailure = Self->hasFlag("ThChouceUse") || (isCollateral && selected_targets.length() == 1);
@@ -1887,8 +1892,7 @@ void RoomScene::toggleDiscards()
 
 GenericCardContainer *RoomScene::_getGenericCardContainer(Player::Place place, Player *player)
 {
-    if (place == Player::DiscardPile || place == Player::PlaceJudge || place == Player::DrawPile
-        || place == Player::PlaceTable)
+    if (place == Player::DiscardPile || place == Player::PlaceJudge || place == Player::DrawPile || place == Player::PlaceTable)
         return m_tablePile;
     // @todo: AG must be a pile with name rather than simply using the name special...
     else if (player == NULL && place == Player::PlaceSpecial)
@@ -2396,7 +2400,7 @@ void RoomScene::useSelectedCard()
         break;
     }
     case Client::AskForGuanxing: {
-        guanxing_box->reply();
+        m_guanxingBox->reply();
         break;
     }
     case Client::AskForGongxin: {
@@ -2619,7 +2623,7 @@ void RoomScene::updateStatus(Client::Status oldStatus, Client::Status newStatus)
                 m_choiceDialog->hide();
             }
         } else if (oldStatus == Client::AskForGuanxing || oldStatus == Client::AskForGongxin) {
-            guanxing_box->clear();
+            m_guanxingBox->clear();
             if (!card_container->retained())
                 card_container->clear();
         } else if (oldStatus == Client::AskForChoice)
@@ -3389,8 +3393,8 @@ void RoomScene::makeReviving()
     }
 
     bool ok;
-    QString item = QInputDialog::getItem(main_window, tr("Reviving wand"), tr("Please select a player to revive"), items, 0,
-                                         false, &ok);
+    QString item
+        = QInputDialog::getItem(main_window, tr("Reviving wand"), tr("Please select a player to revive"), items, 0, false, &ok);
     if (ok) {
         int index = items.indexOf(item);
         ClientInstance->requestCheatRevive(victims.at(index)->objectName());
@@ -3528,8 +3532,7 @@ void RoomScene::fillTable(QTableWidget *table, const QList<const ClientPlayer *>
         table->setItem(i, 8, item);
 
         item = new QTableWidgetItem;
-        QString handcards
-            = QString::fromUtf8(QByteArray::fromBase64(player->property("last_handcards").toString().toLatin1()));
+        QString handcards = QString::fromUtf8(QByteArray::fromBase64(player->property("last_handcards").toString().toLatin1()));
         handcards.replace("<img src='image/system/log/spade.png' height = 12/>", tr("Spade"));
         handcards.replace("<img src='image/system/log/heart.png' height = 12/>", tr("Heart"));
         handcards.replace("<img src='image/system/log/club.png' height = 12/>", tr("Club"));
@@ -3780,7 +3783,7 @@ void RoomScene::doGongxin(const QList<int> &card_ids, bool enable_heart, QList<i
     if (enable_heart)
         card_container->startGongxin(enabled_ids);
     else
-        card_container->addCloseButton();
+        card_container->addConfirmButton();
 }
 
 void RoomScene::showOwnerButtons(bool owner)

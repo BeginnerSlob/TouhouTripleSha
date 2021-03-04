@@ -124,7 +124,9 @@ SOURCES += \
     src/ui/playercardbox.cpp \
     src/ui/choosetriggerorderbox.cpp \
     src/ui/choosesuitbox.cpp \
-    src/package/achievement.cpp
+    src/package/achievement.cpp \
+    src/ui/guanxingbox.cpp \
+    swig/sanguosha_wrap.cxx
 
 HEADERS += \
     src/client/aux-skills.h \
@@ -240,7 +242,8 @@ HEADERS += \
     src/ui/playercardbox.h \
     src/ui/choosetriggerorderbox.h \
     src/ui/choosesuitbox.h \
-    src/package/achievement.h
+    src/package/achievement.h \
+    src/ui/guanxingbox.h
 
 FORMS += \
     src/dialog/cardoverview.ui \

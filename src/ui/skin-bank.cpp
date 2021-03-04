@@ -68,6 +68,20 @@ const char *QSanRoomSkin::S_SKIN_KEY_GENERAL_CIRCLE_MASK = "generalCircleMask-%1
 // Animations
 const char *QSanRoomSkin::S_SKIN_KEY_ANIMATIONS = "preloads";
 
+// CardContainer
+/*static const char *S_SKIN_KEY_CARD_CONTAINER_TOP;
+static const char *S_SKIN_KEY_CARD_CONTAINER_MIDDLE;
+static const char *S_SKIN_KEY_CARD_CONTAINER_BOTTOM;
+static const char *S_SKIN_KEY_CARD_CONTAINER_FRAME;*/
+const char *QSanRoomSkin::S_SKIN_KEY_CHOOSE_CARD_BOX_DEST_PLACE = "chooseCardBoxDestPlace";
+
+// CardItem
+//static const char *S_SKIN_KEY_CARD_TRANSFERABLE_ICON;
+
+// GeneralCardItem
+//static const char *S_SKIN_KEY_GENERAL_CARD_ITEM_COMPANION_FONT;
+//static const char *S_SKIN_KEY_GENERAL_CARD_ITEM_COMPANION_ICON;
+
 QSanSkinFactory *QSanSkinFactory::_sm_singleton = NULL;
 QHash<QString, int *> IQSanComponentSkin::QSanSimpleTextFont::_m_fontBank;
 
@@ -796,6 +810,8 @@ bool QSanRoomSkin::_loadLayoutConfig(const QVariant &layout_config)
     JsonArray magatamaFont = config["magatamaFont"].value<JsonArray>();
     for (int i = 0; i < 5 && i < magatamaFont.size(); i++)
         _m_commonLayout.m_hpFont[i].tryParse(magatamaFont[i]);
+
+    _m_commonLayout.m_chooseCardBoxDestPlaceFont.tryParse(config["chooseCardBoxDestPlace"]);
 
     config = layoutConfig[S_SKIN_KEY_ROOM].value<JsonObject>();
     tryParse(config["chatBoxHeightPercentage"], _m_roomLayout.m_chatBoxHeightPercentage);

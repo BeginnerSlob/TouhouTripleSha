@@ -299,9 +299,7 @@ private:
 
     QList<const Player *> selected_targets;
 
-    GuanxingBox *guanxing_box;
-
-    QList<CardItem *> gongxin_items;
+    GuanxingBox *m_guanxingBox;
 
     ChooseOptionsBox *m_chooseOptionsBox;
 
@@ -310,6 +308,8 @@ private:
     PlayerCardBox *m_playerCardBox;
 
     ChooseSuitBox *m_chooseSuitBox;
+
+    QList<CardItem *> gongxin_items;
 
     ClientLogBox *log_box;
     QTextEdit *chat_box;

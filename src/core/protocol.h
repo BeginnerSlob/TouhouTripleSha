@@ -140,7 +140,8 @@ enum CommandType
     S_COMMAND_TOGGLE_READY,
     S_COMMAND_ADD_ROBOT,
     S_COMMAND_SIGNUP,
-    S_COMMAND_TRIGGER_ORDER
+    S_COMMAND_TRIGGER_ORDER,
+    S_COMMAND_MIRROR_GUANXING_STEP
 };
 
 enum GameEventType
@@ -186,6 +187,13 @@ enum Game3v3Camp
 {
     S_CAMP_WARM,
     S_CAMP_COOL
+};
+
+enum GuanxingStep
+{
+    S_GUANXING_START,
+    S_GUANXING_MOVE,
+    S_GUANXING_FINISH
 };
 
 //static consts
