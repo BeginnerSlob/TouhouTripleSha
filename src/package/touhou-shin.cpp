@@ -3313,10 +3313,10 @@ void ThCanfeiCard::onUse(Room *room, const CardUseStruct &card_use) const
     LogMessage log;
     log.type = "#UseCard_Recast";
     log.from = source;
-    log.card_str = card_use.card->toString();
+    log.card_str = IntList2StringList(subcards).join("+");
     room->sendLog(log);
 
-    source->drawCards(subcardsLength(), "thcanfei");
+    source->drawCards(subcardsLength(), "recast");
 
     room->setPlayerFlag(source, QString("ThCanfei%1").arg(Sanguosha->getCard(subcards.first())->getNumber()));
     if (subcardsLength() > 1)
