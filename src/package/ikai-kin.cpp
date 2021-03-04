@@ -2263,8 +2263,6 @@ void IkHuitaoCard::onUse(Room *room, const CardUseStruct &card_use) const
     room->moveCardTo(this, xiahou, NULL, Player::DiscardPile, reason);
     room->setEmotion(xiahou, "effects/recast");
 
-    int id = card_use.card->getSubcards().first();
-
     LogMessage log;
     log.type = "#UseCard_Recast";
     log.from = xiahou;

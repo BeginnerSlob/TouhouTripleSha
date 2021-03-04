@@ -478,79 +478,84 @@
 <context>
     <name>ClientLogBox</name>
     <message>
-        <location filename="../src/ui/clientlogbox.cpp" line="30"/>
+        <location filename="../src/ui/clientlogbox.cpp" line="31"/>
         <source>&lt;font color=&apos;%1&apos;&gt;------------------------------&lt;/font&gt;</source>
         <translation>&lt;font color=&apos;%1&apos;&gt;─────────────────────&lt;/font&gt;</translation>
     </message>
     <message>
-        <location filename="../src/ui/clientlogbox.cpp" line="101"/>
+        <location filename="../src/ui/clientlogbox.cpp" line="102"/>
         <source>using</source>
         <translation>使用</translation>
     </message>
     <message>
-        <location filename="../src/ui/clientlogbox.cpp" line="103"/>
+        <location filename="../src/ui/clientlogbox.cpp" line="104"/>
         <source>playing</source>
         <translation>打出</translation>
     </message>
     <message>
-        <location filename="../src/ui/clientlogbox.cpp" line="105"/>
+        <location filename="../src/ui/clientlogbox.cpp" line="106"/>
         <source>recasting</source>
         <translation>重铸</translation>
     </message>
     <message>
-        <location filename="../src/ui/clientlogbox.cpp" line="111"/>
+        <location filename="../src/ui/clientlogbox.cpp" line="112"/>
         <source>carry out</source>
         <translation>执行了</translation>
     </message>
     <message>
-        <location filename="../src/ui/clientlogbox.cpp" line="111"/>
-        <location filename="../src/ui/clientlogbox.cpp" line="143"/>
+        <location filename="../src/ui/clientlogbox.cpp" line="112"/>
+        <location filename="../src/ui/clientlogbox.cpp" line="157"/>
         <source>use skill</source>
         <translation>发动了</translation>
     </message>
     <message>
-        <location filename="../src/ui/clientlogbox.cpp" line="112"/>
+        <location filename="../src/ui/clientlogbox.cpp" line="113"/>
         <source>effect</source>
         <translation>的效果</translation>
     </message>
     <message>
-        <location filename="../src/ui/clientlogbox.cpp" line="125"/>
+        <location filename="../src/ui/clientlogbox.cpp" line="126"/>
         <source>%from %2 [%1] %3</source>
         <translation>%from %2“%1”%3</translation>
     </message>
     <message>
-        <location filename="../src/ui/clientlogbox.cpp" line="127"/>
+        <location filename="../src/ui/clientlogbox.cpp" line="128"/>
+        <source>%from %3 [%1] %4, and recasting %2</source>
+        <translation>%from %3“%1”%4重铸了 %2</translation>
+    </message>
+    <message>
+        <location filename="../src/ui/clientlogbox.cpp" line="130"/>
         <source>%from %3 [%1] %4, and the cost is %2</source>
         <translation>%from %3“%1”%4弃置了 %2</translation>
     </message>
     <message>
-        <location filename="../src/ui/clientlogbox.cpp" line="130"/>
+        <location filename="../src/ui/clientlogbox.cpp" line="133"/>
         <source>%from %4 [%1] %5, %3 [%2]</source>
         <translation>%from %4“%1”%5，%3了 %2</translation>
     </message>
     <message>
-        <location filename="../src/ui/clientlogbox.cpp" line="132"/>
-        <location filename="../src/ui/clientlogbox.cpp" line="143"/>
+        <location filename="../src/ui/clientlogbox.cpp" line="135"/>
+        <location filename="../src/ui/clientlogbox.cpp" line="152"/>
         <source>%from %5 [%1] %6 %4 %2 as %3</source>
         <translation>%from %5“%1”%6将 %2 当成 %3 %4</translation>
     </message>
     <message>
-        <location filename="../src/ui/clientlogbox.cpp" line="145"/>
+        <location filename="../src/ui/clientlogbox.cpp" line="160"/>
         <source>Due to the effect of [%1], %from %4 %2 as %3</source>
         <translation>由于“%1”的效果，%from 的 %2 被视为 %3 %4</translation>
     </message>
     <message>
-        <location filename="../src/ui/clientlogbox.cpp" line="147"/>
+        <location filename="../src/ui/clientlogbox.cpp" line="166"/>
         <source>%from %2 %1</source>
         <translation>%from %2了 %1</translation>
     </message>
     <message>
-        <location filename="../src/ui/clientlogbox.cpp" line="150"/>
+        <location filename="../src/ui/clientlogbox.cpp" line="169"/>
         <source>, target is %to</source>
         <translation>，目标是 %to</translation>
     </message>
     <message>
-        <location filename="../src/ui/clientlogbox.cpp" line="189"/>
+        <location filename="../src/ui/clientlogbox.cpp" line="208"/>
         <source>Log string is not well formatted: %1</source>
         <translation>游戏日志没有格式化好: %1</translation>
     </message>
