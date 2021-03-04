@@ -3044,6 +3044,12 @@ void ThXianhuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
     CardMoveReason reason1(CardMoveReason::S_REASON_TURNOVER, source->objectName(), "thxianhu", QString());
     room->moveCardsAtomic(CardsMoveStruct(card_ids, NULL, Player::PlaceTable, reason1), true);
 
+    LogMessage log;
+    log.type = "$ShowCard";
+    log.from = source;
+    log.card_str = IntList2StringList(card_ids).join("+");
+    room->sendLog(log);
+
     QMap<QString, QList<int> > choices;
     foreach (int id, card_ids) {
         QString str = Sanguosha->getCard(id)->getSuitString();

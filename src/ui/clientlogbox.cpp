@@ -21,7 +21,8 @@ ClientLogBox::ClientLogBox(QWidget *parent)
     }
 }
 
-void ClientLogBox::appendLog(const QString &type, const QString &from_general, const QStringList &tos, QString card_str, QString arg, QString arg2)
+void ClientLogBox::appendLog(const QString &type, const QString &from_general, const QStringList &tos, QString card_str,
+                             QString arg, QString arg2)
 {
     if (Self->hasFlag("marshalling"))
         return;
@@ -129,7 +130,13 @@ void ClientLogBox::appendLog(const QString &type, const QString &from_general, c
                 if (subcard_list.isEmpty() || card->getSkillName() == "ikguihuo")
                     log = tr("%from %4 [%1] %5, %3 [%2]").arg(skill_name).arg(card_name).arg(reason).arg(meth).arg(suffix);
                 else
-                    log = tr("%from %5 [%1] %6 %4 %2 as %3").arg(skill_name).arg(subcard_str).arg(card_name).arg(reason).arg(meth).arg(suffix);
+                    log = tr("%from %5 [%1] %6 %4 %2 as %3")
+                              .arg(skill_name)
+                              .arg(subcard_str)
+                              .arg(card_name)
+                              .arg(reason)
+                              .arg(meth)
+                              .arg(suffix);
             }
 
             delete card;
@@ -140,9 +147,19 @@ void ClientLogBox::appendLog(const QString &type, const QString &from_general, c
 
             QString subcard_str = bold(real->getLogName(), Qt::yellow);
             if (card->isKindOf("DelayedTrick"))
-                log = tr("%from %5 [%1] %6 %4 %2 as %3").arg(skill_name).arg(subcard_str).arg(card_name).arg(reason).arg(tr("use skill")).arg(QString());
+                log = tr("%from %5 [%1] %6 %4 %2 as %3")
+                          .arg(skill_name)
+                          .arg(subcard_str)
+                          .arg(card_name)
+                          .arg(reason)
+                          .arg(tr("use skill"))
+                          .arg(QString());
             else
-                log = tr("Due to the effect of [%1], %from %4 %2 as %3").arg(skill_name).arg(subcard_str).arg(card_name).arg(reason);
+                log = tr("Due to the effect of [%1], %from %4 %2 as %3")
+                          .arg(skill_name)
+                          .arg(subcard_str)
+                          .arg(card_name)
+                          .arg(reason);
         } else
             log = tr("%from %2 %1").arg(card_name).arg(reason);
 
@@ -190,7 +207,8 @@ void ClientLogBox::appendLog(const QStringList &log_str)
         append(QString("<font color='%2'>%1</font>").arg(err_string).arg(Config.TextEditColor.name()));
         return;
     }
-    appendLog(log_str[0], log_str[1], log_str[2].isEmpty() ? QStringList() : log_str[2].split("+"), log_str[3], log_str[4], log_str[5]);
+    appendLog(log_str[0], log_str[1], log_str[2].isEmpty() ? QStringList() : log_str[2].split("+"), log_str[3], log_str[4],
+              log_str[5]);
 }
 
 QString ClientLogBox::append(const QString &text)

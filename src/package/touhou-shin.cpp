@@ -2910,7 +2910,7 @@ void ThRenmoCard::onUse(Room *room, const CardUseStruct &card_use) const
     CardMoveReason reason(CardMoveReason::S_REASON_RECAST, player->objectName());
     reason.m_skillName = this->getSkillName();
     room->moveCardTo(this, player, NULL, Player::DiscardPile, reason);
-    player->broadcastSkillInvoke("@recast");
+    room->setEmotion(player, "effects/recast");
 
     int id = card_use.card->getSubcards().first();
 
@@ -3297,8 +3297,9 @@ public:
 ThCanfeiCard::ThCanfeiCard()
 {
     will_throw = false;
-    target_fixed = true;
+    can_recast = true;
     handling_method = MethodRecast;
+    target_fixed = true;
 }
 
 void ThCanfeiCard::onUse(Room *room, const CardUseStruct &card_use) const

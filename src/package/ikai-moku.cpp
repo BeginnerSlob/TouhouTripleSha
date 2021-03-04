@@ -123,7 +123,7 @@ void IkHuanghunCard::onUse(Room *room, const CardUseStruct &card_use) const
     CardMoveReason reason(CardMoveReason::S_REASON_RECAST, player->objectName());
     reason.m_skillName = this->getSkillName();
     room->moveCardTo(this, player, NULL, Player::DiscardPile, reason);
-    player->broadcastSkillInvoke("@recast");
+    room->setEmotion(player, "effects/recast");
 
     int id = card_use.card->getSubcards().first();
 

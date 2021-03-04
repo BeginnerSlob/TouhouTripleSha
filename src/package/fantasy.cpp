@@ -266,8 +266,9 @@ public:
 
     virtual bool isProhibited(const Player *, const Player *to, const Card *card, const QList<const Player *> &) const
     {
-        return to->isRemoved() && (card->getTypeId() != Card::TypeSkill || card->isKindOf("IkMiceCard")
-                                   || card->isKindOf("IkWudiCard") || card->isKindOf("IkMingwangCard"));
+        return to->isRemoved()
+            && (card->getTypeId() != Card::TypeSkill || card->isKindOf("IkMiceCard") || card->isKindOf("IkWudiCard")
+                || card->isKindOf("IkMingwangCard"));
     }
 };
 
@@ -932,8 +933,9 @@ void BurningCamps::onUse(Room *room, const CardUseStruct &card_use) const
             }
             recast = all_prohibit;
         }
-        if (recast || (card_use.from->handCards().contains(getEffectiveId())
-                       && card_use.from->askForSkillInvoke("alliance_recast", QVariant::fromValue(card_use)))) {
+        if (recast
+            || (card_use.from->handCards().contains(getEffectiveId())
+                && card_use.from->askForSkillInvoke("alliance_recast", QVariant::fromValue(card_use)))) {
             CardMoveReason reason(CardMoveReason::S_REASON_RECAST, card_use.from->objectName());
             reason.m_eventName = "alliance_recast";
             room->moveCardTo(card_use.card, card_use.from, NULL, Player::DiscardPile, reason);
@@ -1120,8 +1122,8 @@ public:
         } else if (e == Damage) {
             if (player && player->isAlive()) {
                 DamageStruct damage = data.value<DamageStruct>();
-                if (damage.to->isAlive() && damage.card && damage.card->hasFlag("rodusing") && !damage.transfer
-                    && !damage.chain && damage.to->getMark("Equips_of_Others_Nullified_to_You") == 0)
+                if (damage.to->isAlive() && damage.card && damage.card->hasFlag("rodusing") && !damage.transfer && !damage.chain
+                    && damage.to->getMark("Equips_of_Others_Nullified_to_You") == 0)
                     return QStringList(objectName());
             }
         }

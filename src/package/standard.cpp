@@ -142,7 +142,8 @@ void EquipCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &tar
     CardsMoveStruct move1(getEffectiveId(), target, Player::PlaceEquip, reason1);
     exchangeMove.push_back(move1);
     if (equipped_id != Card::S_UNKNOWN_CARD_ID) {
-        CardsMoveStruct move2(equipped_id, NULL, Player::DiscardPile, CardMoveReason(CardMoveReason::S_REASON_CHANGE_EQUIP, target->objectName()));
+        CardsMoveStruct move2(equipped_id, NULL, Player::DiscardPile,
+                              CardMoveReason(CardMoveReason::S_REASON_CHANGE_EQUIP, target->objectName()));
         exchangeMove.push_back(move2);
     }
     LogMessage log;
@@ -334,7 +335,8 @@ void DelayedTrick::onUse(Room *room, const CardUseStruct &card_use) const
     log.card_str = toString();
     room->sendLog(log);
 
-    CardMoveReason reason(CardMoveReason::S_REASON_USE, use.from->objectName(), use.to.first()->objectName(), this->getSkillName(), QString());
+    CardMoveReason reason(CardMoveReason::S_REASON_USE, use.from->objectName(), use.to.first()->objectName(),
+                          this->getSkillName(), QString());
     reason.m_extraData = QVariant::fromValue((const Card *)this);
     room->moveCardTo(this, use.to.first(), Player::PlaceDelayedTrick, reason, true);
 
@@ -430,7 +432,8 @@ void DelayedTrick::onNullified(ServerPlayer *target) const
                 continue;
             }
 
-            CardMoveReason reason(CardMoveReason::S_REASON_TRANSFER, target->objectName(), QString(), this->getSkillName(), QString());
+            CardMoveReason reason(CardMoveReason::S_REASON_TRANSFER, target->objectName(), QString(), this->getSkillName(),
+                                  QString());
             room->moveCardTo(this, target, player, Player::PlaceDelayedTrick, reason, true);
 
             if (player != target) {
@@ -492,7 +495,8 @@ void Weapon::onUse(Room *room, const CardUseStruct &card_use) const
     ServerPlayer *player = card_use.from;
     if (room->getMode() == "04_1v3" && use.card->isKindOf("Weapon") && !player->isLord()
         && (player->isCardLimited(use.card, Card::MethodUse) || player->isProhibited(player, use.card)
-            || (player->handCards().contains(getEffectiveId()) && player->askForSkillInvoke("alliance_recast", QVariant::fromValue(use))))) {
+            || (player->handCards().contains(getEffectiveId())
+                && player->askForSkillInvoke("alliance_recast", QVariant::fromValue(use))))) {
         CardMoveReason reason(CardMoveReason::S_REASON_RECAST, player->objectName());
         reason.m_eventName = "alliance_recast";
         room->moveCardTo(use.card, player, NULL, Player::DiscardPile, reason);

@@ -2261,7 +2261,7 @@ void IkHuitaoCard::onUse(Room *room, const CardUseStruct &card_use) const
     CardMoveReason reason(CardMoveReason::S_REASON_RECAST, xiahou->objectName());
     reason.m_skillName = this->getSkillName();
     room->moveCardTo(this, xiahou, NULL, Player::DiscardPile, reason);
-    xiahou->broadcastSkillInvoke("@recast");
+    room->setEmotion(xiahou, "effects/recast");
 
     int id = card_use.card->getSubcards().first();
 
