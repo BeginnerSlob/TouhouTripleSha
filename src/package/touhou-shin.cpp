@@ -2912,8 +2912,6 @@ void ThRenmoCard::onUse(Room *room, const CardUseStruct &card_use) const
     room->moveCardTo(this, player, NULL, Player::DiscardPile, reason);
     room->setEmotion(player, "effects/recast");
 
-    int id = card_use.card->getSubcards().first();
-
     LogMessage log;
     log.type = "#UseCard_Recast";
     log.from = player;
