@@ -644,7 +644,7 @@ void IronChain::onUse(Room *room, const CardUseStruct &card_use) const
         LogMessage log;
         log.type = "#UseCard_Recast";
         log.from = card_use.from;
-        log.card_str = card_use.card->toString();
+        log.card_str = toString();
         room->sendLog(log);
 
         card_use.from->drawCards(1, "iron_chain");

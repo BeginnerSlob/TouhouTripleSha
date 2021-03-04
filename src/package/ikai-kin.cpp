@@ -2248,7 +2248,7 @@ public:
 
 IkHuitaoCard::IkHuitaoCard()
 {
-    will_throw = false;
+    will_throw = true;
     can_recast = true;
     handling_method = Card::MethodRecast;
     target_fixed = true;
@@ -2268,7 +2268,7 @@ void IkHuitaoCard::onUse(Room *room, const CardUseStruct &card_use) const
     LogMessage log;
     log.type = "#UseCard_Recast";
     log.from = xiahou;
-    log.card_str = QString::number(id);
+    log.card_str = toString();
     room->sendLog(log);
 
     xiahou->drawCards(1, "recast");

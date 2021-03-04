@@ -110,7 +110,7 @@ public:
 
 IkHuanghunCard::IkHuanghunCard()
 {
-    will_throw = false;
+    will_throw = true;
     can_recast = true;
     handling_method = Card::MethodRecast;
     target_fixed = true;
@@ -130,7 +130,7 @@ void IkHuanghunCard::onUse(Room *room, const CardUseStruct &card_use) const
     LogMessage log;
     log.type = "#UseCard_Recast";
     log.from = player;
-    log.card_str = QString::number(id);
+    log.card_str = toString();
     room->sendLog(log);
 
     player->drawCards(1, "recast");

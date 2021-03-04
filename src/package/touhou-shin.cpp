@@ -2897,7 +2897,7 @@ public:
 
 ThRenmoCard::ThRenmoCard()
 {
-    will_throw = false;
+    will_throw = true;
     can_recast = true;
     handling_method = Card::MethodRecast;
     target_fixed = true;
@@ -2917,7 +2917,7 @@ void ThRenmoCard::onUse(Room *room, const CardUseStruct &card_use) const
     LogMessage log;
     log.type = "#UseCard_Recast";
     log.from = player;
-    log.card_str = QString::number(id);
+    log.card_str = toString();
     room->sendLog(log);
 
     player->drawCards(1, "recast");
@@ -3296,7 +3296,7 @@ public:
 
 ThCanfeiCard::ThCanfeiCard()
 {
-    will_throw = false;
+    will_throw = true;
     can_recast = true;
     handling_method = MethodRecast;
     target_fixed = true;
@@ -3313,7 +3313,7 @@ void ThCanfeiCard::onUse(Room *room, const CardUseStruct &card_use) const
     LogMessage log;
     log.type = "#UseCard_Recast";
     log.from = source;
-    log.card_str = IntList2StringList(subcards).join("+");
+    log.card_str = toString();
     room->sendLog(log);
 
     source->drawCards(subcardsLength(), "recast");
