@@ -125,8 +125,7 @@ SOURCES += \
     src/ui/choosetriggerorderbox.cpp \
     src/ui/choosesuitbox.cpp \
     src/package/achievement.cpp \
-    src/ui/guanxingbox.cpp \
-    swig/sanguosha_wrap.cxx
+    src/ui/guanxingbox.cpp
 
 HEADERS += \
     src/client/aux-skills.h \

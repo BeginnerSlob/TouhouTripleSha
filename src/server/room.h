@@ -407,6 +407,7 @@ public:
     bool addRobotCommand(ServerPlayer *player, const QVariant &arg);
     void broadcastInvoke(const QSanProtocol::AbstractPacket *packet, ServerPlayer *except = NULL);
     void broadcastInvoke(const char *method, const QString &arg = ".", ServerPlayer *except = NULL);
+    bool mirrorGuanxingStepCommand(ServerPlayer *player, const QVariant &arg);
     bool networkDelayTestCommand(ServerPlayer *player, const QVariant &);
     inline RoomState *getRoomState()
     {

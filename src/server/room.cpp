@@ -104,6 +104,8 @@ void Room::initCallbacks()
     m_callbacks[S_COMMAND_TRUST] = &Room::trustCommand;
     m_callbacks[S_COMMAND_PAUSE] = &Room::pauseCommand;
 
+    m_callbacks[S_COMMAND_MIRROR_GUANXING_STEP] = &Room::mirrorGuanxingStepCommand;
+
     m_callbacks[S_COMMAND_CHECK_PASSWORD] = &Room::checkPassword;
 
     //Client request
@@ -889,8 +891,9 @@ ServerPlayer *Room::getRaceResult(QList<ServerPlayer *> &players, QSanProtocol::
             continue;
         }
 
-        if (validateFunc == NULL || (_m_raceWinner->m_isClientResponseReady
-                                     && (this->*validateFunc)(_m_raceWinner, _m_raceWinner->getClientReply(), funcArg))) {
+        if (validateFunc == NULL
+            || (_m_raceWinner->m_isClientResponseReady
+                && (this->*validateFunc)(_m_raceWinner, _m_raceWinner->getClientReply(), funcArg))) {
             validResult = true;
             break;
         } else {
@@ -1299,8 +1302,8 @@ bool Room::_askForNullification(const Card *trick, ServerPlayer *from, ServerPla
 
     setEmotion(to, "effects/nullification");
     //doAnimate(S_ANIMATE_NULLIFICATION, repliedPlayer->objectName(), to->objectName());
-    QVariant decisionData = QVariant::fromValue("Nullification:" + QString(trick->getClassName()) + ":" + to->objectName()
-                                                + ":" + (positive ? "true" : "false"));
+    QVariant decisionData = QVariant::fromValue("Nullification:" + QString(trick->getClassName()) + ":" + to->objectName() + ":"
+                                                + (positive ? "true" : "false"));
     thread->trigger(ChoiceMade, this, repliedPlayer, decisionData);
     setTag("NullifyingTimes", getTag("NullifyingTimes").toInt() + 1);
 
@@ -2227,8 +2230,8 @@ void Room::resetAI(ServerPlayer *player)
         ais.insert(index, new_ai);
 }
 
-void Room::changeHero(ServerPlayer *player, const QString &new_general, bool full_state, bool invokeStart,
-                      bool isSecondaryHero, bool sendLog)
+void Room::changeHero(ServerPlayer *player, const QString &new_general, bool full_state, bool invokeStart, bool isSecondaryHero,
+                      bool sendLog)
 {
     JsonArray args;
     args << S_GAME_EVENT_CHANGE_HERO;
@@ -4730,8 +4733,9 @@ void Room::updateCardsOnGet(const CardsMoveStruct &move)
     }
 
     player = (ServerPlayer *)move.to;
-    if (player != NULL && (move.to_place == Player::PlaceHand || move.to_place == Player::PlaceEquip
-                           || move.to_place == Player::PlaceJudge || move.to_place == Player::PlaceSpecial)) {
+    if (player != NULL
+        && (move.to_place == Player::PlaceHand || move.to_place == Player::PlaceEquip || move.to_place == Player::PlaceJudge
+            || move.to_place == Player::PlaceSpecial)) {
         QList<const Card *> cards;
         foreach (int cardId, move.card_ids)
             cards.append(getCard(cardId));
@@ -4764,15 +4768,18 @@ bool Room::notifyMoveCards(bool isLostPhase, QList<CardsMoveStruct> &cards_moves
                     break;
                 }
             }
-            cards_moves[i].open = forceVisible || cards_moves[i].isRelevant(player)
+            cards_moves[i].open = forceVisible
+                || cards_moves[i].isRelevant(player)
                 // forceVisible will override cards to be visible
                 || cards_moves[i].to_place == Player::PlaceEquip || cards_moves[i].from_place == Player::PlaceEquip
                 || cards_moves[i].to_place == Player::PlaceDelayedTrick
                 || cards_moves[i].from_place == Player::PlaceDelayedTrick
                 // only cards moved to hand/special can be invisible
-                || cards_moves[i].from_place == Player::DiscardPile || cards_moves[i].to_place == Player::DiscardPile
+                || cards_moves[i].from_place == Player::DiscardPile
+                || cards_moves[i].to_place == Player::DiscardPile
                 // any card from/to discard pile should be visible
-                || cards_moves[i].from_place == Player::PlaceTable || cards_moves[i].to_place == Player::PlaceTable
+                || cards_moves[i].from_place == Player::PlaceTable
+                || cards_moves[i].to_place == Player::PlaceTable
                 // any card from/to place table should be visible
                 || (cards_moves[i].to_place == Player::PlaceSpecial && to
                     && to->pileOpen(cards_moves[i].to_pile_name, player->objectName()))
@@ -5684,36 +5691,108 @@ void Room::askForGuanxing(ServerPlayer *zhuge, const QList<int> &cards, Guanxing
     foreach (int id, cards)
         if (m_drawPile->contains(id))
             m_drawPile->removeOne(id);
-    AI *ai = zhuge->getAI();
-    if (ai) {
-        ai->askForGuanxing(cards, top_cards, bottom_cards, (int)guanxing_type);
-    } else if (guanxing_type == GuanxingUpOnly && cards.length() == 1) {
+
+    if (guanxing_type == GuanxingUpOnly && cards.length() == 1) {
         top_cards = cards;
     } else if (guanxing_type == GuanxingDownOnly && cards.length() == 1) {
         bottom_cards = cards;
     } else {
-        JsonArray guanxingArgs;
-        guanxingArgs << toJsonArray(cards);
-        guanxingArgs << (guanxing_type != GuanxingBothSides);
-        bool success = doRequest(zhuge, S_COMMAND_SKILL_GUANXING, guanxingArgs, true);
-        if (!success) {
-            foreach (int card_id, cards) {
-                if (guanxing_type == GuanxingDownOnly)
-                    m_drawPile->append(card_id);
-                else
-                    m_drawPile->prepend(card_id);
+        JsonArray stepArgs;
+        stepArgs << S_GUANXING_START << zhuge->objectName() << (guanxing_type != GuanxingBothSides) << cards.length();
+        doBroadcastNotify(getOtherPlayers(zhuge), S_COMMAND_MIRROR_GUANXING_STEP, stepArgs);
+
+        AI *ai = zhuge->getAI();
+        if (ai) {
+            ai->askForGuanxing(cards, top_cards, bottom_cards, (int)guanxing_type);
+
+            bool isTrustAI = zhuge->getState() == "trust";
+            if (isTrustAI) {
+                stepArgs[1] = QVariant();
+                stepArgs[3] = JsonUtils::toJsonArray(cards);
+                doNotify(zhuge, S_COMMAND_MIRROR_GUANXING_STEP, stepArgs);
             }
-            return;
-        }
-        JsonArray clientReply = zhuge->getClientReply().value<JsonArray>();
-        if (clientReply.size() == 2) {
-            success &= tryParse(clientReply[0], top_cards);
-            success &= tryParse(clientReply[1], bottom_cards);
+
+            thread->delay();
+            thread->delay();
+
+            QList<int> realtopcards = top_cards;
+            QList<int> realbottomcards = bottom_cards;
             if (guanxing_type == GuanxingDownOnly) {
-                bottom_cards = top_cards;
-                top_cards.clear();
+                realtopcards = realbottomcards;
+                realbottomcards.clear();
+            }
+
+            QList<int> to_move = cards;
+
+            if (to_move != realtopcards) {
+                JsonArray movearg_base;
+                movearg_base << S_GUANXING_MOVE;
+
+                if (guanxing_type == GuanxingBothSides && !realbottomcards.isEmpty()) {
+                    for (int i = 0; i < realbottomcards.length(); ++i) {
+                        int id = realbottomcards.at(i);
+                        int pos = to_move.indexOf(id);
+                        to_move.removeOne(id);
+                        JsonArray movearg = movearg_base;
+                        movearg << pos + 1 << -i - 1;
+                        doBroadcastNotify(isTrustAI ? m_players : getOtherPlayers(zhuge), S_COMMAND_MIRROR_GUANXING_STEP,
+                                          movearg);
+                        thread->delay();
+                    }
+                }
+
+                for (int i = 0; i < realtopcards.length() - 1; ++i) {
+                    int id = realtopcards.at(i);
+                    int pos = to_move.indexOf(id);
+
+                    if (pos == i)
+                        continue;
+
+                    to_move.removeOne(id);
+                    to_move.insert(i, id);
+                    JsonArray movearg = movearg_base;
+                    movearg << pos + 1 << i + 1;
+                    doBroadcastNotify(isTrustAI ? m_players : getOtherPlayers(zhuge), S_COMMAND_MIRROR_GUANXING_STEP, movearg);
+                    thread->delay();
+                }
+
+                thread->delay();
+                thread->delay();
+            }
+
+            if (isTrustAI) {
+                JsonArray stepArgs;
+                stepArgs << S_GUANXING_FINISH;
+                doNotify(zhuge, S_COMMAND_MIRROR_GUANXING_STEP, stepArgs);
+            }
+        } else {
+            JsonArray guanxingArgs;
+            guanxingArgs << toJsonArray(cards);
+            guanxingArgs << (guanxing_type != GuanxingBothSides);
+            bool success = doRequest(zhuge, S_COMMAND_SKILL_GUANXING, guanxingArgs, true);
+            if (!success) {
+                foreach (int card_id, cards) {
+                    if (guanxing_type == GuanxingDownOnly)
+                        m_drawPile->append(card_id);
+                    else
+                        m_drawPile->prepend(card_id);
+                }
+                return;
+            }
+            JsonArray clientReply = zhuge->getClientReply().value<JsonArray>();
+            if (clientReply.size() == 2) {
+                success &= tryParse(clientReply[0], top_cards);
+                success &= tryParse(clientReply[1], bottom_cards);
+                if (guanxing_type == GuanxingDownOnly) {
+                    bottom_cards = top_cards;
+                    top_cards.clear();
+                }
             }
         }
+
+        stepArgs.clear();
+        stepArgs << S_GUANXING_FINISH;
+        doBroadcastNotify(getOtherPlayers(zhuge), S_COMMAND_MIRROR_GUANXING_STEP, stepArgs);
     }
 
     bool length_equal = top_cards.length() + bottom_cards.length() == cards.length();
@@ -5762,6 +5841,9 @@ void Room::askForGuanxing(ServerPlayer *zhuge, const QList<int> &cards, Guanxing
         m_drawPile->append(i.next());
 
     doBroadcastNotify(S_COMMAND_UPDATE_PILE, QVariant(m_drawPile->length()));
+
+    //QVariant decisionData = QVariant::fromValue("guanxingViewCards:" + zhuge->objectName() + ":" + IntList2StringList(top_cards).join("+") + ":" + IntList2StringList(bottom_cards).join("+"));
+    //thread->trigger(ChoiceMade, this, zhuge, decisionData);
 }
 
 void Room::returnToTopDrawPile(const QList<int> &cards)
@@ -6831,6 +6913,12 @@ QString Room::askForRole(ServerPlayer *player, const QStringList &roles, const Q
     if (success && isString(clientReply))
         result = clientReply.toString();
     return result;
+}
+
+bool Room::mirrorGuanxingStepCommand(ServerPlayer *player, const QVariant &arg)
+{
+    doBroadcastNotify(getOtherPlayers(player), S_COMMAND_MIRROR_GUANXING_STEP, arg);
+    return true;
 }
 
 bool Room::networkDelayTestCommand(ServerPlayer *player, const QVariant &)
