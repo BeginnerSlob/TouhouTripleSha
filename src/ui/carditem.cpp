@@ -291,9 +291,8 @@ void CardItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *mouseEvent)
     else
         emit released();
 
-    if (auto_back) {
+    if (auto_back)
         goBack(true, false);
-    }
 }
 
 void CardItem::mouseMoveEvent(QGraphicsSceneMouseEvent *mouseEvent)
@@ -336,7 +335,7 @@ void CardItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidge
 {
     painter->setRenderHints(QPainter::Antialiasing | QPainter::SmoothPixmapTransform);
 
-    if (!isEnabled()) {
+    if (frozen || !isEnabled()) {
         painter->fillRect(G_COMMON_LAYOUT.m_cardMainArea, QColor(100, 100, 100, 255 * opacity()));
         painter->setOpacity(0.7 * opacity());
     }

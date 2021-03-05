@@ -30,7 +30,6 @@ Dashboard::Dashboard(QGraphicsItem *widget)
     m_player = Self;
     _m_leftFrame = _m_rightFrame = _m_middleFrame = NULL;
     _m_rightFrameBg = NULL;
-    animations = new EffectAnimation();
     pending_card = NULL;
     _m_pile_expanded = QStringList();
     for (int i = 0; i < S_EQUIP_AREA_LENGTH; i++) {
@@ -328,8 +327,8 @@ void Dashboard::_addHandCard(CardItem *card_item, bool prepend, const QString &f
     connect(card_item, &CardItem::clicked, this, &Dashboard::onCardItemClicked);
     connect(card_item, &CardItem::double_clicked, this, &Dashboard::onCardItemDoubleClicked);
     connect(card_item, &CardItem::thrown, this, &Dashboard::onCardItemThrown);
-    connect(card_item, &CardItem::enter_hover, this, &Dashboard::onCardItemHover);
-    connect(card_item, &CardItem::leave_hover, this, &Dashboard::onCardItemLeaveHover);
+    connect(card_item, &CardItem::enter_hover, this, &Dashboard::bringSenderToTop);
+    connect(card_item, &CardItem::leave_hover, this, &Dashboard::resetSenderZValue);
 
     card_item->setOuterGlowEffectEnabled(true);
 
@@ -1100,7 +1099,7 @@ void Dashboard::disableAllCards()
 {
     m_mutexEnableCards.lock();
     foreach (CardItem *card_item, m_handCards)
-        card_item->setEnabled(false);
+        card_item->setFrozen(true, false);
     m_mutexEnableCards.unlock();
 }
 
@@ -1111,16 +1110,23 @@ void Dashboard::enableCards()
     expandPileCards("pokemon");
     if (Self->hasFlag("thbaochui") && Self->getPhase() == Player::Play)
         expandPileCards("currency");
-    foreach (CardItem *card_item, m_handCards)
-        card_item->setEnabled(card_item->getCard()->isAvailable(Self));
+    foreach (CardItem *card_item, m_handCards) {
+        const bool frozen = !card_item->getCard()->isAvailable(Self);
+        card_item->setFrozen(frozen, false);
+        if (!frozen && Config.EnableSuperDrag)
+            card_item->setFlag(ItemIsMovable);
+    }
     m_mutexEnableCards.unlock();
 }
 
 void Dashboard::enableAllCards()
 {
     m_mutexEnableCards.lock();
-    foreach (CardItem *card_item, m_handCards)
-        card_item->setEnabled(true);
+    foreach (CardItem *card_item, m_handCards) {
+        card_item->setFrozen(false, false);
+        if (Config.EnableSuperDrag)
+            card_item->setFlag(ItemIsMovable);
+    }
     m_mutexEnableCards.unlock();
 }
 
@@ -1178,10 +1184,8 @@ void Dashboard::stopPending()
         retractPileCards("currency");
     emit card_selected(NULL);
 
-    foreach (CardItem *item, m_handCards) {
-        item->setEnabled(false);
-        animations->effectOut(item);
-    }
+    foreach (CardItem *item, m_handCards)
+        item->setFrozen(true, false);
 
     for (int i = 0; i < S_EQUIP_AREA_LENGTH; i++) {
         CardItem *equip = _m_equipCards[i];
@@ -1294,10 +1298,12 @@ void Dashboard::updatePending()
     if (!view_as_skill->inherits("OneCardViewAsSkill"))
         pended = cards;
     foreach (CardItem *item, m_handCards) {
-        if (!item->isSelected() || pendings.isEmpty())
-            item->setEnabled(view_as_skill->viewFilter(pended, item->getCard()));
-        if (!item->isEnabled())
-            animations->effectOut(item);
+        if (!item->isSelected() || pendings.isEmpty()) {
+            const bool frozen = !view_as_skill->viewFilter(pended, item->getCard());
+            item->setFrozen(frozen, false);
+            if (!frozen && Config.EnableSuperDrag)
+                item->setFlag(ItemIsMovable);
+        }
     }
 
     for (int i = 0; i < S_EQUIP_AREA_LENGTH; i++) {
@@ -1350,7 +1356,6 @@ void Dashboard::onCardItemDoubleClicked()
     if (card_item) {
         if (!view_as_skill)
             selected = card_item;
-        animations->effectOut(card_item);
         emit card_to_use();
     }
 }
@@ -1363,24 +1368,6 @@ void Dashboard::onCardItemThrown()
             selected = card_item;
         emit card_to_use();
     }
-}
-
-void Dashboard::onCardItemHover()
-{
-    QGraphicsItem *card_item = qobject_cast<QGraphicsItem *>(sender());
-    if (!card_item)
-        return;
-
-    animations->emphasize(card_item);
-}
-
-void Dashboard::onCardItemLeaveHover()
-{
-    QGraphicsItem *card_item = qobject_cast<QGraphicsItem *>(sender());
-    if (!card_item)
-        return;
-
-    animations->effectOut(card_item);
 }
 
 void Dashboard::onMarkChanged()
@@ -1401,6 +1388,24 @@ void Dashboard::onMarkChanged()
 
         updatePending();
     }
+}
+
+void Dashboard::bringSenderToTop()
+{
+    CardItem *item = qobject_cast<CardItem *>(sender());
+
+    Q_ASSERT(item);
+    item->setData(CARDITEM_Z_DATA_KEY, item->zValue());
+    item->setZValue(1000);
+}
+
+void Dashboard::resetSenderZValue()
+{
+    CardItem *item = qobject_cast<CardItem *>(sender());
+
+    Q_ASSERT(item);
+    const int z = item->data(CARDITEM_Z_DATA_KEY).toInt();
+    item->setZValue(z);
 }
 
 const ViewAsSkill *Dashboard::currentSkill() const

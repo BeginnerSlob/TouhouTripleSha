@@ -153,8 +153,6 @@ public slots:
 #ifdef Q_OS_WIN
     void updateTimedProgressBar(time_t val, time_t max);
 #endif
-    void onCardItemHover();
-    void onCardItemLeaveHover();
 
 protected:
     void _createExtraButtons();
@@ -242,9 +240,6 @@ protected:
     QSanInvokeSkillDock *_m_skillDock;
     const QSanRoomSkin::DashboardLayout *_dlayout;
 
-    //for animated effects
-    EffectAnimation *animations;
-
     // for parts creation
     void _createLeft();
     void _createRight();
@@ -277,6 +272,8 @@ protected:
 #endif
 
 private:
+    static const int CARDITEM_Z_DATA_KEY = 0626;
+
     void moveProgressBarUp();
     void moveProgressBarDown();
 
@@ -296,6 +293,8 @@ private slots:
     void onCardItemDoubleClicked();
     void onCardItemThrown();
     void onMarkChanged();
+    void bringSenderToTop();
+    void resetSenderZValue();
 
 signals:
     void card_selected(const Card *card);

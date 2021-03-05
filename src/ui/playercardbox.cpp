@@ -246,6 +246,7 @@ void PlayerCardBox::arrangeCards(const QList<const Card *> &cards, const QPoint 
     foreach (const Card *card, cards) {
         CardItem *item = new CardItem(card);
         item->setAutoBack(false);
+        item->setOuterGlowEffectEnabled(true);
         item->resetTransform();
         item->setParentItem(this);
         item->setFlag(ItemIsMovable, false);
@@ -255,8 +256,6 @@ void PlayerCardBox::arrangeCards(const QList<const Card *> &cards, const QPoint 
         else
             item->setEnabled(true);
         connect(item, &CardItem::clicked, this, &PlayerCardBox::reply);
-        connect(item, &CardItem::enter_hover, RoomSceneInstance->getDashboard(), &Dashboard::onCardItemHover);
-        connect(item, &CardItem::leave_hover, RoomSceneInstance->getDashboard(), &Dashboard::onCardItemLeaveHover);
         items << item;
         areaItems << item;
     }
