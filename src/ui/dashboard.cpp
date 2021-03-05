@@ -344,7 +344,7 @@ void Dashboard::selectCard(const QString &pattern, bool forward, bool multiple)
     // find all cards that match the card type
     QList<CardItem *> matches;
     foreach (CardItem *card_item, m_handCards) {
-        if (card_item->isEnabled() && (pattern == "." || card_item->getCard()->match(pattern)))
+        if (!card_item->isFrozen() && (pattern == "." || card_item->getCard()->match(pattern)))
             matches << card_item;
     }
 
@@ -386,7 +386,7 @@ void Dashboard::selectOnlyCard(bool need_only)
 
     QList<CardItem *> items;
     foreach (CardItem *card_item, m_handCards) {
-        if (card_item->isEnabled()) {
+        if (!card_item->isFrozen()) {
             items << card_item;
             count++;
             if (need_only && count > 1) {
@@ -1017,13 +1017,14 @@ void Dashboard::reverseSelection()
         return;
 
     QList<CardItem *> selected_items;
-    foreach (CardItem *item, m_handCards)
+    foreach (CardItem *item, m_handCards) {
         if (item->isSelected()) {
             item->clickItem();
             selected_items << item;
         }
+    }
     foreach (CardItem *item, m_handCards)
-        if (item->isEnabled() && !selected_items.contains(item))
+        if (!item->isFrozen() && !selected_items.contains(item))
             item->clickItem();
     adjustCards();
 }
