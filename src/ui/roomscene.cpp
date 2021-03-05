@@ -1020,7 +1020,8 @@ void RoomScene::updateTable()
         qMax((int)tableRect.width() - _m_roomLayout->m_discardPilePadding * 2, _m_roomLayout->m_discardPileMinWidth),
         _m_commonLayout->m_cardNormalHeight);
     m_tablePile->adjustCards();
-    card_container->setPos(m_tableCenterPos);
+    card_container->setPos(m_tableCenterPos
+                           - QPointF(card_container->boundingRect().width() / 2, card_container->boundingRect().height() / 2));
     m_guanxingBox->setPos(m_tableCenterPos
                           - QPointF(m_guanxingBox->boundingRect().width() / 2, m_guanxingBox->boundingRect().height() / 2));
     m_chooseOptionsBox->setPos(

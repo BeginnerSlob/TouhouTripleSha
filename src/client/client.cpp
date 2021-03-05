@@ -88,6 +88,7 @@ Client::Client(QObject *parent, const QString &filename)
     m_callbacks[S_COMMAND_UPDATE_PILE] = &Client::setPileNumber;
     m_callbacks[S_COMMAND_SYNCHRONIZE_DISCARD_PILE] = &Client::synchronizeDiscardPile;
     m_callbacks[S_COMMAND_CARD_FLAG] = &Client::setCardFlag;
+    m_callbacks[S_COMMAND_MIRROR_GUANXING_STEP] = &Client::mirrorGuanxingStep;
 
     // interactive methods
     m_interactions[S_COMMAND_CHOOSE_GENERAL] = &Client::askForGeneral;
@@ -211,7 +212,8 @@ void Client::updateCard(const QVariant &val)
 void Client::mirrorGuanxingStep(const QVariant &args)
 {
     JsonArray arg = args.value<JsonArray>();
-    if (arg.isEmpty()) return;
+    if (arg.isEmpty())
+        return;
 
     GuanxingStep step = static_cast<GuanxingStep>(arg.at(0).toInt());
     if (step == S_GUANXING_START) {
@@ -908,8 +910,7 @@ QString Client::setPromptList(const QStringList &texts)
 
 void Client::commandFormatWarning(const QString &str, const QRegExp &rx, const char *command)
 {
-    QString text
-        = tr("The argument (%1) of command %2 does not conform the format %3").arg(str).arg(command).arg(rx.pattern());
+    QString text = tr("The argument (%1) of command %2 does not conform the format %3").arg(str).arg(command).arg(rx.pattern());
     QMessageBox::warning(NULL, tr("Command format warning"), text);
 }
 
@@ -1807,6 +1808,14 @@ void Client::askForGuanxing(const QVariant &arg)
 
     emit guanxing(card_ids, single_side);
     setStatus(AskForGuanxing);
+
+    if (recorder) {
+        JsonArray stepArgs;
+        stepArgs << S_GUANXING_START << QVariant() << single_side << args[0];
+        Packet packet(S_SRC_ROOM | S_TYPE_NOTIFICATION | S_DEST_CLIENT, S_COMMAND_MIRROR_GUANXING_STEP);
+        packet.setMessageBody(stepArgs);
+        recorder->recordLine(packet.toJson());
+    }
 }
 
 void Client::showAllCards(const QVariant &arg)
