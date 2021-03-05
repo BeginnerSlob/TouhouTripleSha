@@ -119,11 +119,22 @@ QRectF ChooseSuitBox::boundingRect() const
 
 void ChooseSuitBox::chooseSuit(const QStringList &suits)
 {
+    static QStringList suit_order;
+    if (suit_order.isEmpty()) {
+        suit_order << "spade"
+                   << "heart"
+                   << "club"
+                   << "diamond";
+    }
     suitNumber = suits.size();
-    m_suits = suits;
+    m_suits = QStringList();
+    foreach (QString suit, suit_order) {
+        if (suits.contains(suit))
+            m_suits << suit;
+    }
     prepareGeometryChange();
 
-    foreach (const QString &suit, suits) {
+    foreach (const QString &suit, m_suits) {
         SuitOptionButton *button = new SuitOptionButton(this, suit, buttonWidth);
         button->setObjectName(suit);
         buttons << button;

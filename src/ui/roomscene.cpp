@@ -3775,6 +3775,7 @@ void RoomScene::fillCards(const QList<int> &card_ids, const QList<int> &disabled
 {
     bringToFront(card_container);
     card_container->fillCards(card_ids, disabled_ids);
+    card_container->setPos(m_tableCenterPos - QPointF(card_container->boundingRect().width() / 2, card_container->boundingRect().height() / 2));
     card_container->show();
 }
 

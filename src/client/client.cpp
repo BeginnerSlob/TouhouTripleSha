@@ -1478,13 +1478,25 @@ void Client::askForGeneral(const QVariant &arg)
     setStatus(ExecDialog);
 }
 
-void Client::askForSuit(const QVariant &)
+void Client::askForSuit(const QVariant &arg)
 {
     QStringList suits;
     suits << "spade"
           << "club"
           << "heart"
           << "diamond";
+    QStringList limits;
+    JsonArray args = arg.value<JsonArray>();
+    //QString skill_name = args[0].toString();
+    if (args.length() > 1)
+        limits = args[1].toString().split("+");
+    if (!limits.isEmpty()) {
+        if (limits.first().startsWith("-")) {
+            foreach (QString suit_str, limits)
+                suits.removeOne(suit_str.right(suit_str.length() - 1));
+        } else
+            suits = limits;
+    }
     emit suits_got(suits);
     setStatus(AskForSuit);
 }

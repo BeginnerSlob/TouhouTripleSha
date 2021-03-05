@@ -5414,7 +5414,7 @@ void Room::askForLuckCard()
     doBroadcastNotify(S_COMMAND_UPDATE_PILE, QVariant(m_drawPile->length()));
 }
 
-Card::Suit Room::askForSuit(ServerPlayer *player, const QString &reason)
+Card::Suit Room::askForSuit(ServerPlayer *player, const QString &reason, const QString &limits)
 {
     tryPause();
     notifyMoveFocus(player, S_COMMAND_CHOOSE_SUIT);
@@ -5423,7 +5423,10 @@ Card::Suit Room::askForSuit(ServerPlayer *player, const QString &reason)
     if (ai)
         return ai->askForSuit(reason);
 
-    bool success = doRequest(player, S_COMMAND_CHOOSE_SUIT, QVariant(), true);
+    JsonArray args;
+    args << reason
+         << limits;
+    bool success = doRequest(player, S_COMMAND_CHOOSE_SUIT, args, true);
 
     Card::Suit suit = Card::AllSuits[qrand() % 4];
     if (success) {

@@ -221,6 +221,21 @@ public:
         return available_cards;
     }
 
+    inline int getDrawPileNum() const
+    {
+        return pile_num;
+    }
+
+    inline int getDiscardPileNum() const
+    {
+        return discarded_list.length();
+    }
+
+    inline int getSwapTimes() const
+    {
+        return swap_pile;
+    }
+
     // public fields
     QString m_cardDiscardReason;
     bool m_isDiscardActionRefusable;

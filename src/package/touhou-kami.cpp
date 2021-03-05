@@ -3036,6 +3036,8 @@ ThXianhuCard::ThXianhuCard()
 void ThXianhuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
 {
     QList<int> discard_pile = room->getDiscardPile();
+    if (discard_pile.isEmpty())
+        return;
     qShuffle(discard_pile);
     QList<int> card_ids = discard_pile;
     int n = 4 + source->getMark("@lake");
@@ -3060,8 +3062,7 @@ void ThXianhuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
         choices[str] << id;
     }
 
-    QString suit
-        = room->askForChoice(source, "thxianhu", choices.keys().join("+"), QVariant::fromValue(IntList2VariantList(card_ids)));
+    QString suit = Suit2String(room->askForSuit(source, "thxianhu", choices.keys().join("+")));
 
     DummyCard *dummy = new DummyCard;
     dummy->addSubcards(choices[suit]);
@@ -3095,6 +3096,8 @@ public:
 
     virtual bool isEnabledAtPlay(const Player *player) const
     {
+        if (ClientInstance->getDiscardPileNum() == 0)
+            return false;
         return !player->hasUsed("ThShuangfengCard") && !player->hasUsed("ThXianhuCard");
     }
 };
