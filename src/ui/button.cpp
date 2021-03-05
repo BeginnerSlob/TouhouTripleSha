@@ -151,14 +151,17 @@ void Button::hoverEnterEvent(QGraphicsSceneHoverEvent *)
 
 void Button::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    event->accept();
+    if (boundingRect().contains(event->pos()))
+        event->accept();
 }
 
-void Button::mouseReleaseEvent(QGraphicsSceneMouseEvent *)
+void Button::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
-    if (!mute)
-        Sanguosha->playSystemAudioEffect("button-down", false);
-    emit clicked();
+    if (boundingRect().contains(event->pos())) {
+        if (!mute)
+            Sanguosha->playSystemAudioEffect("button-down", false);
+        emit clicked();
+    }
 }
 
 QRectF Button::boundingRect() const

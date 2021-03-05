@@ -114,12 +114,14 @@ QRectF TriggerOptionButton::boundingRect() const
 
 void TriggerOptionButton::mousePressEvent(QGraphicsSceneMouseEvent *event)
 {
-    event->accept();
+    if (boundingRect().contains(event->pos()))
+        event->accept();
 }
 
-void TriggerOptionButton::mouseReleaseEvent(QGraphicsSceneMouseEvent *)
+void TriggerOptionButton::mouseReleaseEvent(QGraphicsSceneMouseEvent *event)
 {
-    emit clicked();
+    if (boundingRect().contains(event->pos()))
+        emit clicked();
 }
 
 void TriggerOptionButton::hoverEnterEvent(QGraphicsSceneHoverEvent *)
