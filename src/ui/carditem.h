@@ -142,6 +142,9 @@ signals:
     void leave_hover();
     void movement_animation_finished();
     void hoverChanged(const bool &enter);
+
+private slots:
+    void currentAnimationDestroyed();
 };
 
 #endif

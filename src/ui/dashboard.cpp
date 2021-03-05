@@ -93,7 +93,8 @@ void Dashboard::showProgressBar(QSanProtocol::Countdown countdown)
     _m_progressBar->show();
 #ifdef Q_OS_WIN
     if (_m_progressBar->hasTimer()) {
-        connect(_m_progressBar, &QSanCommandProgressBar::timerStep, this, &Dashboard::updateTimedProgressBar, Qt::UniqueConnection);
+        connect(_m_progressBar, &QSanCommandProgressBar::timerStep, this, &Dashboard::updateTimedProgressBar,
+                Qt::UniqueConnection);
         QWinTaskbarProgress *prog = taskbarButton->progress();
         prog->reset();
         prog->resume();
@@ -196,9 +197,11 @@ int Dashboard::width()
 
 void Dashboard::_createRight()
 {
-    QRect rect = QRect(_m_width - G_DASHBOARD_LAYOUT.m_rightWidth, 0, G_DASHBOARD_LAYOUT.m_rightWidth, G_DASHBOARD_LAYOUT.m_normalHeight);
+    QRect rect = QRect(_m_width - G_DASHBOARD_LAYOUT.m_rightWidth, 0, G_DASHBOARD_LAYOUT.m_rightWidth,
+                       G_DASHBOARD_LAYOUT.m_normalHeight);
     _paintPixmap(_m_rightFrame, rect, QPixmap(1, 1), _m_groupMain);
-    _paintPixmap(_m_rightFrameBg, QRect(0, 0, rect.width(), rect.height()), _getPixmap(QSanRoomSkin::S_SKIN_KEY_RIGHTFRAME), _m_rightFrame);
+    _paintPixmap(_m_rightFrameBg, QRect(0, 0, rect.width(), rect.height()), _getPixmap(QSanRoomSkin::S_SKIN_KEY_RIGHTFRAME),
+                 _m_rightFrame);
     _m_rightFrame->setZValue(-1000); // nobody should be under me.
 
     _m_skillDock = new QSanInvokeSkillDock(_m_rightFrame);
@@ -210,12 +213,15 @@ void Dashboard::_createRight()
 void Dashboard::_updateFrames()
 {
     // Here is where we adjust all frames to actual width
-    QRect rect = QRect(G_DASHBOARD_LAYOUT.m_leftWidth, 0, this->width() - G_DASHBOARD_LAYOUT.m_rightWidth - G_DASHBOARD_LAYOUT.m_leftWidth, G_DASHBOARD_LAYOUT.m_normalHeight);
+    QRect rect = QRect(G_DASHBOARD_LAYOUT.m_leftWidth, 0,
+                       this->width() - G_DASHBOARD_LAYOUT.m_rightWidth - G_DASHBOARD_LAYOUT.m_leftWidth,
+                       G_DASHBOARD_LAYOUT.m_normalHeight);
     _paintPixmap(_m_middleFrame, rect, _getPixmap(QSanRoomSkin::S_SKIN_KEY_MIDDLEFRAME), this);
     QRect rect2 = QRect(0, 0, this->width(), G_DASHBOARD_LAYOUT.m_normalHeight);
     trusting_item->setRect(rect2);
     trusting_item->setPos(0, 0);
-    trusting_text->setPos((rect2.width() - Config.BigFont.pixelSize() * 4.5) / 2, (rect2.height() - Config.BigFont.pixelSize()) / 2);
+    trusting_text->setPos((rect2.width() - Config.BigFont.pixelSize() * 4.5) / 2,
+                          (rect2.height() - Config.BigFont.pixelSize()) / 2);
     _m_rightFrame->setX(_m_width - G_DASHBOARD_LAYOUT.m_rightWidth);
     Q_ASSERT(button_widget);
     button_widget->setX(rect.width() - getButtonWidgetWidth());
@@ -295,16 +301,20 @@ void Dashboard::addHandCards(QList<CardItem *> &card_items)
 
 void Dashboard::_addHandCard(CardItem *card_item, bool prepend, const QString &footnote)
 {
-    if (ClientInstance->getStatus() == Client::Playing)
-        card_item->setEnabled(card_item->getCard()->isAvailable(Self));
-    else
-        card_item->setEnabled(false);
+    if (!card_item->isEnabled())
+        card_item->setEnabled(true);
+
+    if (ClientInstance->getStatus() == Client::Playing && card_item->getCard()) {
+        const bool frozen = !card_item->getCard()->isAvailable(Self);
+        card_item->setFrozen(frozen, false);
+        if (!frozen && Config.EnableSuperDrag)
+            card_item->setFlag(ItemIsMovable);
+    } else
+        card_item->setFrozen(true, false);
 
     card_item->setHomeOpacity(1.0);
     card_item->setRotation(0.0);
     card_item->setFlag(ItemIsFocusable);
-    if (Config.EnableSuperDrag)
-        card_item->setFlag(ItemIsMovable);
     card_item->setZValue(0.1);
     if (!footnote.isEmpty()) {
         card_item->setFootnote(footnote);
@@ -320,6 +330,11 @@ void Dashboard::_addHandCard(CardItem *card_item, bool prepend, const QString &f
     connect(card_item, &CardItem::thrown, this, &Dashboard::onCardItemThrown);
     connect(card_item, &CardItem::enter_hover, this, &Dashboard::onCardItemHover);
     connect(card_item, &CardItem::leave_hover, this, &Dashboard::onCardItemLeaveHover);
+
+    card_item->setOuterGlowEffectEnabled(true);
+
+    if (m_handCards.size() > maxCardsNumInFirstLine() && m_progressBarPositon != Up)
+        moveProgressBarUp();
 }
 
 void Dashboard::selectCard(const QString &pattern, bool forward, bool multiple)
@@ -714,7 +729,8 @@ void Dashboard::_createEquipBorderAnimations()
             _m_equipBorders[i] = NULL;
             continue;
         }
-        _m_equipBorders[i]->setPos(_dlayout->m_equipBorderPos + _dlayout->m_equipSelectedOffset + _dlayout->m_equipAreas[i].topLeft());
+        _m_equipBorders[i]->setPos(_dlayout->m_equipBorderPos + _dlayout->m_equipSelectedOffset
+                                   + _dlayout->m_equipAreas[i].topLeft());
         _m_equipBorders[i]->hide();
     }
 }
@@ -760,6 +776,36 @@ void Dashboard::_setEquipBorderAnimation(int index, bool turnOn)
     _mutexEquipAnim.unlock();
 }
 
+void Dashboard::moveProgressBarUp()
+{
+    QPoint pos = _m_progressBar->pos();
+    pos.setY(pos.y() - 20);
+    _m_progressBar->move(pos);
+    m_progressBarPositon = Up;
+}
+
+void Dashboard::moveProgressBarDown()
+{
+    QPoint pos = _m_progressBar->pos();
+    pos.setY(pos.y() + 20);
+    _m_progressBar->move(pos);
+    m_progressBarPositon = Down;
+}
+
+int Dashboard::maxCardsNumInFirstLine() const
+{
+    int maxCards = Config.MaxCards;
+
+    int n = m_handCards.length();
+
+    if (maxCards >= n)
+        maxCards = n;
+    else if (maxCards <= (n - 1) / 2 + 1)
+        maxCards = (n - 1) / 2 + 1;
+
+    return maxCards;
+}
+
 void Dashboard::adjustCards(bool playAnimation)
 {
     _adjustCards();
@@ -769,16 +815,8 @@ void Dashboard::adjustCards(bool playAnimation)
 
 void Dashboard::_adjustCards()
 {
-    int maxCards = Config.MaxCards;
+    int maxCards = maxCardsNumInFirstLine();
 
-    int n = m_handCards.length();
-    if (n == 0)
-        return;
-
-    if (maxCards >= n)
-        maxCards = n;
-    else if (maxCards <= (n - 1) / 2 + 1)
-        maxCards = (n - 1) / 2 + 1;
     QList<CardItem *> row;
     QSanRoomSkin::DashboardLayout *layout = (QSanRoomSkin::DashboardLayout *)_m_layout;
     int leftWidth = layout->m_leftWidth;
@@ -787,6 +825,10 @@ void Dashboard::_adjustCards()
     QRect rowRect = QRect(leftWidth, layout->m_normalHeight - cardHeight - 3, middleWidth, cardHeight);
     for (int i = 0; i < maxCards; i++)
         row.push_back(m_handCards[i]);
+
+    int n = m_handCards.size();
+    if (n == 0)
+        return;
 
     _m_highestZ = n;
     _disperseCards(row, rowRect, Qt::AlignLeft, true, true);
@@ -843,13 +885,19 @@ QList<CardItem *> Dashboard::removeHandCards(const QList<int> &card_ids)
             selected = NULL;
         Q_ASSERT(card_item);
         if (card_item) {
-            animations->effectOut(card_item);
             m_handCards.removeOne(card_item);
             card_item->disconnect(this);
+            card_item->setOuterGlowEffectEnabled(false);
+            if (card_item->isFrozen())
+                card_item->setEnabled(false);
             result.append(card_item);
         }
     }
     updateHandcardNum();
+
+    if (m_handCards.size() <= maxCardsNumInFirstLine() && m_progressBarPositon != Down)
+        moveProgressBarDown();
+
     return result;
 }
 
@@ -984,8 +1032,8 @@ void Dashboard::reverseSelection()
 void Dashboard::cancelNullification()
 {
     ClientInstance->m_noNullificationThisTime = !ClientInstance->m_noNullificationThisTime;
-    if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE && Sanguosha->getCurrentCardUsePattern() == "nullification"
-        && RoomSceneInstance->isCancelButtonEnabled()) {
+    if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE
+        && Sanguosha->getCurrentCardUsePattern() == "nullification" && RoomSceneInstance->isCancelButtonEnabled()) {
         RoomSceneInstance->doCancelButton();
     }
 }
@@ -1270,7 +1318,8 @@ void Dashboard::updatePending()
             delete pending_card;
             pending_card = NULL;
         }
-        if (view_as_skill->objectName() == "ikguihuo" && Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY) {
+        if (view_as_skill->objectName() == "ikguihuo"
+            && Sanguosha->currentRoomState()->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY) {
             foreach (CardItem *item, m_handCards) {
                 item->hideFootnote();
                 if (new_pending_card && item->getCard() == cards.first()) {

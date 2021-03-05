@@ -172,7 +172,15 @@ QAbstractAnimation *CardItem::getGoBackAnimation(bool doFade, bool smoothTransit
     }
     m_animationMutex.unlock();
     connect(m_currentAnimation, &QAbstractAnimation::finished, this, &CardItem::movement_animation_finished);
+    connect(m_currentAnimation, &QAbstractAnimation::destroyed, this, &CardItem::currentAnimationDestroyed);
     return m_currentAnimation;
+}
+
+void CardItem::currentAnimationDestroyed()
+{
+    QObject *ca = sender();
+    if (ca == m_currentAnimation)
+        m_currentAnimation = NULL;
 }
 
 void CardItem::showAvatar(const General *general)
@@ -315,11 +323,13 @@ void CardItem::mouseDoubleClickEvent(QGraphicsSceneMouseEvent *event)
 void CardItem::hoverEnterEvent(QGraphicsSceneHoverEvent *)
 {
     emit enter_hover();
+    emit hoverChanged(true);
 }
 
 void CardItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *)
 {
     emit leave_hover();
+    emit hoverChanged(false);
 }
 
 void CardItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *, QWidget *)

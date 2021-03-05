@@ -276,6 +276,18 @@ protected:
     QWinTaskbarButton *taskbarButton;
 #endif
 
+private:
+    void moveProgressBarUp();
+    void moveProgressBarDown();
+
+    enum ProgressBarPostion
+    {
+        Up,
+        Down
+    } m_progressBarPositon;
+
+    int maxCardsNumInFirstLine() const;
+
 protected slots:
     virtual void _onEquipSelectChanged();
 
