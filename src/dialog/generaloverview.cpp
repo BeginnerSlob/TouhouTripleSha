@@ -44,13 +44,15 @@ QWidget *GeneralSearch::createInfoTab()
     layout->addWidget(include_hidden_checkbox);
 
     nickname_label = new QLabel(tr("Nickname"));
-    nickname_label->setToolTip(tr("Input characters included by the nickname. '?' and '*' is available. Every nickname meets the condition if the line is empty."));
+    nickname_label->setToolTip(tr("Input characters included by the nickname. '?' and '*' is available. Every nickname meets "
+                                  "the condition if the line is empty."));
     nickname_edit = new QLineEdit;
     nickname_edit->clear();
     layout->addLayout(HLay(nickname_label, nickname_edit));
 
     name_label = new QLabel(tr("Name"));
-    name_label->setToolTip(tr("Input characters included by the name. '?' and '*' is available. Every name meets the condition if the line is empty."));
+    name_label->setToolTip(tr("Input characters included by the name. '?' and '*' is available. Every name meets the condition "
+                              "if the line is empty."));
     name_edit = new QLineEdit;
     name_edit->clear();
     layout->addLayout(HLay(name_label, name_edit));
@@ -313,6 +315,8 @@ void GeneralOverview::fillGenerals(const QList<const General *> &generals, bool 
         kingdom = Sanguosha->translate(general->getKingdom());
         gender = general->isMale() ? tr("Male") : (general->isFemale() ? tr("Female") : tr("NoGender"));
         max_hp = QString::number(general->getMaxHp());
+        if (general->getStartHp() != general->getMaxHp())
+            max_hp.prepend(QString::number(general->getStartHp()) + "/");
         package = Sanguosha->translate(general->getPackage());
 
         QString nickname = Sanguosha->translate("#" + general_name);
@@ -614,8 +618,8 @@ void GeneralOverview::askChangeSkin()
     ui->illustratorLineEdit->setText(getIllustratorInfo(general_name));
 }
 
-void GeneralOverview::startSearch(bool include_hidden, const QString &nickname, const QString &name, const QStringList &genders, const QStringList &kingdoms, int lower, int upper,
-                                  const QStringList &packages)
+void GeneralOverview::startSearch(bool include_hidden, const QString &nickname, const QString &name, const QStringList &genders,
+                                  const QStringList &kingdoms, int lower, int upper, const QStringList &packages)
 {
     QList<const General *> generals;
     foreach (const General *general, all_generals) {

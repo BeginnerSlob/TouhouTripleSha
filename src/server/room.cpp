@@ -2248,7 +2248,7 @@ void Room::changeHero(ServerPlayer *player, const QString &new_general, bool ful
     player->setMaxHp(player->getGeneralMaxHp());
 
     if (full_state)
-        player->setHp(player->getMaxHp());
+        player->setHp(player->getGeneralStartHp());
     broadcastProperty(player, "hp");
     broadcastProperty(player, "maxhp");
 
@@ -5424,8 +5424,7 @@ Card::Suit Room::askForSuit(ServerPlayer *player, const QString &reason, const Q
         return ai->askForSuit(reason);
 
     JsonArray args;
-    args << reason
-         << limits;
+    args << reason << limits;
     bool success = doRequest(player, S_COMMAND_CHOOSE_SUIT, args, true);
 
     Card::Suit suit = Card::AllSuits[qrand() % 4];
@@ -6222,7 +6221,7 @@ void Room::makeReviving(const QString &name)
     revivePlayer(player);
     removeTag("HpChangedData");
     setPlayerProperty(player, "maxhp", player->getGeneralMaxHp());
-    setPlayerProperty(player, "hp", player->getMaxHp());
+    setPlayerProperty(player, "hp", player->getGeneralStartHp());
 }
 
 void Room::fillAG(const QList<int> &card_ids, ServerPlayer *who, const QList<int> &disabled_ids)

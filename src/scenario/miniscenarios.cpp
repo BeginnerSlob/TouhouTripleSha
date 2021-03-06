@@ -184,7 +184,7 @@ bool MiniSceneRule::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer 
 
             str = this->players.at(i)["hpadj"];
             if (str != QString()) {
-                sp->setMaxHp(sp->getMaxHp() + str.toInt());
+                sp->setMaxHp(sp->getGeneralStartHp() + str.toInt());
                 room->broadcastProperty(sp, "maxhp");
             }
 
@@ -204,14 +204,16 @@ bool MiniSceneRule::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer 
                 if (!ok)
                     room->installEquip(sp, equip);
                 else
-                    room->moveCardTo(Sanguosha->getCard(equip.toInt()), NULL, sp, Player::PlaceEquip, CardMoveReason(CardMoveReason::S_REASON_UNKNOWN, QString()));
+                    room->moveCardTo(Sanguosha->getCard(equip.toInt()), NULL, sp, Player::PlaceEquip,
+                                     CardMoveReason(CardMoveReason::S_REASON_UNKNOWN, QString()));
             }
 
             str = this->players.at(i)["judge"];
             if (str != QString()) {
                 QStringList judges = str.split(",");
                 foreach (QString judge, judges)
-                    room->moveCardTo(Sanguosha->getCard(judge.toInt()), NULL, sp, Player::PlaceDelayedTrick, CardMoveReason(CardMoveReason::S_REASON_UNKNOWN, QString()));
+                    room->moveCardTo(Sanguosha->getCard(judge.toInt()), NULL, sp, Player::PlaceDelayedTrick,
+                                     CardMoveReason(CardMoveReason::S_REASON_UNKNOWN, QString()));
             }
 
             str = this->players.at(i)["hand"];

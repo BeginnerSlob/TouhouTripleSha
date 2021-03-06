@@ -100,6 +100,7 @@ public:
     void clearSelected();
 
     int getGeneralMaxHp() const;
+    int getGeneralStartHp() const;
     virtual QString getGameMode() const;
 
     QString getIp() const;

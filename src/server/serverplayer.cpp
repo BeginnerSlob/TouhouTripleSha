@@ -1052,6 +1052,44 @@ int ServerPlayer::getGeneralMaxHp() const
     return max_hp;
 }
 
+int ServerPlayer::getGeneralStartHp() const
+{
+    int start_hp = 0;
+
+    if (getGeneral2() == NULL)
+        start_hp = getGeneral()->getStartHp();
+    else {
+        int first = getGeneral()->getStartHp();
+        int second = getGeneral2()->getStartHp();
+
+        int plan = Config.MaxHpScheme;
+        if (Config.GameMode.contains("_mini_") || Config.GameMode == "custom_scenario")
+            plan = 1;
+
+        switch (plan) {
+        case 3:
+            start_hp = (first + second) / 2;
+            break;
+        case 2:
+            start_hp = qMax(first, second);
+            break;
+        case 1:
+            start_hp = qMin(first, second);
+            break;
+        default:
+            start_hp = first + second - Config.Scheme0Subtraction;
+            break;
+        }
+
+        start_hp = qMin(start_hp, getMaxHp());
+    }
+
+    if (room->hasWelfare(this))
+        start_hp++;
+
+    return start_hp;
+}
+
 QString ServerPlayer::getGameMode() const
 {
     return room->getMode();

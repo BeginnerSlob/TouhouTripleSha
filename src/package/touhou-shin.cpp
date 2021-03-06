@@ -3674,8 +3674,8 @@ TouhouShinPackage::TouhouShinPackage()
     General *shin025 = new General(this, "shin025", "kaze");
     shin025->addSkill(new ThRuizhi);
 
-    /*General *shin026;
-    General *shin027;
+    General *shin026 = new General(this, "shin026", "hana", 5, 4);
+    /*General *shin027;
     General *shin028;*/
 
     General *shin029 = new General(this, "shin029", "kaze");

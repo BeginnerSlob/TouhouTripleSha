@@ -7,10 +7,34 @@
 #include <QFile>
 #include <QSize>
 
-General::General(Package *package, const QString &name, const QString &kingdom, int max_hp, bool male, bool hidden, bool never_shown)
+General::General(Package *package, const QString &name, const QString &kingdom, int max_hp, int start_hp, bool male,
+                 bool hidden, bool never_shown)
     : QObject(package)
     , kingdom(kingdom)
     , max_hp(max_hp)
+    , start_hp(start_hp)
+    , gender(male ? Male : Female)
+    , hidden(hidden)
+    , never_shown(never_shown)
+{
+    static QChar lord_symbol('$');
+    if (name.endsWith(lord_symbol)) {
+        QString copy = name;
+        copy.remove(lord_symbol);
+        lord = true;
+        setObjectName(copy);
+    } else {
+        lord = false;
+        setObjectName(name);
+    }
+}
+
+General::General(Package *package, const QString &name, const QString &kingdom, int max_hp, bool male, bool hidden,
+                 bool never_shown)
+    : QObject(package)
+    , kingdom(kingdom)
+    , max_hp(max_hp)
+    , start_hp(max_hp)
     , gender(male ? Male : Female)
     , hidden(hidden)
     , never_shown(never_shown)
@@ -30,6 +54,11 @@ General::General(Package *package, const QString &name, const QString &kingdom, 
 int General::getMaxHp() const
 {
     return max_hp;
+}
+
+int General::getStartHp() const
+{
+    return start_hp;
 }
 
 QString General::getKingdom() const
@@ -107,7 +136,8 @@ QList<const Skill *> General::getSkillList() const
 {
     QList<const Skill *> skills;
     foreach (QString skill_name, skillname_list) {
-        if (skill_name == "thjibu" && ServerInfo.DuringGame && ServerInfo.GameMode == "02_1v1" && ServerInfo.GameRuleMode != "Classical")
+        if (skill_name == "thjibu" && ServerInfo.DuringGame && ServerInfo.GameMode == "02_1v1"
+            && ServerInfo.GameRuleMode != "Classical")
             skill_name = "xiaoxi";
         const Skill *skill = Sanguosha->getSkill(skill_name);
         if (skill)
@@ -175,7 +205,10 @@ QString General::getSkillDescription(bool include_name) const
 
     if (include_name) {
         QString color_str = Sanguosha->getKingdomColor(kingdom).name();
-        QString name = QString("<br/><font color=%1><b>%2-%3</b></font>").arg(color_str).arg(objectName().toUpper()).arg(Sanguosha->translate(objectName()));
+        QString name = QString("<br/><font color=%1><b>%2-%3</b></font>")
+                           .arg(color_str)
+                           .arg(objectName().toUpper())
+                           .arg(Sanguosha->translate(objectName()));
         for (int i = 0; i < max_hp; i++)
             name.prepend("<img src='image/system/magatamas/4.png' height = 12/>");
         name.prepend(QString("<img src='image/kingdom/icon/%1.png'/>    ").arg(kingdom));

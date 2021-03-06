@@ -24,10 +24,14 @@ class General : public QObject
     Q_PROPERTY(bool hidden READ isHidden CONSTANT)
 
 public:
-    explicit General(Package *package, const QString &name, const QString &kingdom, int max_hp = 4, bool male = true, bool hidden = false, bool never_shown = false);
+    explicit General(Package *package, const QString &name, const QString &kingdom, int max_hp, int start_hp, bool male = true,
+                     bool hidden = false, bool never_shown = false);
+    explicit General(Package *package, const QString &name, const QString &kingdom, int max_hp = 4, bool male = true,
+                     bool hidden = false, bool never_shown = false);
 
     // property getters/setters
     int getMaxHp() const;
+    int getStartHp() const;
     QString getKingdom() const;
     bool isMale() const;
     bool isFemale() const;
@@ -73,6 +77,7 @@ public slots:
 private:
     QString kingdom;
     int max_hp;
+    int start_hp;
     Gender gender;
     bool lord;
     QSet<QString> extra_set;
