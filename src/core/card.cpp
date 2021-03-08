@@ -429,13 +429,16 @@ QString Card::subcardString() const
 
 void Card::addSubcards(const QList<const Card *> &cards)
 {
-    foreach (const Card *card, cards)
-        subcards.append(card->getId());
+    if (!cards.isEmpty()) {
+        foreach (const Card *card, cards)
+            subcards.append(card->getId());
+    }
 }
 
 void Card::addSubcards(const QList<int> &subcards_list)
 {
-    subcards.append(subcards_list);
+    if (!subcards_list.isEmpty())
+        subcards.append(subcards_list);
 }
 
 int Card::subcardsLength() const

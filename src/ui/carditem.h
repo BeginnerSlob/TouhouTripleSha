@@ -105,7 +105,6 @@ protected:
     QAbstractAnimation *m_currentAnimation;
     QImage _m_footnoteImage;
     bool _m_showFootnote;
-    // QGraphicsPixmapItem *_m_footnoteItem;
     QMutex m_animationMutex;
     double m_opacityAtHome;
     bool m_isSelected;

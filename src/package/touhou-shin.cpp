@@ -3545,6 +3545,560 @@ public:
     }
 };
 
+ThLingweiCard::ThLingweiCard()
+{
+}
+
+bool ThLingweiCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
+    Card *card = NULL;
+    if (!user_string.isEmpty()) {
+        card = Sanguosha->cloneCard(user_string.split("+").first());
+        card->deleteLater();
+    }
+    return card && card->targetFilter(targets, to_select, Self) && !Self->isProhibited(to_select, card, targets);
+}
+
+bool ThLingweiCard::targetFixed() const
+{
+    Card *card = NULL;
+    if (!user_string.isEmpty()) {
+        card = Sanguosha->cloneCard(user_string.split("+").first());
+        card->deleteLater();
+    }
+    return card && card->targetFixed();
+}
+
+bool ThLingweiCard::targetsFeasible(const QList<const Player *> &targets, const Player *Self) const
+{
+    Card *card = NULL;
+    if (!user_string.isEmpty()) {
+        card = Sanguosha->cloneCard(user_string.split("+").first());
+        card->deleteLater();
+    }
+    return card && card->targetsFeasible(targets, Self);
+}
+
+const Card *ThLingweiCard::validateInResponse(ServerPlayer *user) const
+{
+    Room *room = user->getRoom();
+
+    QString to_use;
+    if (user_string == "peach+analeptic") {
+        QStringList to_uses;
+        to_uses << "peach";
+        if (!ServerInfo.Extensions.contains("!maneuvering"))
+            to_uses << "analeptic";
+        to_use = room->askForChoice(user, "thlingwei_saveself", to_uses.join("+"));
+    } else
+        to_use = user_string;
+
+    ServerPlayer *source = room->findPlayer(user->property("thlingweisource").toString());
+    Q_ASSERT(source && source->isAlive());
+
+    if (user == source) {
+        if (to_use == "slash") {
+            Q_ASSERT(subcardsLength() == 1);
+            LogMessage log;
+            log.type = "$DiscardCardWithSkill";
+            log.from = source;
+            log.card_str = QString::number(getEffectiveId());
+            log.arg = "thlingwei";
+            room->sendLog(log);
+            room->notifySkillInvoked(source, "thlingwei");
+            CardMoveReason reason(CardMoveReason::S_REASON_THROW, source->objectName());
+            room->moveCardTo(this, source, NULL, Player::DiscardPile, reason, true);
+        } else {
+            LogMessage log;
+            log.type = "#InvokeSkill";
+            log.from = source;
+            log.arg = "thlingwei";
+            room->sendLog(log);
+
+            room->loseMaxHp(source);
+        }
+    } else {
+        if (to_use == "slash") {
+            if (!room->askForCard(source, ".", "@thlingwei-slash:" + user->objectName(), QVariant(), "thlingwei")) {
+                room->setPlayerFlag(user, "Global_ThLingweiFailed");
+                return NULL;
+            }
+        } else {
+            LogMessage log;
+            log.type = "#InvokeSkill";
+            log.from = user;
+            log.arg = "thlingwei";
+            room->sendLog(log);
+
+            if (source->askForSkillInvoke(objectName(), QVariant::fromValue(user)))
+                room->loseMaxHp(source);
+            else {
+                room->setPlayerFlag(user, "Global_ThLingweiFailed");
+                return NULL;
+            }
+        }
+    }
+
+    if (!user->isAlive())
+        return NULL;
+    Card *use_card = Sanguosha->cloneCard(to_use);
+    use_card->setSkillName("_thlingwei");
+    return use_card;
+}
+
+const Card *ThLingweiCard::validate(CardUseStruct &cardUse) const
+{
+    ServerPlayer *user = cardUse.from;
+    Room *room = user->getRoom();
+    QString to_use = user_string;
+
+    ServerPlayer *source = room->findPlayer(user->property("thlingweisource").toString());
+    Q_ASSERT(source && source->isAlive());
+
+    if (user == source) {
+        if (to_use == "slash") {
+            Q_ASSERT(subcardsLength() == 1);
+            LogMessage log;
+            log.type = "$DiscardCardWithSkill";
+            log.from = source;
+            log.card_str = QString::number(getEffectiveId());
+            log.arg = "thlingwei";
+            room->sendLog(log);
+            room->notifySkillInvoked(source, "thlingwei");
+            CardMoveReason reason(CardMoveReason::S_REASON_THROW, source->objectName());
+            room->moveCardTo(this, source, NULL, Player::DiscardPile, reason, true);
+        } else {
+            LogMessage log;
+            log.type = "#InvokeSkill";
+            log.from = source;
+            log.arg = "thlingwei";
+            room->sendLog(log);
+
+            room->loseMaxHp(source);
+        }
+    } else {
+        if (to_use == "slash") {
+            if (!room->askForCard(source, ".", "@thlingwei-slash:" + user->objectName(), QVariant(), "thlingwei")) {
+                room->setPlayerFlag(user, "Global_ThLingweiFailed");
+                return NULL;
+            }
+        } else {
+            LogMessage log;
+            log.type = "#InvokeSkill";
+            log.from = user;
+            log.arg = "thlingwei";
+            room->sendLog(log);
+
+            if (source->askForSkillInvoke(objectName(), QVariant::fromValue(user)))
+                room->loseMaxHp(source);
+            else {
+                room->setPlayerFlag(user, "Global_ThLingweiFailed");
+                return NULL;
+            }
+        }
+    }
+
+    if (!user->isAlive())
+        return NULL;
+
+    Card *use_card = Sanguosha->cloneCard(to_use);
+    use_card->setSkillName("_thlingwei");
+    return use_card;
+}
+
+class ThLingweiGivenSkill : public ZeroCardViewAsSkill
+{
+public:
+    ThLingweiGivenSkill()
+        : ZeroCardViewAsSkill("thlingweiv")
+    {
+        attached_lord_skill = true;
+    }
+
+    virtual SkillDialog *getDialog() const
+    {
+        return ThMimengDialog::getInstance("thlingwei", true, false, true, true);
+    }
+
+    virtual const Card *viewAs() const
+    {
+        if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+            ThLingweiCard *tianyan_card = new ThLingweiCard;
+            QString pattern = Sanguosha->currentRoomState()->getCurrentCardUsePattern();
+            if (pattern == "peach+analeptic" && Self->getMark("Global_PreventPeach") > 0)
+                pattern = "analeptic";
+            tianyan_card->setUserString(pattern);
+            return tianyan_card;
+        }
+
+        Q_ASSERT(Sanguosha->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_RESPONSE);
+
+        const Card *c = Self->tag["thlingwei"].value<const Card *>();
+        if (c) {
+            ThLingweiCard *card = new ThLingweiCard;
+            card->setUserString(c->objectName());
+            return card;
+        } else
+            return NULL;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        if (player->hasFlag("Global_ThLingweiFailed"))
+            return false;
+
+        if (player->getMark("@assistant") > 0) {
+            const Player *source = NULL;
+            QString obj = player->property("thlingweisource").toString();
+            if (player->objectName() == obj)
+                source = player;
+            else {
+                foreach (const Player *p, player->getSiblings()) {
+                    if (p->objectName() == obj) {
+                        source = p;
+                        break;
+                    }
+                }
+            }
+
+            if (!source || source->isDead())
+                return false;
+
+            Slash *slash = new Slash(Card::NoSuit, 0);
+            slash->deleteLater();
+            if (slash->isAvailable(player) && source->canDiscard(source, "h"))
+                return true;
+
+            Peach *peach = new Peach(Card::NoSuit, 0);
+            peach->deleteLater();
+            if (peach->isAvailable(player))
+                return true;
+
+            Analeptic *analeptic = new Analeptic(Card::NoSuit, 0);
+            analeptic->deleteLater();
+            if (analeptic->isAvailable(player))
+                return true;
+        }
+        return false;
+    }
+
+    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const
+    {
+        if (player->hasFlag("Global_ThLingweiFailed"))
+            return false;
+
+        if (player->getMark("@assistant") > 0) {
+            const Player *source = NULL;
+            QString obj = player->property("thlingweisource").toString();
+            if (player->objectName() == obj)
+                source = player;
+            else {
+                foreach (const Player *p, player->getSiblings()) {
+                    if (p->objectName() == obj) {
+                        source = p;
+                        break;
+                    }
+                }
+            }
+
+            if (!source || source->isDead())
+                return false;
+
+            if (pattern == "slash") {
+                if (source->canDiscard(source, "h")
+                    && Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE)
+                    return true;
+            } else if (pattern == "peach")
+                return player->getMark("Global_PreventPeach") == 0;
+            else
+                return pattern.contains("analeptic");
+        }
+        return false;
+    }
+};
+
+class ThLingweiViewAsSkill : public ViewAsSkill
+{
+public:
+    ThLingweiViewAsSkill()
+        : ViewAsSkill("thlingwei")
+    {
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
+    {
+        if (!selected.isEmpty())
+            return false;
+
+        QString obj = Self->property("thlingweisource").toString();
+        if (Self->objectName() == obj) {
+            if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+                if (Sanguosha->getCurrentCardUsePattern() == "slash")
+                    return !to_select->isEquipped() && !Self->isJilei(to_select);
+            } else {
+                if (Self->tag["thlingwei"].value<const Card *>()->isKindOf("Slash"))
+                    return !to_select->isEquipped() && !Self->isJilei(to_select);
+            }
+        }
+
+        return false;
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const
+    {
+        QString obj = Self->property("thlingweisource").toString();
+        if (Self->objectName() == obj) {
+            if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+                if (Sanguosha->getCurrentCardUsePattern() == "slash") {
+                    if (cards.isEmpty())
+                        return NULL;
+                }
+            } else {
+                if (Self->tag["thlingwei"].value<const Card *>()->isKindOf("Slash")) {
+                    if (cards.isEmpty())
+                        return NULL;
+                }
+            }
+        }
+
+        if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE) {
+            ThLingweiCard *tianyan_card = new ThLingweiCard;
+            QString pattern = Sanguosha->currentRoomState()->getCurrentCardUsePattern();
+            if (pattern == "peach+analeptic" && Self->getMark("Global_PreventPeach") > 0)
+                pattern = "analeptic";
+            tianyan_card->setUserString(pattern);
+            tianyan_card->addSubcards(cards);
+            return tianyan_card;
+        }
+
+        Q_ASSERT(Sanguosha->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_RESPONSE);
+
+        const Card *c = Self->tag["thlingwei"].value<const Card *>();
+        if (c) {
+            ThLingweiCard *card = new ThLingweiCard;
+            card->setUserString(c->objectName());
+            card->addSubcards(cards);
+            return card;
+        } else
+            return NULL;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        if (player->hasFlag("Global_ThLingweiFailed"))
+            return false;
+
+        if (player->getMark("@assistant") > 0) {
+            const Player *source = NULL;
+            QString obj = player->property("thlingweisource").toString();
+            if (player->objectName() == obj)
+                source = player;
+            else {
+                foreach (const Player *p, player->getSiblings()) {
+                    if (p->objectName() == obj) {
+                        source = p;
+                        break;
+                    }
+                }
+            }
+
+            if (!source || source->isDead())
+                return false;
+
+            Slash *slash = new Slash(Card::NoSuit, 0);
+            slash->deleteLater();
+            if (slash->isAvailable(player) && source->canDiscard(source, "h"))
+                return true;
+
+            Peach *peach = new Peach(Card::NoSuit, 0);
+            peach->deleteLater();
+            if (peach->isAvailable(player))
+                return true;
+
+            Analeptic *analeptic = new Analeptic(Card::NoSuit, 0);
+            analeptic->deleteLater();
+            if (analeptic->isAvailable(player))
+                return true;
+        }
+        return false;
+    }
+
+    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const
+    {
+        if (player->hasFlag("Global_ThLingweiFailed"))
+            return false;
+
+        if (player->getMark("@assistant") > 0) {
+            const Player *source = NULL;
+            QString obj = player->property("thlingweisource").toString();
+            if (player->objectName() == obj)
+                source = player;
+            else {
+                foreach (const Player *p, player->getSiblings()) {
+                    if (p->objectName() == obj) {
+                        source = p;
+                        break;
+                    }
+                }
+            }
+
+            if (!source || source->isDead())
+                return false;
+
+            if (pattern == "slash") {
+                if (source->canDiscard(source, "h")
+                    && Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE)
+                    return true;
+            } else if (pattern == "peach")
+                return player->getMark("Global_PreventPeach") == 0;
+            else
+                return pattern.contains("analeptic");
+        }
+        return false;
+    }
+};
+
+class ThLingwei : public TriggerSkill
+{
+public:
+    ThLingwei()
+        : TriggerSkill("thlingwei")
+    {
+        events << EventAcquireSkill << EventLoseSkill << GameStart << EventPhaseStart << CardAsked;
+        view_as_skill = new ThLingweiViewAsSkill;
+    }
+
+    virtual SkillDialog *getDialog() const
+    {
+        return ThMimengDialog::getInstance("thlingwei", true, false, true, true);
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data,
+                                    ServerPlayer *&) const
+    {
+        if (triggerEvent == EventAcquireSkill && data.toString() == "thlingwei") {
+            foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                if (p->getMark("@assistant") > 0) {
+                    if (p->hasSkill("thlingwei"))
+                        continue;
+
+                    if (!p->hasSkill("thlingweiv") && p->property("thlingweisource").toString() == player->objectName())
+                        room->attachSkillToPlayer(p, "thlingweiv");
+                    break;
+                }
+            }
+        } else if (triggerEvent == EventLoseSkill && data.toString() == "thlingwei") {
+            foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+                if (p->getMark("@assistant") > 0) {
+                    if (p->hasSkill("thlingweiv") && p->property("thlingweisource").toString() == player->objectName())
+                        room->detachSkillFromPlayer(p, "thlingweiv", true);
+                }
+            }
+            return QStringList();
+        } else if (triggerEvent == GameStart || (triggerEvent == EventPhaseStart && player->getPhase() == Player::Play)) {
+            if (TriggerSkill::triggerable(player))
+                return QStringList(objectName());
+        } else if (triggerEvent == CardAsked && player && player->isAlive() && player->getMark("@assistant") > 0) {
+            ServerPlayer *source = room->findPlayer(player->property("thlingweisource").toString());
+            if (TriggerSkill::triggerable(source)) {
+                QString pattern = data.toStringList().first();
+                if (pattern == "slash" && source->canDiscard(source, "h"))
+                    return QStringList(objectName());
+                else if (pattern == "jink"
+                         && Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_RESPONSE_USE)
+                    return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        if (triggerEvent == GameStart || triggerEvent == EventPhaseStart) {
+            ServerPlayer *target
+                = room->askForPlayerChosen(player, room->getAlivePlayers(), objectName(), "@thlingwei", true, true);
+            if (target) {
+                room->broadcastSkillInvoke(objectName());
+                player->tag["ThLingweiTarget"] = QVariant::fromValue(target);
+                return true;
+            }
+        } else if (triggerEvent == CardAsked) {
+            ServerPlayer *source = room->findPlayer(player->property("thlingweisource").toString());
+            if (player != source) {
+                if (player->askForSkillInvoke(objectName())) {
+                    room->broadcastSkillInvoke(objectName());
+                    return true;
+                }
+            } else {
+                QString pattern = data.toStringList().first();
+                if (pattern == "slash") {
+                    if (room->askForCard(source, ".", "@thlingwei-slash-self", QVariant(), objectName()))
+                        return true;
+                } else {
+                    if (player->askForSkillInvoke(objectName())) {
+                        room->broadcastSkillInvoke(objectName());
+                        room->loseMaxHp(source);
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        if (triggerEvent == GameStart || triggerEvent == EventPhaseStart) {
+            ServerPlayer *target = player->tag["ThLingweiTarget"].value<ServerPlayer *>();
+            player->tag.remove("ThLingweiTarget");
+            if (target) {
+                foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                    if (p->getMark("@assistant") > 0) {
+                        p->loseAllMarks("@assistant");
+                        room->setPlayerProperty(p, "thlingweisource", "");
+                        if (p->hasSkill("thlingweiv"))
+                            room->detachSkillFromPlayer(p, "thlingweiv", true);
+                    }
+                }
+
+                target->gainMark("@assistant");
+                room->setPlayerProperty(target, "thlingweisource", player->objectName());
+                if (!target->hasSkill("thlingweiv") && !target->hasSkill("thlingwei"))
+                    room->attachSkillToPlayer(target, "thlingweiv");
+            }
+        } else if (triggerEvent == CardAsked) {
+            ServerPlayer *source = room->findPlayer(player->property("thlingweisource").toString());
+            QString pattern = data.toStringList().first();
+            if (player == source) {
+                Card *card = Sanguosha->cloneCard(pattern);
+                card->setSkillName("_thlingwei");
+                room->provide(card);
+                return true;
+            } else {
+                if (pattern == "slash") {
+                    if (room->askForCard(source, ".", "@thlingwei-slash:" + player->objectName(), QVariant(), objectName())) {
+                        Slash *slash = new Slash(Card::NoSuit, 0);
+                        slash->setSkillName("_thlingwei");
+                        room->provide(slash);
+                        return true;
+                    }
+                } else {
+                    if (source->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
+                        room->loseMaxHp(source);
+
+                        Jink *jink = new Jink(Card::NoSuit, 0);
+                        jink->setSkillName("_thlingwei");
+                        room->provide(jink);
+
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+};
+
 TouhouShinPackage::TouhouShinPackage()
     : Package("touhou-shin")
 {
@@ -3675,6 +4229,7 @@ TouhouShinPackage::TouhouShinPackage()
     shin025->addSkill(new ThRuizhi);
 
     General *shin026 = new General(this, "shin026", "hana", 5, 4);
+    shin026->addSkill(new ThLingwei);
     /*General *shin027;
     General *shin028;*/
 
@@ -3700,8 +4255,9 @@ TouhouShinPackage::TouhouShinPackage()
     addMetaObject<ThRenmoCard>();
     addMetaObject<ThRuizhiCard>();
     addMetaObject<ThCanfeiCard>();
+    addMetaObject<ThLingweiCard>();
 
-    skills << new ThBaochuiRecord << new ThChipin << new ThAimin << new ThAiminTrigger;
+    skills << new ThBaochuiRecord << new ThChipin << new ThAimin << new ThAiminTrigger << new ThLingweiGivenSkill;
     related_skills.insertMulti("thaimin", "#thaimin");
 }
 
