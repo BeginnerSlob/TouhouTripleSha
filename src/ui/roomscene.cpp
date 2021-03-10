@@ -1873,6 +1873,26 @@ void RoomScene::chooseDirection()
 
 void RoomScene::chooseTriggerOrder(const QString &reason, const QStringList &options, const bool optional)
 {
+    if (options.length() == 1) {
+        QString option = options.first();
+        QString skill_str = option;
+        if (skill_str.contains("*"))
+            skill_str = option.split("*").first();
+        skill_str = skill_str.split(":").last();
+        if (skill_str.contains("'")) // "sgs1'songwei"
+            skill_str = option.split("'").last();
+        else if (skill_str.contains("->")) // "tieqi->sgs4&1"
+            skill_str = option.split("->").first();
+        foreach (QSanSkillButton *button, m_skillButtons) {
+            if (button->getSkill()->objectName() == skill_str) {
+                if (button->getStyle() == QSanSkillButton::S_STYLE_TOGGLE && button->isEnabled() && button->isDown()) {
+                    ClientInstance->onPlayerChooseTriggerOrder(option);
+                    return;
+                }
+            }
+        }
+    }
+
     QApplication::alert(main_window);
     if (!main_window->isActiveWindow())
         Sanguosha->playSystemAudioEffect("pop-up");
@@ -3775,7 +3795,8 @@ void RoomScene::fillCards(const QList<int> &card_ids, const QList<int> &disabled
 {
     bringToFront(card_container);
     card_container->fillCards(card_ids, disabled_ids);
-    card_container->setPos(m_tableCenterPos - QPointF(card_container->boundingRect().width() / 2, card_container->boundingRect().height() / 2));
+    card_container->setPos(m_tableCenterPos
+                           - QPointF(card_container->boundingRect().width() / 2, card_container->boundingRect().height() / 2));
     card_container->show();
 }
 
