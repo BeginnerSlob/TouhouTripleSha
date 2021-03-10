@@ -23,6 +23,7 @@ Dashboard::Dashboard(QGraphicsItem *widget)
     , selected(NULL)
     , view_as_skill(NULL)
     , filter(NULL)
+    , m_progressBarPositon(Down)
 {
     Q_ASSERT(button_widget);
     _dlayout = &G_DASHBOARD_LAYOUT;

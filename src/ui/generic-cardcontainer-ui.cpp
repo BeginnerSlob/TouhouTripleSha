@@ -1,17 +1,19 @@
 #include "generic-cardcontainer-ui.h"
+
 #include "clientplayer.h"
 #include "engine.h"
 #include "roomscene.h"
 #include "standard.h"
+
 #include <QGraphicsColorizeEffect>
 #include <QGraphicsProxyWidget>
 #include <QGraphicsSceneMouseEvent>
+#include <QLabel>
+#include <QMenu>
 #include <QParallelAnimationGroup>
-#include <qlabel.h>
-#include <qmenu.h>
-#include <qpropertyanimation.h>
-#include <qpushbutton.h>
-#include <qtextdocument.h>
+#include <QPropertyAnimation>
+#include <QPushButton.h>
+#include <QTextDocument>
 
 using namespace QSanProtocol;
 
@@ -127,8 +129,7 @@ void PlayerCardContainer::_paintPixmap(QGraphicsPixmapItem *&item, const QRect &
     _paintPixmap(item, rect, _getPixmap(key));
 }
 
-void PlayerCardContainer::_paintPixmap(QGraphicsPixmapItem *&item, const QRect &rect, const QString &key,
-                                       QGraphicsItem *parent)
+void PlayerCardContainer::_paintPixmap(QGraphicsPixmapItem *&item, const QRect &rect, const QString &key, QGraphicsItem *parent)
 {
     _paintPixmap(item, rect, _getPixmap(key), parent);
 }
@@ -875,8 +876,7 @@ void PlayerCardContainer::startHuaShen(QString generalName, QString skillName, b
                 _m_avatarNameItem->hide();
             }
         }
-        _paintPixmap(_m_extraSkillBg, _m_layout->m_extraSkillArea, QSanRoomSkin::S_SKIN_KEY_EXTRA_SKILL_BG,
-                     _getAvatarParent());
+        _paintPixmap(_m_extraSkillBg, _m_layout->m_extraSkillArea, QSanRoomSkin::S_SKIN_KEY_EXTRA_SKILL_BG, _getAvatarParent());
         if (!skillName.isEmpty())
             _m_extraSkillBg->show();
         else
