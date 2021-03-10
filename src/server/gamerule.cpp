@@ -345,8 +345,7 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *play
 
             // coupling IkSishideng here to deal with complicated rule problems
             ServerPlayer *current = room->getCurrent();
-            if (current && current->isAlive() && current->getPhase() != Player::NotActive
-                && current->hasSkill("iksishideng")) {
+            if (current && current->isAlive() && current->getPhase() != Player::NotActive && current->hasSkill("iksishideng")) {
                 if (player != current && player != dying.who) {
                     player->setFlags("iksishideng");
                     room->addPlayerMark(player, "Global_PreventPeach");
@@ -465,7 +464,8 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *play
         DamageStruct damage = data.value<DamageStruct>();
         if (damage.prevented)
             break;
-        if (damage.nature != DamageStruct::Normal && player->isChained() && (damage.chain || damage.invoke_skills.contains("chain")))
+        if (damage.nature != DamageStruct::Normal && player->isChained()
+            && (damage.chain || damage.invoke_skills.contains("chain")))
             room->setPlayerProperty(player, "chained", false);
         if (damage.invoke_skills.contains("chain")) {
             if (damage.nature != DamageStruct::Normal && !damage.chain) {
@@ -555,8 +555,7 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *play
         if (!effect.to->isAlive())
             break;
         if (effect.jink_num == 1) {
-            const Card *jink
-                = room->askForCard(effect.to, "jink", "slash-jink:" + slasher, data, Card::MethodUse, effect.from);
+            const Card *jink = room->askForCard(effect.to, "jink", "slash-jink:" + slasher, data, Card::MethodUse, effect.from);
             room->slashResult(effect, room->isJinkEffected(effect.to, jink) ? jink : NULL);
         } else {
             DummyCard *jink = new DummyCard;

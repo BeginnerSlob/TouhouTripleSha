@@ -4170,7 +4170,7 @@ void Room::startGame()
     foreach (ServerPlayer *player, m_players) {
         Q_ASSERT(player->getGeneral());
         player->setMaxHp(player->getGeneralMaxHp());
-        player->setHp(player->getMaxHp());
+        player->setHp(player->getGeneralStartHp());
         // setup AI
         AI *ai = cloneAI(player);
         ais << ai;

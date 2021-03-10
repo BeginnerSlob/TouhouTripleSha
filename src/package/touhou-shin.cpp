@@ -3836,7 +3836,8 @@ public:
                 if (Sanguosha->getCurrentCardUsePattern() == "slash")
                     return !to_select->isEquipped() && !Self->isJilei(to_select);
             } else {
-                if (Self->tag["thlingwei"].value<const Card *>()->isKindOf("Slash"))
+                const Card *card = Self->tag["thlingwei"].value<const Card *>();
+                if (card && card->isKindOf("Slash"))
                     return !to_select->isEquipped() && !Self->isJilei(to_select);
             }
         }
@@ -3854,7 +3855,8 @@ public:
                         return NULL;
                 }
             } else {
-                if (Self->tag["thlingwei"].value<const Card *>()->isKindOf("Slash")) {
+                const Card *card = Self->tag["thlingwei"].value<const Card *>();
+                if (card && card->isKindOf("Slash")) {
                     if (cards.isEmpty())
                         return NULL;
                 }
