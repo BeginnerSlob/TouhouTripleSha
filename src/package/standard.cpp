@@ -91,7 +91,7 @@ void EquipCard::onUse(Room *room, const CardUseStruct &card_use) const
         room->setPlayerFlag(use.from, "-ThChouceUse");
         int n = use.from->getMark("ThChouce");
         if (n > 0)
-            room->removePlayerCardLimitation(use.from, "use", QString("^SkillCard|.|1~%1$0").arg(n));
+            room->removePlayerCardLimitation(use.from, "use", QString("^SkillCard|.|~%1$0").arg(n));
 
         LogMessage log;
         log.type = "#InvokeSkill";
@@ -312,7 +312,7 @@ void DelayedTrick::onUse(Room *room, const CardUseStruct &card_use) const
         room->setPlayerFlag(use.from, "-ThChouceUse");
         int n = use.from->getMark("ThChouce");
         if (n > 0)
-            room->removePlayerCardLimitation(use.from, "use", QString("^SkillCard|.|1~%1$0").arg(n));
+            room->removePlayerCardLimitation(use.from, "use", QString("^SkillCard|.|~%1$0").arg(n));
 
         LogMessage log;
         log.type = "#InvokeSkill";

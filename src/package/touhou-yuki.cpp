@@ -1041,7 +1041,7 @@ const Card *ThChouceCard::validate(CardUseStruct &card_use) const
     room->setPlayerFlag(player, "ThChouceUse");
     int n = player->getMark("ThChouce");
     if (n > 0)
-        room->setPlayerCardLimitation(player, "use", QString("^SkillCard|.|1~%1").arg(n), false);
+        room->setPlayerCardLimitation(player, "use", QString("^SkillCard|.|~%1").arg(n), false);
     CardUseStruct::CardUseReason reason = Sanguosha->getCurrentCardUseReason();
     if (reason == CardUseStruct::CARD_USE_REASON_RESPONSE_USE)
         new_card = room->askForUseCard(player, user_string, "@thchouce");
@@ -1054,7 +1054,7 @@ const Card *ThChouceCard::validate(CardUseStruct &card_use) const
     }
     if (!new_card) {
         if (n > 0)
-            room->removePlayerCardLimitation(player, "use", QString("^SkillCard|.|1~%1$0").arg(n));
+            room->removePlayerCardLimitation(player, "use", QString("^SkillCard|.|~%1$0").arg(n));
         room->setPlayerFlag(player, "Global_ThChouceFailed");
         room->setPlayerFlag(player, "-ThChouceUse");
         return NULL;
@@ -1069,7 +1069,7 @@ const Card *ThChouceCard::validateInResponse(ServerPlayer *player) const
     room->setPlayerFlag(player, "ThChouceUse");
     int n = player->getMark("ThChouce");
     if (n > 0)
-        room->setPlayerCardLimitation(player, "use", QString("^SkillCard|.|1~%1").arg(n), false);
+        room->setPlayerCardLimitation(player, "use", QString("^SkillCard|.|~%1").arg(n), false);
     CardUseStruct::CardUseReason reason = Sanguosha->getCurrentCardUseReason();
     if (reason == CardUseStruct::CARD_USE_REASON_RESPONSE_USE)
         new_card = room->askForUseCard(player, user_string, "@thchouce");
@@ -1082,7 +1082,7 @@ const Card *ThChouceCard::validateInResponse(ServerPlayer *player) const
     }
     if (!new_card) {
         if (n > 0)
-            room->removePlayerCardLimitation(player, "use", QString("^SkillCard|.|1~%1$0").arg(n));
+            room->removePlayerCardLimitation(player, "use", QString("^SkillCard|.|~%1$0").arg(n));
         room->setPlayerFlag(player, "Global_ThChouceFailed");
         room->setPlayerFlag(player, "-ThChouceUse");
         return NULL;

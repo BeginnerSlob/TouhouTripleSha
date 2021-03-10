@@ -828,7 +828,7 @@ IkXianyuSlashCard::IkXianyuSlashCard()
 
 bool IkXianyuSlashCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
 {
-    Slash *slash = new Slash(Card::SuitToBeDecided, -1);
+    Slash *slash = new Slash(Card::NoSuit, 0);
     if (targets.isEmpty()) {
         bool filter = to_select->hasSkill("ikxianyu") && to_select->getPile("flaw").length() >= 2
             && slash->targetFilter(QList<const Player *>(), to_select, Self);

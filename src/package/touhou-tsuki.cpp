@@ -2529,16 +2529,25 @@ public:
         if (triggerEvent == PreCardUsed) {
             if (player == room->getCurrent() && player->getPhase() != Player::NotActive) {
                 const Card *card = data.value<CardUseStruct>().card;
-                if (card->getTypeId() != Card::TypeSkill)
-                    player->tag["ThGuixuRecord"] = QVariant::fromValue(data.value<CardUseStruct>().card);
+                if (card->getTypeId() != Card::TypeSkill) {
+                    QString color_str;
+                    if (card->isRed())
+                        color_str = "red";
+                    else if (card->isBlack())
+                        color_str = "black";
+                    else
+                        color_str = "no_color";
+                    QString str = QString("%1|%2").arg(card->getType()).arg(color_str);
+                    player->tag["ThGuixuRecord"] = str;
+                }
             }
         } else if (triggerEvent == EventPhaseChanging) {
             if (data.value<PhaseChangeStruct>().to == Player::NotActive)
                 player->tag.remove("ThGuixuRecord");
         } else if (triggerEvent == EventPhaseStart && TriggerSkill::triggerable(player)
                    && player->getPhase() == Player::Finish) {
-            const Card *card = player->tag["ThGuixuRecord"].value<const Card *>();
-            if (card && card->getTypeId() == Card::TypeTrick && (card->isRed() || card->isBlack()))
+            QStringList card = player->tag["ThGuixuRecord"].toString().split("|");
+            if (card.first() == "trick" && card.last() != "no_color")
                 return QStringList(objectName());
         }
         return QStringList();
@@ -2546,11 +2555,8 @@ public:
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        const Card *card = player->tag["ThGuixuRecord"].value<const Card *>();
-        if (card->isRed())
-            room->setPlayerProperty(player, "thguixu", "red");
-        else if (card->isBlack())
-            room->setPlayerProperty(player, "thguixu", "black");
+        QStringList card = player->tag["ThGuixuRecord"].toString().split("|");
+        room->setPlayerProperty(player, "thguixu", card.last());
         room->askForUseCard(player, "@@thguixu", "@thguixu", -1, Card::MethodNone);
         room->setPlayerProperty(player, "thguixu", QVariant());
         return false;
