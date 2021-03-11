@@ -387,7 +387,7 @@ return {
 	
 	["#shin030"] = "誂然造形神",
 	["shin030"] = "埴安神袿姬",--花 - 空 - 3血
-	["&shin030"] = "神袿姬",
+	["&shin030"] = "袿姬",
 	["designer:shin030"] = "永恒の须臾",
 	["illustrator:shin030"] = "minusT",
 	["cv:shin030"] = "暂无",

@@ -4159,7 +4159,7 @@ public:
     }
 };
 
-const QString &ThZuoyongDialog::chuanyuNames = "jink+anaeptic+nullification+fire_attack";
+const QString &ThZuoyongDialog::chuanyuNames = "jink+analeptic+nullification+fire_attack";
 QMap<QString, ThZuoyongDialog::ThChuanyuName> ThZuoyongDialog::chuanyuMap;
 
 bool ThZuoyongDialog::hasNamed(QString name, const Player *player)
