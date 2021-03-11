@@ -3,11 +3,11 @@
 
 #include "card.h"
 #include "package.h"
+#include "skill.h"
 
 class QAbstractButton;
 class QButtonGroup;
 class QVBoxLayout;
-class SkillDialog;
 
 class TouhouShinPackage : public Package
 {

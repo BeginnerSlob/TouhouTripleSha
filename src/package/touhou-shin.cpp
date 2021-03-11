@@ -7,7 +7,6 @@
 #include "general.h"
 #include "maneuvering.h"
 #include "room.h"
-#include "skill.h"
 #include "standard.h"
 #include "touhou-hana.h"
 
@@ -4161,6 +4160,7 @@ public:
 };
 
 const QString &ThZuoyongDialog::chuanyuNames = "jink+anaeptic+nullification+fire_attack";
+QMap<QString, ThZuoyongDialog::ThChuanyuName> ThZuoyongDialog::chuanyuMap;
 
 bool ThZuoyongDialog::hasNamed(QString name, const Player *player)
 {
@@ -4211,7 +4211,7 @@ ThZuoyongDialog::ThZuoyongDialog()
 void ThZuoyongDialog::popup()
 {
     if (Sanguosha->currentRoomState()->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_PLAY) {
-        Self->tag.remove(object_name);
+        Self->tag.remove("thzuoyong");
         emit onButtonClick();
         return;
     }
