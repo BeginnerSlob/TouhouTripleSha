@@ -213,6 +213,7 @@ struct CardsMoveOneTimeStruct
 
     QList<bool> open; // helper to prevent sending card_id to unrelevant clients
     bool is_last_handcard;
+    bool is_last_equip;
 
     inline void removeCardIds(const QList<int> &to_remove)
     {
@@ -237,6 +238,7 @@ struct CardsMoveStruct
         from = NULL;
         to = NULL;
         is_last_handcard = false;
+        is_last_equip = false;
     }
 
     inline CardsMoveStruct(const QList<int> &ids, Player *from, Player *to, Player::Place from_place, Player::Place to_place,
@@ -249,6 +251,7 @@ struct CardsMoveStruct
         this->to = to;
         this->reason = reason;
         this->is_last_handcard = false;
+        this->is_last_equip = false;
         if (from)
             this->from_player_name = from->objectName();
         if (to)
@@ -264,6 +267,7 @@ struct CardsMoveStruct
         this->to = to;
         this->reason = reason;
         this->is_last_handcard = false;
+        this->is_last_equip = false;
         if (to)
             this->to_player_name = to->objectName();
     }
@@ -278,6 +282,7 @@ struct CardsMoveStruct
         this->to = to;
         this->reason = reason;
         this->is_last_handcard = false;
+        this->is_last_equip = false;
         if (from)
             this->from_player_name = from->objectName();
         if (to)
@@ -293,6 +298,7 @@ struct CardsMoveStruct
         this->to = to;
         this->reason = reason;
         this->is_last_handcard = false;
+        this->is_last_equip = false;
         if (to)
             this->to_player_name = to->objectName();
     }
@@ -317,6 +323,7 @@ struct CardsMoveStruct
     CardMoveReason reason;
     bool open; // helper to prevent sending card_id to unrelevant clients
     bool is_last_handcard;
+    bool is_last_equip;
     bool tryParse(const QVariant &);
     QVariant toVariant() const;
     inline bool isRelevant(const Player *player)

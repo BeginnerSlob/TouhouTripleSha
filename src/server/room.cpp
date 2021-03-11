@@ -4479,6 +4479,7 @@ QList<CardsMoveOneTimeStruct> Room::_mergeMoves(QList<CardsMoveStruct> cards_mov
         moveOneTime.to_place = cls.m_to_place;
         moveOneTime.to_pile_name = cls.m_to_pile_name;
         moveOneTime.is_last_handcard = false;
+        moveOneTime.is_last_equip = false;
         foreach (CardsMoveStruct move, moveMap[cls]) {
             moveOneTime.card_ids.append(move.card_ids);
             for (int i = 0; i < move.card_ids.size(); i++) {
@@ -4488,6 +4489,8 @@ QList<CardsMoveOneTimeStruct> Room::_mergeMoves(QList<CardsMoveStruct> cards_mov
             }
             if (move.is_last_handcard)
                 moveOneTime.is_last_handcard = true;
+            if (move.is_last_equip)
+                moveOneTime.is_last_equip = true;
         }
         result.append(moveOneTime);
     }
@@ -4519,13 +4522,18 @@ QList<CardsMoveStruct> Room::_separateMoves(QList<CardsMoveOneTimeStruct> moveOn
 
     QList<CardsMoveStruct> card_moves;
     int i = 0;
-    QMap<ServerPlayer *, QList<int> > from_handcards;
+    QMap<ServerPlayer *, QList<int> > from_handcards, from_equips;
     foreach (_MoveSeparateClassifier cls, classifiers) {
         CardsMoveStruct card_move;
         ServerPlayer *from = (ServerPlayer *)cls.m_from;
         card_move.from = cls.m_from;
-        if (from && !from_handcards.keys().contains(from))
+        if (from && !from_handcards.contains(from))
             from_handcards[from] = from->handCards();
+        if (from && !from_equips.contains(from)) {
+            from_equips[from] = QList<int>();
+            foreach (const Card *c, from->getEquips())
+                from_equips[from] << c->getEffectiveId();
+        }
         card_move.to = cls.m_to;
         if (card_move.from)
             card_move.from_player_name = card_move.from->objectName();
@@ -4539,12 +4547,21 @@ QList<CardsMoveStruct> Room::_separateMoves(QList<CardsMoveOneTimeStruct> moveOn
         card_move.card_ids = ids.at(i);
         card_move.reason = cls.m_reason;
 
-        if (from && from_handcards.keys().contains(from)) {
+        if (from && from_handcards.contains(from)) {
             QList<int> &move_ids = from_handcards[from];
             if (!move_ids.isEmpty()) {
                 foreach (int id, card_move.card_ids)
                     move_ids.removeOne(id);
                 card_move.is_last_handcard = move_ids.isEmpty();
+            }
+        }
+
+        if (from && from_equips.contains(from)) {
+            QList<int> &move_ids = from_equips[from];
+            if (!move_ids.isEmpty()) {
+                foreach (int id, card_move.card_ids)
+                    move_ids.removeOne(id);
+                card_move.is_last_equip = move_ids.isEmpty();
             }
         }
 

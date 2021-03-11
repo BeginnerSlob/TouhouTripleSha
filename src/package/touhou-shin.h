@@ -4,6 +4,11 @@
 #include "card.h"
 #include "package.h"
 
+class QAbstractButton;
+class QButtonGroup;
+class QVBoxLayout;
+class SkillDialog;
+
 class TouhouShinPackage : public Package
 {
     Q_OBJECT
@@ -160,16 +165,6 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
-class ThCanfeiCard : public SkillCard
-{
-    Q_OBJECT
-
-public:
-    Q_INVOKABLE ThCanfeiCard();
-
-    virtual void onUse(Room *room, const CardUseStruct &card_use) const;
-};
-
 class ThLingweiCard : public SkillCard
 {
     Q_OBJECT
@@ -183,6 +178,50 @@ public:
 
     virtual const Card *validateInResponse(ServerPlayer *user) const;
     virtual const Card *validate(CardUseStruct &cardUse) const;
+};
+
+class ThCanfeiCard : public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThCanfeiCard();
+
+    virtual void onUse(Room *room, const CardUseStruct &card_use) const;
+};
+
+class ThZuoyongDialog : public SkillDialog
+{
+    Q_OBJECT
+
+public:
+    enum ThChuanyuName
+    {
+        Jink = 0x1,
+        Analeptic = 0x2,
+        Nullification = 0x4,
+        FireAttack = 0x8,
+    };
+
+    static ThZuoyongDialog *getInstance();
+
+    static bool hasNamed(QString name, const Player *player);
+    static bool hasAllNamed(const Player *player);
+
+    static const QString &chuanyuNames;
+    static QMap<QString, ThChuanyuName> chuanyuMap;
+
+public slots:
+    virtual void popup();
+    void selectCard(QAbstractButton *button);
+
+private:
+    explicit ThZuoyongDialog();
+
+    QButtonGroup *group;
+    QVBoxLayout *button_layout;
+
+    QHash<QString, const Card *> map;
 };
 
 #endif // TOUHOUSHIN_H
