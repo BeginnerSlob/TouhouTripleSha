@@ -3260,6 +3260,167 @@ public:
     }
 };
 
+class ThSanjie : public TriggerSkill
+{
+public:
+    ThSanjie()
+        : TriggerSkill("thsanjie")
+    {
+        events << GameStart << CardFinished << CardsMoveOneTime << HpRecover << Damaged;
+        frequency = Compulsory;
+        owner_only_skill = true;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const
+    {
+        TriggerList skill_list;
+        if (event == GameStart) {
+            if (TriggerSkill::triggerable(player))
+                skill_list.insert(player, QStringList(objectName()));
+        } else if (event == CardFinished) {
+            if (TriggerSkill::triggerable(player)) {
+                CardUseStruct use = data.value<CardUseStruct>();
+                if (use.card->isKindOf("BasicCard")) {
+                    if (use.card->isRed() && player->getMark("@sanjie_chikai") > 0) {
+                        if (canDiscard(room, player))
+                            skill_list.insert(player, QStringList(objectName()));
+                    } else if (use.card->isBlack()) {
+                        if (player->getMark("@sanjie_getsukai") > 0)
+                            skill_list.insert(player, QStringList(objectName()));
+                        else if (player->getMark("@sanjie_ikai") > 0)
+                            skill_list.insert(player, QStringList(objectName()));
+                    }
+                } else if (use.card->getTypeId() != Card::TypeSkill) {
+                    if (use.card->isNDTrick() && player->getMark("@sanjie_getsukai") > 0) {
+                        if (canDiscard(room, player))
+                            skill_list.insert(player, QStringList(objectName()));
+                    } else if (player->getMark("@sanjie_ikai") > 0)
+                        skill_list.insert(player, QStringList(objectName()));
+                }
+            }
+        } else if (event == CardsMoveOneTime) {
+            if (TriggerSkill::triggerable(player)) {
+                CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+                if (move.from == player
+                    && (move.from_places.contains(Player::PlaceHand) || move.from_places.contains(Player::PlaceEquip))
+                    && (move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_DISCARD) {
+                    if (player->getMark("@sanjie_chikai") > 0)
+                        skill_list.insert(player, QStringList(objectName()));
+                    else if (player->getMark("@sanjie_ikai") > 0) {
+                        if (canDiscard(room, player))
+                            skill_list.insert(player, QStringList(objectName()));
+                    }
+                } else if (move.to == player && move.to_place == Player::PlaceHand && move.from && move.from != move.to) {
+                    for (int i = 0; i < move.card_ids.length(); ++i) {
+                        if (move.from_places[i] == Player::PlaceHand || move.from_places[i] == Player::PlaceEquip) {
+                            if (player->getMark("@sanjie_chikai") > 0)
+                                skill_list.insert(player, QStringList(objectName()));
+                            break;
+                        }
+                    }
+                }
+            }
+        } else if (event == HpRecover) {
+            foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                if (p == player)
+                    continue;
+                if (p->getMark("@sanjie_chikai") > 0)
+                    skill_list.insert(p, QStringList(objectName()));
+                else if (p->getMark("@sanjie_getsukai") > 0)
+                    skill_list.insert(p, QStringList(objectName()));
+            }
+        } else if (event == Damaged) {
+            if (TriggerSkill::triggerable(player)) {
+                if (player->getMark("@sanjie_getsukai") > 0)
+                    skill_list.insert(player, QStringList(objectName()));
+                else if (player->getMark("@sanjie_ikai") > 0)
+                    skill_list.insert(player, QStringList(objectName()));
+            }
+        }
+        return skill_list;
+    }
+
+    virtual bool effect(TriggerEvent event, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *ask_who) const
+    {
+        room->sendCompulsoryTriggerLog(ask_who, objectName());
+
+        if (event == GameStart) {
+            room->addPlayerMark(ask_who, "@sanjie_chikai");
+        } else if (event == CardFinished) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->isKindOf("BasicCard")) {
+                if (use.card->isRed())
+                    findDiscardTarget(room, ask_who);
+                else if (use.card->isBlack()) {
+                    if (ask_who->getMark("@sanjie_getsukai") > 0)
+                        ask_who->drawCards(1, objectName());
+                    else if (ask_who->getMark("@sanjie_ikai") > 0) {
+                        room->removePlayerMark(ask_who, "@sanjie_ikai");
+                        room->addPlayerMark(ask_who, "@sanjie_chikai");
+                    }
+                }
+            } else {
+                if (ask_who->getMark("@sanjie_getsukai") > 0)
+                    findDiscardTarget(room, ask_who);
+                else if (ask_who->getMark("@sanjie_ikai") > 0) {
+                    room->removePlayerMark(ask_who, "@sanjie_ikai");
+                    room->addPlayerMark(ask_who, "@sanjie_getsukai");
+                }
+            }
+        } else if (event == CardsMoveOneTime) {
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (move.to == ask_who && move.to_place == Player::PlaceHand && move.from && move.from != move.to) {
+                room->removePlayerMark(ask_who, "@sanjie_chikai");
+                room->addPlayerMark(ask_who, "@sanjie_ikai");
+            } else {
+                if (ask_who->getMark("@sanjie_chikai") > 0) {
+                    room->removePlayerMark(ask_who, "@sanjie_chikai");
+                    room->addPlayerMark(ask_who, "@sanjie_getsukai");
+                } else if (ask_who->getMark("@sanjie_ikai") > 0) {
+                    findDiscardTarget(room, ask_who);
+                }
+            }
+        } else if (event == HpRecover) {
+            if (ask_who->getMark("@sanjie_chikai") > 0)
+                ask_who->drawCards(1, objectName());
+            else if (ask_who->getMark("@sanjie_getsukai") > 0) {
+                room->removePlayerMark(ask_who, "@sanjie_getsukai");
+                room->addPlayerMark(ask_who, "@sanjie_chikai");
+            }
+        } else if (event == Damaged) {
+            if (ask_who->getMark("@sanjie_getsukai") > 0) {
+                room->removePlayerMark(ask_who, "@sanjie_getsukai");
+                room->addPlayerMark(ask_who, "@sanjie_ikai");
+            } else if (ask_who->getMark("@sanjie_ikai") > 0)
+                ask_who->drawCards(1, objectName());
+        }
+
+        return false;
+    }
+
+    bool canDiscard(Room *room, ServerPlayer *player) const
+    {
+        foreach (ServerPlayer *p, room->getOtherPlayers(player)) {
+            if (player->canDiscard(p, "he"))
+                return true;
+        }
+        return false;
+    }
+
+    void findDiscardTarget(Room *room, ServerPlayer *ask_who) const
+    {
+        QList<ServerPlayer *> targets;
+        foreach (ServerPlayer *p, room->getOtherPlayers(ask_who)) {
+            if (ask_who->canDiscard(p, "he"))
+                targets << p;
+        }
+        Q_ASSERT(!targets.isEmpty());
+        ServerPlayer *target = room->askForPlayerChosen(ask_who, targets, objectName(), "@thsanjie");
+        int card_id = room->askForCardChosen(ask_who, target, "he", objectName(), false, Card::MethodDiscard);
+        room->throwCard(card_id, target, ask_who);
+    }
+};
+
 TouhouKamiPackage::TouhouKamiPackage()
     : Package("touhou-kami")
 {
@@ -3365,6 +3526,9 @@ TouhouKamiPackage::TouhouKamiPackage()
     kami017->addSkill(new ThXianhu);
     kami017->addSkill(new ThXingyong);
     kami017->addSkill(new ThZaishen);
+
+    General *kami018 = new General(this, "kami018", "kami", 3);
+    kami018->addSkill(new ThSanjie);
 
     addMetaObject<ThShenfengCard>();
     addMetaObject<ThGugaoCard>();

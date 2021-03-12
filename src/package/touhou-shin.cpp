@@ -4150,8 +4150,17 @@ public:
         log.arg = choice;
         room->sendLog(log);
 
+        int name = ThZuoyongDialog::chuanyuMap[choice];
+
+        int mark_index = 1;
+        while (name != 1) {
+            name = name >> 1;
+            ++mark_index;
+        }
+        room->addPlayerMark(player, QString("@chuanyu%1").arg(mark_index));
+
         int n = player->getMark("thchuanyu");
-        n |= ThZuoyongDialog::chuanyuMap[choice];
+        n |= name;
         foreach (ServerPlayer *p, room->getAlivePlayers())
             room->setPlayerMark(p, "thchuanyu", n);
 
@@ -4390,6 +4399,7 @@ public:
         if ((triggerEvent == EventPhaseStart && player->getPhase() == Player::RoundStart) || triggerEvent == Death) {
             foreach (ServerPlayer *p, room->getAllPlayers()) {
                 if (player->getMark("thzaoxing_" + p->objectName())) {
+                    room->removePlayerMark(p, "@zaoxing", player->getMark("thzaoxing_" + p->objectName()));
                     player->setMark("thzaoxing_" + p->objectName(), 0);
                     room->handleAcquireDetachSkills(p, "-thzuoyong", true, true);
                 }
@@ -4428,6 +4438,7 @@ public:
             room->obtainCard(target, dummy, reason);
             delete dummy;
             player->addMark("thzaoxing_" + target->objectName());
+            room->addPlayerMark(target, "@zaoxing");
             QStringList list;
             if (!target->hasSkill("thzuoyong"))
                 list << "thzuoyong";
