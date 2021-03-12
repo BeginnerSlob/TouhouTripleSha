@@ -4160,7 +4160,7 @@ public:
         room->addPlayerMark(player, QString("@chuanyu%1").arg(mark_index));
 
         int n = player->getMark("thchuanyu");
-        n |= name;
+        n |= ThZuoyongDialog::chuanyuMap[choice];
         foreach (ServerPlayer *p, room->getAlivePlayers())
             room->setPlayerMark(p, "thchuanyu", n);
 
