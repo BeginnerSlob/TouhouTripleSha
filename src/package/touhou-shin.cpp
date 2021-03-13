@@ -3868,7 +3868,7 @@ public:
     ThMinwangViewAsSkill()
         : ViewAsSkill("thminwang")
     {
-        response_pattern = "@@thmingwang!";
+        response_pattern = "@@thminwang!";
     }
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
@@ -3929,7 +3929,7 @@ public:
 
         //QList<int> origin_ids = card_ids;
         QList<int> put_ids;
-        const Card *card = room->askForUseCard(player, "@@thmingwang!", "@thmingwang", -1, Card::MethodNone);
+        const Card *card = room->askForUseCard(player, "@@thminwang!", "@thminwang", -1, Card::MethodNone);
         if (card)
             put_ids = card->getSubcards();
 
