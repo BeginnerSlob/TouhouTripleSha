@@ -3386,17 +3386,7 @@ bool RhYizhiCard::targetFilter(const QList<const Player *> &targets, const Playe
 
 bool RhYizhiCard::targetsFeasible(const QList<const Player *> &targets, const Player *) const
 {
-    if (targets.length() == 2) {
-        if (!targets.first()->hasEquip())
-            return false;
-        foreach (const Card *card, targets.first()->getEquips()) {
-            const EquipCard *equip = qobject_cast<const EquipCard *>(card->getRealCard());
-            EquipCard::Location location = equip->location();
-            if (!targets.last()->getEquip(location))
-                return true;
-        }
-    }
-    return false;
+    return targets.length() == 2;
 }
 
 void RhYizhiCard::onUse(Room *room, const CardUseStruct &card_use) const

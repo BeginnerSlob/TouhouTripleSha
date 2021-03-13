@@ -3850,6 +3850,203 @@ public:
     }
 };
 
+ThMinwangCard::ThMinwangCard()
+{
+    will_throw = false;
+    target_fixed = true;
+    handling_method = MethodNone;
+}
+
+void ThMinwangCard::onUse(Room *, const CardUseStruct &) const
+{
+    // do nothing
+}
+
+class ThMinwangViewAsSkill : public ViewAsSkill
+{
+public:
+    ThMinwangViewAsSkill()
+        : ViewAsSkill("thminwang")
+    {
+        response_pattern = "@@thmingwang!";
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
+    {
+        if (to_select->isEquipped())
+            return false;
+
+        foreach (const Card *card, selected) {
+            if (to_select->getNumber() == card->getNumber())
+                return false;
+        }
+
+        return true;
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const
+    {
+        if (!cards.isEmpty()) {
+            ThMinwangCard *card = new ThMinwangCard;
+            card->addSubcards(cards);
+            return card;
+        }
+        return NULL;
+    }
+};
+
+class ThMinwang : public TriggerSkill
+{
+public:
+    ThMinwang()
+        : TriggerSkill("thminwang")
+    {
+        events << Death;
+        view_as_skill = new ThMinwangViewAsSkill;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        QList<ServerPlayer *> _player;
+        _player.append(player);
+        QList<int> card_ids = room->getNCards(3, false);
+
+        CardsMoveStruct move(card_ids, NULL, player, Player::PlaceTable, Player::PlaceHand,
+                             CardMoveReason(CardMoveReason::S_REASON_PREVIEW, player->objectName(), objectName(), QString()));
+        QList<CardsMoveStruct> moves;
+        moves.append(move);
+        room->notifyMoveCards(true, moves, false, _player);
+        room->notifyMoveCards(false, moves, false, _player);
+
+        //QList<int> origin_ids = card_ids;
+        QList<int> put_ids;
+        const Card *card = room->askForUseCard(player, "@@thmingwang!", "@thmingwang", -1, Card::MethodNone);
+        if (card)
+            put_ids = card->getSubcards();
+
+        if (put_ids.isEmpty())
+            put_ids << card_ids.first();
+
+        QList<int> copy_ids = card_ids;
+        card_ids.clear();
+        foreach (int id, copy_ids)
+            card_ids.prepend(id);
+
+        move = CardsMoveStruct(card_ids, player, NULL, Player::PlaceHand, Player::PlaceTable,
+                               CardMoveReason(CardMoveReason::S_REASON_PREVIEW, player->objectName(), objectName(), QString()));
+
+        moves.clear();
+        moves.append(move);
+        room->notifyMoveCards(true, moves, false, _player);
+        room->notifyMoveCards(false, moves, false, _player);
+
+        player->addToPile("feed", put_ids);
+
+        QString target_obj = data.value<DeathStruct>().who->objectName();
+        QStringList targets = player->tag["ThMinwangTargets"].toString().split("+");
+        targets << target_obj;
+        player->tag["ThMinwangTargets"] = targets.join("+");
+        player->tag["ThMinwang_" + target_obj] = IntList2StringList(put_ids).join("+");
+
+        return false;
+    }
+};
+
+class ThLingbo : public TriggerSkill
+{
+public:
+    ThLingbo()
+        : TriggerSkill("thlingbo")
+    {
+        events << EventPhaseStart << EventPhaseEnd;
+    }
+
+    virtual QStringList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *&) const
+    {
+        if (event == EventPhaseStart) {
+            if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Play && !player->getPile("feed").isEmpty())
+                return QStringList(objectName());
+        } else if (player->hasFlag("ThLingboUsed") && player->getPhase() == Player::Play) {
+            player->setFlags("-ThLingboUsed");
+
+            QStringList remove_list;
+            QStringList skill_list = player->tag["ThMinwangSkillList"].toString().split("|");
+            player->tag.remove("ThMinwangSkillList");
+            foreach (QString name, skill_list)
+                remove_list << "-" + name;
+            room->handleAcquireDetachSkills(player, remove_list.join("|"), true, true);
+
+            QList<int> hand = player->handCards();
+            player->addToPile("feed", hand);
+            QList<int> to_back = StringList2IntList(player->tag["ThMinwangHandCards"].toString().split("+"));
+            DummyCard *dummy = new DummyCard(to_back);
+            CardMoveReason reason(CardMoveReason::S_REASON_EXCHANGE_FROM_PILE, player->objectName());
+            room->obtainCard(player, dummy, reason, false);
+            delete dummy;
+            player->tag.remove("ThMinwangHandCards");
+            dummy = new DummyCard(to_back);
+            CardMoveReason reason2(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), objectName(), QString());
+            room->throwCard(dummy, reason2, NULL);
+            delete dummy;
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        player->setFlags("ThLingboUsed");
+        QStringList target_str = player->tag["ThMinwangTargets"].toString().split("+");
+        QList<ServerPlayer *> targets;
+        foreach (QString str, target_str)
+            targets << room->findPlayer(str, true);
+
+        ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName());
+        target_str.removeOne(target->objectName());
+        player->tag["ThMinwangTargets"] = target_str.join("+");
+        // for handcards
+        QList<int> hand = player->handCards();
+        player->tag["ThMinwangHandCards"] = IntList2StringList(hand).join("+");
+        player->addToPile("feed", hand, false);
+        QString tag_str = "ThMinwang_" + target->objectName();
+        DummyCard *dummy = new DummyCard(StringList2IntList(player->tag[tag_str].toString().split("|")));
+        player->tag.remove(tag_str);
+        CardMoveReason reason(CardMoveReason::S_REASON_EXCHANGE_FROM_PILE, player->objectName());
+        room->obtainCard(player, dummy, reason);
+        delete dummy;
+
+        QList<const Skill *> skills = target->getGeneral()->getVisibleSkillList();
+        QStringList list;
+        foreach (const Skill *skill, skills) {
+            if (!player->hasSkill(skill->objectName()))
+                list << skill->objectName();
+        }
+        if (!list.isEmpty()) {
+            room->handleAcquireDetachSkills(target, list.join("|"), true, true);
+            player->tag["ThMinwangSkillList"] = list.join("|");
+        }
+
+        return false;
+    }
+};
+
 ThCanfeiCard::ThCanfeiCard()
 {
     will_throw = true;
@@ -4580,8 +4777,12 @@ TouhouShinPackage::TouhouShinPackage()
 
     General *shin026 = new General(this, "shin026", "hana", 5, 4);
     shin026->addSkill(new ThLingwei);
-    /*General *shin027;
-    General *shin028;*/
+
+    General *shin027 = new General(this, "shin027", "yuki", 4, false);
+    shin027->addSkill(new ThMinwang);
+    shin027->addSkill(new ThLingbo);
+
+    //General *shin028 = new General(this, "shin028", "tsuki", 3);
 
     General *shin029 = new General(this, "shin029", "kaze");
     shin029->addSkill(new ThCanfei);
@@ -4610,6 +4811,7 @@ TouhouShinPackage::TouhouShinPackage()
     addMetaObject<ThRenmoCard>();
     addMetaObject<ThRuizhiCard>();
     addMetaObject<ThLingweiCard>();
+    addMetaObject<ThMinwangCard>();
     addMetaObject<ThCanfeiCard>();
 
     skills << new ThBaochuiRecord << new ThChipin << new ThAimin << new ThAiminTrigger << new ThLingweiGivenSkill;

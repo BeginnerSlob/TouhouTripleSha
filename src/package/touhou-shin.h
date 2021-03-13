@@ -180,6 +180,16 @@ public:
     virtual const Card *validate(CardUseStruct &cardUse) const;
 };
 
+class ThMinwangCard : public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThMinwangCard();
+
+    virtual void onUse(Room *room, const CardUseStruct &card_use) const;
+};
+
 class ThCanfeiCard : public SkillCard
 {
     Q_OBJECT
