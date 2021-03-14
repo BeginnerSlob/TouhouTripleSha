@@ -3936,11 +3936,6 @@ public:
         if (put_ids.isEmpty())
             put_ids << card_ids.first();
 
-        QList<int> copy_ids = card_ids;
-        card_ids.clear();
-        foreach (int id, copy_ids)
-            card_ids.prepend(id);
-
         move = CardsMoveStruct(card_ids, player, NULL, Player::PlaceHand, Player::PlaceTable,
                                CardMoveReason(CardMoveReason::S_REASON_PREVIEW, player->objectName(), objectName(), QString()));
 
@@ -3948,6 +3943,8 @@ public:
         moves.append(move);
         room->notifyMoveCards(true, moves, false, _player);
         room->notifyMoveCards(false, moves, false, _player);
+
+        room->returnToTopDrawPile(card_ids);
 
         player->addToPile("feed", put_ids);
 
@@ -4130,6 +4127,74 @@ public:
     virtual bool isEnabledAtPlay(const Player *player) const
     {
         return !player->hasUsed("ThYuguangCard");
+    }
+};
+
+class ThGuidu : public TriggerSkill
+{
+public:
+    ThGuidu()
+        : TriggerSkill("thguidu")
+    {
+        events << EventPhaseStart;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *&) const
+    {
+        if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Finish) {
+            foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                if (p->getHandcardNum() < p->getHp())
+                    return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        int n = 0;
+        foreach (ServerPlayer *p, room->getAlivePlayers()) {
+            if (p->getHandcardNum() < p->getHp())
+                ++n;
+        }
+
+        player->drawCards(n, objectName());
+
+        QList<int> card_ids = player->handCards();
+        if (player->getHandcardNum() > n) {
+            const Card *dummy = room->askForExchange(player, objectName(), n, n, false, "@thguidu", false);
+            if (dummy) {
+                card_ids = dummy->getSubcards();
+                room->showCard(player, card_ids);
+                delete dummy;
+            }
+        }
+
+        room->fillAG(card_ids);
+        foreach (ServerPlayer *p, room->getAllPlayers()) {
+            if (p->getHandcardNum() < p->getHp()) {
+                int id = room->askForAG(p, card_ids, false, objectName());
+                if (id == -1)
+                    id = card_ids.first();
+                card_ids.removeOne(id);
+                room->takeAG(p, id, false);
+                room->obtainCard(p, id);
+                if (card_ids.isEmpty())
+                    break;
+            }
+        }
+        room->clearAG();
+
+        return false;
     }
 };
 
@@ -4870,7 +4935,7 @@ TouhouShinPackage::TouhouShinPackage()
 
     General *shin028 = new General(this, "shin028", "tsuki", 3);
     shin028->addSkill(new ThYuguang);
-    //shin028->addSkill(new ThGuidu);
+    shin028->addSkill(new ThGuidu);
 
     General *shin029 = new General(this, "shin029", "kaze");
     shin029->addSkill(new ThCanfei);
