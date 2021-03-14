@@ -4047,6 +4047,92 @@ public:
     }
 };
 
+ThYuguangCard::ThYuguangCard()
+{
+}
+
+bool ThYuguangCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
+    return targets.isEmpty() && !to_select->isKongcheng() && to_select != Self;
+}
+
+void ThYuguangCard::onEffect(const CardEffectStruct &effect) const
+{
+    Room *room = effect.from->getRoom();
+    room->showAllCards(effect.to);
+
+    QMap<Suit, QList<int> > yuguangMap;
+    QList<int> card_ids = effect.to->handCards();
+    qSort(card_ids.begin(), card_ids.end(), CompareBySuit);
+
+    foreach (int id, card_ids) {
+        Suit suit = Sanguosha->getCard(id)->getSuit();
+        if (!yuguangMap.contains(suit))
+            yuguangMap[suit] = QList<int>();
+        yuguangMap[suit] << id;
+    }
+
+    QList<int> choose_ids, disabled_ids;
+    foreach (Suit suit, yuguangMap.keys()) {
+        if (yuguangMap[suit].length() < 2) {
+            disabled_ids << yuguangMap[suit];
+            continue;
+        }
+
+        foreach (int id, yuguangMap[suit]) {
+            if (!effect.from->canDiscard(effect.to, id))
+                disabled_ids << id;
+            else
+                choose_ids << id;
+        }
+    }
+
+    QList<int> to_discard;
+    while (!choose_ids.isEmpty()) {
+        room->fillAG(card_ids, effect.from, disabled_ids);
+        int card_id = room->askForAG(effect.from, choose_ids, false, "thyuguang");
+        room->clearAG(effect.from);
+        to_discard << card_id;
+        Suit suit = Sanguosha->getCard(card_id)->getSuit();
+        yuguangMap[suit].removeOne(card_id);
+        choose_ids = yuguangMap[suit];
+        disabled_ids << card_id;
+
+        if (choose_ids.length() == 1)
+            break;
+
+        foreach (Suit m_suit, yuguangMap.keys()) {
+            if (m_suit == suit)
+                continue;
+            if (yuguangMap[m_suit].length() < 2)
+                continue;
+            disabled_ids << yuguangMap[m_suit];
+        }
+    }
+
+    DummyCard *dummy = new DummyCard(to_discard);
+    room->throwCard(dummy, effect.to, effect.from);
+}
+
+class ThYuguang : public ZeroCardViewAsSkill
+{
+public:
+    ThYuguang()
+        : ZeroCardViewAsSkill("thyuguang")
+    {
+    }
+
+    virtual const Card *viewAs() const
+    {
+        return new ThYuguangCard;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return !player->hasUsed("ThYuguangCard");
+    }
+};
+
 ThCanfeiCard::ThCanfeiCard()
 {
     will_throw = true;
@@ -4782,7 +4868,9 @@ TouhouShinPackage::TouhouShinPackage()
     shin027->addSkill(new ThMinwang);
     shin027->addSkill(new ThLingbo);
 
-    //General *shin028 = new General(this, "shin028", "tsuki", 3);
+    General *shin028 = new General(this, "shin028", "tsuki", 3);
+    shin028->addSkill(new ThYuguang);
+    //shin028->addSkill(new ThGuidu);
 
     General *shin029 = new General(this, "shin029", "kaze");
     shin029->addSkill(new ThCanfei);
@@ -4812,6 +4900,7 @@ TouhouShinPackage::TouhouShinPackage()
     addMetaObject<ThRuizhiCard>();
     addMetaObject<ThLingweiCard>();
     addMetaObject<ThMinwangCard>();
+    addMetaObject<ThYuguangCard>();
     addMetaObject<ThCanfeiCard>();
 
     skills << new ThBaochuiRecord << new ThChipin << new ThAimin << new ThAiminTrigger << new ThLingweiGivenSkill;
