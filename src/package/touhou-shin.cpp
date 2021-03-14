@@ -4026,7 +4026,7 @@ public:
         player->tag["ThMinwangHandCards"] = IntList2StringList(hand).join("+");
         player->addToPile("feed", hand, false);
         QString tag_str = "ThMinwang_" + target->objectName();
-        DummyCard *dummy = new DummyCard(StringList2IntList(player->tag[tag_str].toString().split("|")));
+        DummyCard *dummy = new DummyCard(StringList2IntList(player->tag[tag_str].toString().split("+")));
         player->tag.remove(tag_str);
         CardMoveReason reason(CardMoveReason::S_REASON_EXCHANGE_FROM_PILE, player->objectName());
         room->obtainCard(player, dummy, reason);
