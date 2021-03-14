@@ -197,6 +197,8 @@ class ThYuguangCard : public SkillCard
 public:
     Q_INVOKABLE ThYuguangCard();
 
+    static bool CompareBySuit(int card1, int card2);
+
     virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
     virtual void onEffect(const CardEffectStruct &effect) const;
 };

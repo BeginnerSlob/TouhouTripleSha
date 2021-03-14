@@ -4048,17 +4048,17 @@ ThYuguangCard::ThYuguangCard()
 {
 }
 
-bool ThYuguangCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
-{
-    return targets.isEmpty() && !to_select->isKongcheng() && to_select != Self;
-}
-
-static bool CompareBySuit(int card1, int card2)
+bool ThYuguangCard::CompareBySuit(int card1, int card2)
 {
     const Card *c1 = Sanguosha->getCard(card1);
     const Card *c2 = Sanguosha->getCard(card2);
 
-    return Card::CompareBySuit(c1, c2);
+    return SkillCard::CompareBySuit(c1, c2);
+}
+
+bool ThYuguangCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
+    return targets.isEmpty() && !to_select->isKongcheng() && to_select != Self;
 }
 
 void ThYuguangCard::onEffect(const CardEffectStruct &effect) const
@@ -4809,7 +4809,7 @@ ThGuiyuniuCard::ThGuiyuniuCard()
 {
 }
 
-bool ThGuiyuniuCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+bool ThGuiyuniuCard::targetFilter(const QList<const Player *> &targets, const Player *, const Player *) const
 {
     return targets.isEmpty();
 }
@@ -4939,7 +4939,8 @@ void ThHaixingCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> 
 
 void ThHaixingCard::onEffect(const CardEffectStruct &effect) const
 {
-    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, effect.from->objectName(), effect.to->objectName(), "thhaixing", QString());
+    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, effect.from->objectName(), effect.to->objectName(), "thhaixing",
+                          QString());
     Room *room = effect.from->getRoom();
     if (effect.from == effect.to) {
         LogMessage log;
@@ -5010,7 +5011,7 @@ public:
         limit_mark = "@haixing";
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *&) const
     {
         if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Finish && !player->getPile("seafood").isEmpty())
             return QStringList(objectName());
