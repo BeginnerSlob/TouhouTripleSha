@@ -4053,6 +4053,14 @@ bool ThYuguangCard::targetFilter(const QList<const Player *> &targets, const Pla
     return targets.isEmpty() && !to_select->isKongcheng() && to_select != Self;
 }
 
+static bool CompareBySuit(int card1, int card2)
+{
+    const Card *c1 = Sanguosha->getCard(card1);
+    const Card *c2 = Sanguosha->getCard(card2);
+
+    return Card::CompareBySuit(c1, c2);
+}
+
 void ThYuguangCard::onEffect(const CardEffectStruct &effect) const
 {
     Room *room = effect.from->getRoom();
@@ -4797,6 +4805,225 @@ public:
     }
 };
 
+ThGuiyuniuCard::ThGuiyuniuCard()
+{
+}
+
+bool ThGuiyuniuCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
+    return targets.isEmpty();
+}
+
+void ThGuiyuniuCard::onEffect(const CardEffectStruct &effect) const
+{
+    QStringList targets = effect.from->tag["ThGuiyuniuTargets"].toString().split("+");
+    targets << effect.to->objectName();
+    effect.from->tag["ThGuiyuniuTargets"] = targets.join("+");
+    effect.to->gainMark("@stable");
+}
+
+class ThGuiyuniuViewAsSkill : public OneCardViewAsSkill
+{
+public:
+    ThGuiyuniuViewAsSkill()
+        : OneCardViewAsSkill("thguiyuniu")
+    {
+        filter_pattern = ".|.|.|hand!";
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const
+    {
+        ThGuiyuniuCard *card = new ThGuiyuniuCard;
+        card->addSubcard(originalCard);
+        return card;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return player->canDiscard(player, "h") && !player->hasUsed("ThGuiyuniuCard");
+    }
+};
+
+class ThGuiyuniu : public TriggerSkill
+{
+public:
+    ThGuiyuniu()
+        : TriggerSkill("thguiyuniu")
+    {
+        events << EventPhaseStart << Death;
+        view_as_skill = new ThGuiyuniuViewAsSkill;
+    }
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data,
+                                    ServerPlayer *&) const
+    {
+        if (triggerEvent == Death) {
+            DeathStruct death = data.value<DeathStruct>();
+            if (death.who != player)
+                return QStringList();
+        }
+
+        if ((triggerEvent == EventPhaseStart && player->getPhase() == Player::RoundStart) || triggerEvent == Death) {
+            if (!player->tag["ThGuiyuniuTargets"].toString().isEmpty()) {
+                QStringList targets = player->tag["ThGuiyuniuTargets"].toString().split("+");
+                player->tag.remove("ThGuiyuniuTargets");
+                foreach (QString tar, targets) {
+                    ServerPlayer *p = room->findPlayer(tar);
+                    if (p)
+                        p->loseMark("@stable");
+                }
+            }
+        }
+
+        return QStringList();
+    }
+};
+
+class ThGuiyuniuDistance : public DistanceSkill
+{
+public:
+    ThGuiyuniuDistance()
+        : DistanceSkill("#thguiyuniu-distance")
+    {
+        frequency = NotCompulsory;
+    }
+
+    virtual int getCorrect(const Player *from, const Player *to) const
+    {
+        return from->getMark("@stable") - to->getMark("@stable");
+    }
+};
+
+ThHaixingCard::ThHaixingCard()
+{
+    will_throw = false;
+    handling_method = MethodNone;
+}
+
+bool ThHaixingCard::targetFixed() const
+{
+    return subcards.isEmpty();
+}
+
+bool ThHaixingCard::targetFilter(const QList<const Player *> &targets, const Player *, const Player *) const
+{
+    if (targetFixed())
+        return false;
+
+    return targets.isEmpty();
+}
+
+bool ThHaixingCard::targetsFeasible(const QList<const Player *> &targets, const Player *) const
+{
+    return targetFixed() == targets.isEmpty();
+}
+
+void ThHaixingCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
+{
+    if (subcards.isEmpty()) {
+        room->removePlayerMark(source, "@haixing");
+        room->addPlayerMark(source, "@haixingused");
+        foreach (ServerPlayer *p, room->getAllPlayers()) {
+            if (!p->isNude()) {
+                const Card *card = room->askForCard(p, "..!", "@thhaixing:" + source->objectName());
+                if (!card) {
+                    QList<const Card *> cards = p->getCards("he");
+                    card = cards.at(qrand() % cards.length());
+                }
+                source->addToPile("seafood", card);
+            }
+        }
+    } else
+        SkillCard::use(room, source, targets);
+}
+
+void ThHaixingCard::onEffect(const CardEffectStruct &effect) const
+{
+    CardMoveReason reason(CardMoveReason::S_REASON_GIVE, effect.from->objectName(), effect.to->objectName(), "thhaixing", QString());
+    Room *room = effect.from->getRoom();
+    if (effect.from == effect.to) {
+        LogMessage log;
+        log.type = "$MoveCard";
+        log.from = effect.from;
+        log.to << effect.to;
+        log.card_str = IntList2StringList(subcards).join("+");
+        room->sendLog(log);
+    }
+    room->obtainCard(effect.to, this);
+}
+
+class ThHaixingViewAsSkill : public ViewAsSkill
+{
+public:
+    ThHaixingViewAsSkill()
+        : ViewAsSkill("thhaixing")
+    {
+        response_pattern = "@@thhaixing";
+        expand_pile = "seafood";
+    }
+
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
+    {
+        if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY)
+            return false;
+
+        return selected.length() < 2 && Self->getPile("seafood").contains(to_select->getEffectiveId());
+    }
+
+    virtual const Card *viewAs(const QList<const Card *> &cards) const
+    {
+        if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY)
+            return new ThHaixingCard;
+
+        if (!cards.isEmpty()) {
+            Card *card = new ThHaixingCard;
+            card->addSubcards(cards);
+            return card;
+        }
+
+        return NULL;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        if (player->getMark("@haixing") == 0)
+            return false;
+        if (!player->isNude())
+            return true;
+        foreach (const Player *p, player->getSiblings()) {
+            if (!p->isNude())
+                return true;
+        }
+        return false;
+    }
+};
+
+class ThHaixing : public TriggerSkill
+{
+public:
+    ThHaixing()
+        : TriggerSkill("thhaixing")
+    {
+        events << EventPhaseStart;
+        view_as_skill = new ThHaixingViewAsSkill;
+        frequency = Limited;
+        limit_mark = "@haixing";
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Finish && !player->getPile("seafood").isEmpty())
+            return QStringList(objectName());
+
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        return room->askForUseCard(player, "@@thhaixing", "@thhaixing", -1, Card::MethodNone);
+    }
+};
+
 TouhouShinPackage::TouhouShinPackage()
     : Package("touhou-shin")
 {
@@ -4949,6 +5176,12 @@ TouhouShinPackage::TouhouShinPackage()
     shin030->addSkill(new ThZuoyong);
     shin030->addSkill(new ThZaoxing);
 
+    General *shin031 = new General(this, "shin031", "yuki", 3);
+    shin031->addSkill(new ThGuiyuniu);
+    shin031->addSkill(new ThGuiyuniuDistance);
+    related_skills.insertMulti("thguiyuniu", "#thguiyuniu-distance");
+    shin031->addSkill(new ThHaixing);
+
     addMetaObject<ThLuanshenCard>();
     addMetaObject<ThLianyingCard>();
     addMetaObject<ThMumiCard>();
@@ -4967,6 +5200,8 @@ TouhouShinPackage::TouhouShinPackage()
     addMetaObject<ThMinwangCard>();
     addMetaObject<ThYuguangCard>();
     addMetaObject<ThCanfeiCard>();
+    addMetaObject<ThGuiyuniuCard>();
+    addMetaObject<ThHaixingCard>();
 
     skills << new ThBaochuiRecord << new ThChipin << new ThAimin << new ThAiminTrigger << new ThLingweiGivenSkill;
     related_skills.insertMulti("thaimin", "#thaimin");

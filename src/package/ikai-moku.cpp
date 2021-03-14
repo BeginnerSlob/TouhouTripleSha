@@ -3872,10 +3872,7 @@ static bool CompareBySuit(int card1, int card2)
     const Card *c1 = Sanguosha->getCard(card1);
     const Card *c2 = Sanguosha->getCard(card2);
 
-    int a = static_cast<int>(c1->getSuit());
-    int b = static_cast<int>(c2->getSuit());
-
-    return a < b;
+    return Card::CompareBySuit(c1, c2);
 }
 
 class IkLvejue : public PhaseChangeSkill
