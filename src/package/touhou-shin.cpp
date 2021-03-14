@@ -5025,6 +5025,227 @@ public:
     }
 };
 
+class ThZuisheng : public TriggerSkill
+{
+public:
+    ThZuisheng()
+        : TriggerSkill("thzuisheng")
+    {
+        events << EventPhaseStart << EventPhaseChanging;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const
+    {
+        TriggerList skill_list;
+        if (event == EventPhaseStart && player->getPhase() == Player::Play && player->canDiscard(player, "h")) {
+            foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName()))
+                skill_list.insert(p, QStringList(objectName()));
+        } else if (event == EventPhaseChanging && player->getMark("@zuisheng") > 0
+                   && data.value<PhaseChangeStruct>().to == Player::NotActive) {
+            room->removePlayerMark(player, "@zuisheng");
+            room->detachSkillFromPlayer(player, "thzuishengv", true);
+            room->removePlayerMark(player, "@skill_invalidity");
+
+            foreach (ServerPlayer *pl, room->getAllPlayers())
+                room->filterCards(pl, pl->getCards("he"), false);
+            JsonArray args;
+            args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+            room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *ask_who) const
+    {
+        if (player == ask_who) {
+            return room->askForCard(ask_who, ".", "@thzuisheng", data, objectName());
+        } else {
+            if (ask_who->askForSkillInvoke(objectName(), QVariant::fromValue(player))) {
+                room->broadcastSkillInvoke(objectName());
+                return true;
+            }
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    {
+        if (player == ask_who || room->askForDiscard(player, objectName(), 1, 1, true, false, "@thzuisheng")) {
+            if (player->getMark("@zuisheng") == 0) {
+                room->addPlayerMark(player, "@zuisheng");
+                room->attachSkillToPlayer(player, "thzuishengv");
+                room->addPlayerMark(player, "@skill_invalidity");
+
+                foreach (ServerPlayer *pl, room->getAllPlayers())
+                    room->filterCards(pl, pl->getCards("he"), true);
+                JsonArray args;
+                args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+                room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
+            }
+        }
+        return false;
+    }
+};
+
+class ThZuishengVS : public OneCardViewAsSkill
+{
+public:
+    ThZuishengVS()
+        : OneCardViewAsSkill("thzuishengv")
+    {
+        attached_lord_skill = true;
+        response_pattern = "peach+analeptic";
+        response_or_use = true;
+        filter_pattern = "BasicCard|red";
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return Analeptic::IsAvailable(player);
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const
+    {
+        Analeptic *anal = new Analeptic(originalCard->getSuit(), originalCard->getNumber());
+        anal->addSubcard(originalCard);
+        anal->setSkillName(objectName());
+        return anal;
+    }
+};
+
+class ThZuishengProhibit : public ProhibitSkill
+{
+public:
+    ThZuishengProhibit()
+        : ProhibitSkill("#thzuisheng")
+    {
+        frequency = NotCompulsory;
+    }
+
+    virtual bool isProhibited(const Player *from, const Player *to, const Card *card, const QList<const Player *> &) const
+    {
+        if (from->getMark("@zuisheng") > 0 && card->isKindOf("Slash")) {
+            foreach (const Player *p, from->getAliveSiblings()) {
+                if (from->distanceTo(p) < from->distanceTo(to))
+                    return true;
+            }
+        }
+        return false;
+    }
+};
+
+class ThMengsi : public TriggerSkill
+{
+public:
+    ThMengsi()
+        : TriggerSkill("thmengsi")
+    {
+        events << EventPhaseChanging << EventPhaseStart;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const
+    {
+        TriggerList skill_list;
+        if (event == EventPhaseChanging && data.value<PhaseChangeStruct>().to == Player::NotActive && player->isKongcheng()) {
+            foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                if (p == player)
+                    continue;
+                if (p->getCardCount() > 1)
+                    skill_list.insert(p, QStringList(objectName()));
+            }
+        } else if (event == EventPhaseStart && player->getPhase() == Player::RoundStart && player->getMark("@mengsi") > 0) {
+            room->removePlayerMark(player, "@mengsi");
+            room->handleAcquireDetachSkills(player, "-thmengxuan|-ikfusheng", true);
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    {
+        const Card *card = room->askForExchange(ask_who, objectName(), 2, 2, true, "@thmengsi:" + player->objectName(), true);
+        if (card) {
+            CardMoveReason reason(CardMoveReason::S_REASON_GIVE, ask_who->objectName(), player->objectName(), objectName(),
+                                  QString());
+            room->obtainCard(player, card, reason, false);
+            delete card;
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        if (player->getMark("@mengsi") == 0) {
+            room->addPlayerMark(player, "@mengsi");
+            room->handleAcquireDetachSkills(player, "thmengxuan|ikfusheng");
+        }
+        return false;
+    }
+};
+
+class ThLinglu : public TriggerSkill
+{
+public:
+    ThLinglu()
+        : TriggerSkill("thlinglu")
+    {
+        events << EventPhaseChanging;
+        frequency = NotCompulsory;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
+    {
+        TriggerList skill_list;
+        if (player->isLord() && data.value<PhaseChangeStruct>().to == Player::RoundStart) {
+            foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                if (p->getMark("@spirits") > 0)
+                    skill_list.insert(p, QStringList(objectName()));
+            }
+        }
+        return skill_list;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
+    {
+        room->sendCompulsoryTriggerLog(ask_who, objectName());
+        room->broadcastSkillInvoke(objectName());
+        int n = (qMin(5, ask_who->getMark("@spirits")) + 3) / 4;
+        ask_who->drawCards(n, objectName());
+        ask_who->loseAllMarks("@spirits");
+        return false;
+    }
+};
+
+class ThLingluGain : public TriggerSkill
+{
+public:
+    ThLingluGain()
+        : TriggerSkill("#thlinglu")
+    {
+        events << CardFinished;
+        frequency = NotCompulsory;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *, QVariant &data) const
+    {
+        TriggerList skill_list;
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.card->isKindOf("Analeptic")) {
+            foreach (ServerPlayer *p, room->findPlayersBySkillName("thlinglu"))
+                skill_list.insert(p, QStringList(objectName()));
+        }
+        return skill_list;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
+    {
+        room->sendCompulsoryTriggerLog(ask_who, "thlinglu");
+        room->broadcastSkillInvoke("thlinglu");
+        ask_who->gainMark("@spirits");
+        return false;
+    }
+};
+
 TouhouShinPackage::TouhouShinPackage()
     : Package("touhou-shin")
 {
@@ -5183,6 +5404,15 @@ TouhouShinPackage::TouhouShinPackage()
     related_skills.insertMulti("thguiyuniu", "#thguiyuniu-distance");
     shin031->addSkill(new ThHaixing);
 
+    General *shin032 = new General(this, "shin032", "tsuki", 3);
+    shin032->addSkill(new ThZuisheng);
+    shin031->addSkill(new ThZuishengProhibit);
+    related_skills.insertMulti("thzuisheng", "#thzuisheng");
+    shin032->addSkill(new ThMengsi);
+    shin032->addSkill(new ThLinglu);
+    shin032->addSkill(new ThLingluGain);
+    related_skills.insertMulti("thlinglu", "#thlinglu");
+
     addMetaObject<ThLuanshenCard>();
     addMetaObject<ThLianyingCard>();
     addMetaObject<ThMumiCard>();
@@ -5204,7 +5434,8 @@ TouhouShinPackage::TouhouShinPackage()
     addMetaObject<ThGuiyuniuCard>();
     addMetaObject<ThHaixingCard>();
 
-    skills << new ThBaochuiRecord << new ThChipin << new ThAimin << new ThAiminTrigger << new ThLingweiGivenSkill;
+    skills << new ThBaochuiRecord << new ThChipin << new ThAimin << new ThAiminTrigger << new ThLingweiGivenSkill
+           << new ThZuishengVS;
     related_skills.insertMulti("thaimin", "#thaimin");
 }
 

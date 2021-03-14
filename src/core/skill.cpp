@@ -190,7 +190,8 @@ ViewAsSkill::ViewAsSkill(const QString &name)
 
 bool ViewAsSkill::isAvailable(const Player *invoker, CardUseStruct::CardUseReason reason, const QString &pattern) const
 {
-    if (!invoker->hasSkill(objectName()) && !invoker->hasLordSkill(objectName()) && !invoker->hasFlag(objectName())) // For IkQiyu
+    if (!invoker->hasSkill(objectName()) && !invoker->hasLordSkill(objectName())
+        && !invoker->hasFlag(objectName())) // For IkQiyu
         return false;
     switch (reason) {
     case CardUseStruct::CARD_USE_REASON_PLAY:
@@ -464,12 +465,14 @@ bool SPConvertSkill::triggerable(const ServerPlayer *target) const
     bool available = false;
     foreach (QString to_gen, to_list) {
         const General *gen = Sanguosha->getGeneral(to_gen);
-        if (gen && !Config.value("Banlist/Roles", "").toStringList().contains(to_gen) && !Sanguosha->getBanPackages().contains(gen->getPackage())) {
+        if (gen && !Config.value("Banlist/Roles", "").toStringList().contains(to_gen)
+            && !Sanguosha->getBanPackages().contains(gen->getPackage())) {
             available = true;
             break;
         }
     }
-    return GameStartSkill::triggerable(target) && (target->getGeneralName() == from || target->getGeneral2Name() == from) && available;
+    return GameStartSkill::triggerable(target) && (target->getGeneralName() == from || target->getGeneral2Name() == from)
+        && available;
 }
 
 void SPConvertSkill::onGameStart(ServerPlayer *player) const
@@ -478,7 +481,8 @@ void SPConvertSkill::onGameStart(ServerPlayer *player) const
     QStringList choicelist;
     foreach (QString to_gen, to_list) {
         const General *gen = Sanguosha->getGeneral(to_gen);
-        if (gen && !Config.value("Banlist/Roles", "").toStringList().contains(to_gen) && !Sanguosha->getBanPackages().contains(gen->getPackage()))
+        if (gen && !Config.value("Banlist/Roles", "").toStringList().contains(to_gen)
+            && !Sanguosha->getBanPackages().contains(gen->getPackage()))
             choicelist << to_gen;
     }
     QString data = choicelist.join("\\,\\");

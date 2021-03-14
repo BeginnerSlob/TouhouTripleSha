@@ -162,8 +162,8 @@ const Card *IkXinqiCard::validate(CardUseStruct &cardUse) const
         target->setFlags("IkXinqiTarget");
     foreach (ServerPlayer *liege, lieges) {
         try {
-            slash = room->askForCard(liege, "slash", "@ikxinqi-slash:" + liubei->objectName(), QVariant(),
-                                     Card::MethodResponse, liubei, false, QString(), true);
+            slash = room->askForCard(liege, "slash", "@ikxinqi-slash:" + liubei->objectName(), QVariant(), Card::MethodResponse,
+                                     liubei, false, QString(), true);
         } catch (TriggerEvent triggerEvent) {
             if (triggerEvent == TurnBroken || triggerEvent == StageChange) {
                 foreach (ServerPlayer *target, targets)
@@ -2960,8 +2960,7 @@ public:
 
     virtual bool isEnabledAtPlay(const Player *player) const
     {
-        return player->getAliveSiblings().length() > 1 && player->canDiscard(player, "he")
-            && !player->hasUsed("IkQingguoCard");
+        return player->getAliveSiblings().length() > 1 && player->canDiscard(player, "he") && !player->hasUsed("IkQingguoCard");
     }
 
     virtual const Card *viewAs(const Card *originalCard) const
