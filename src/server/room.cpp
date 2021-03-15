@@ -4749,6 +4749,21 @@ void Room::updateCardsOnGet(const CardsMoveStruct &move)
         return;
     }
 
+    if (player != NULL && move.to_place == Player::PlaceEquip) {
+        for (int i = 0; i < move.card_ids.size(); i++) {
+            WrappedCard *card = qobject_cast<WrappedCard *>(getCard(move.card_ids[i]));
+            const Card *engine_card = Sanguosha->getEngineCard(move.card_ids[i]);
+            if (card->getSuit() != engine_card->getSuit() || card->getNumber() != engine_card->getNumber()) {
+                Card *trick = Sanguosha->cloneCard(card->getRealCard());
+                trick->setSuit(engine_card->getSuit());
+                trick->setNumber(engine_card->getNumber());
+                card->takeOver(trick);
+                broadcastUpdateCard(getPlayers(), move.card_ids[i], card);
+            }
+        }
+        return;
+    }
+
     player = (ServerPlayer *)move.to;
     if (player != NULL
         && (move.to_place == Player::PlaceHand || move.to_place == Player::PlaceEquip || move.to_place == Player::PlaceJudge

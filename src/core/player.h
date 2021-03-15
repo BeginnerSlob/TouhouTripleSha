@@ -138,6 +138,7 @@ public:
     void setPhase(Phase phase);
 
     int getAttackRange(bool include_weapon = true) const;
+    int getWeaponLowerLimitRange() const;
     bool inMyAttackRange(const Player *other, int distance_fix = 0) const;
 
     bool isAlive() const;

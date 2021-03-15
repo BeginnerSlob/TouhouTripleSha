@@ -292,8 +292,9 @@ class Weapon : public EquipCard
     Q_OBJECT
 
 public:
-    Weapon(Suit suit, int number, int range);
+    Weapon(Suit suit, int number, int upper_limit_range, int lower_limit_range = 1);
     int getRange() const;
+    QList<int> getRanges() const;
 
     virtual void onUse(Room *room, const CardUseStruct &card_use) const;
     virtual QString getSubtype() const;
@@ -303,7 +304,7 @@ public:
     virtual bool isAvailable(const Player *player) const;
 
 protected:
-    int range;
+    int upper_limit_range, lower_limit_range;
 };
 
 class Armor : public EquipCard

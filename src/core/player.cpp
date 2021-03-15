@@ -233,7 +233,7 @@ int Player::getAttackRange(bool include_weapon) const
 {
     int original_range = 1;
     if (hasFlag("InfinityAttackRange") || getMark("InfinityAttackRange") > 0)
-        original_range = 10000; // Actually infinity
+        original_range = 0x11030; // Actually infinity
     int weapon_range = 0;
     if (include_weapon) {
         if (!weapon && hasSkill("thdaojian"))
@@ -268,6 +268,28 @@ int Player::getAttackRange(bool include_weapon) const
     return qMax(original_range, weapon_range) + extra_range;
 }
 
+int Player::getWeaponLowerLimitRange() const
+{
+    int loweLimit = 1;
+    WrappedCard *wp = weapon;
+    if (!wp && !hasOwnerOnlySkill(true) && getMark("@technology") > 0) {
+        foreach (const Player *p, getAliveSiblings()) {
+            if (p->getMark("thmicaisource") > 0) {
+                wp = p->weapon;
+                break;
+            }
+        }
+    }
+
+    if (wp) {
+        const Weapon *card = qobject_cast<const Weapon *>(wp->getRealCard());
+        Q_ASSERT(card);
+        loweLimit = card->getRanges().first();
+    }
+
+    return loweLimit;
+}
+
 bool Player::inMyAttackRange(const Player *other, int distance_fix) const
 {
     if (this == other)
@@ -278,7 +300,8 @@ bool Player::inMyAttackRange(const Player *other, int distance_fix) const
         return true;
     if (hasSkill("rhmangti") && other->getHandcardNum() < 2)
         return true;
-    return distanceTo(other, distance_fix) <= getAttackRange();
+    int dis = distanceTo(other, distance_fix);
+    return dis >= getWeaponLowerLimitRange() &&  dis <= getAttackRange();
 }
 
 void Player::setFixedDistance(const Player *player, int distance)

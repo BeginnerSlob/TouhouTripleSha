@@ -3421,6 +3421,212 @@ public:
     }
 };
 
+ThJieshaCard::ThJieshaCard()
+{
+}
+
+bool ThJieshaCard::targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const
+{
+    return targets.length() < subcardsLength() && (!targets.isEmpty() || to_select == Self);
+}
+
+bool ThJieshaCard::targetsFeasible(const QList<const Player *> &targets, const Player *) const
+{
+    return targets.length() == subcardsLength();
+}
+
+void ThJieshaCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
+{
+    room->drawCards(targets, 1, "thjiesha");
+
+    foreach (ServerPlayer *p, targets)
+        room->damage(DamageStruct("thjiesha", source, p));
+}
+
+class ThJiesha : public ZeroCardViewAsSkill
+{
+public:
+    ThJiesha()
+        : ZeroCardViewAsSkill("thjiesha")
+    {
+    }
+
+    virtual const Card *viewAs() const
+    {
+        ThJieshaCard *card = new ThJieshaCard;
+        card->addSubcards(Self->getEquips());
+        return card;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        if (player->getEquips().isEmpty() || player->hasUsed("ThJieshaCard"))
+            return false;
+
+        foreach (const Card *card, player->getEquips()) {
+            if (!player->canDiscard(player, card->getEffectiveId()))
+                return false;
+        }
+
+        return true;
+    }
+};
+
+class KuukankenSkill : public WeaponSkill
+{
+public:
+    KuukankenSkill()
+        : WeaponSkill("kuukanken")
+    {
+        events << CardFinished;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (WeaponSkill::triggerable(player)) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->isKindOf("Slash")) {
+                if (use.to.length() == 1)
+                    return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        room->sendCompulsoryTriggerLog(player, objectName());
+        room->addPlayerMark(player, objectName());
+        return false;
+    }
+};
+
+class KuukankenTargetMod : public TargetModSkill
+{
+public:
+    KuukankenTargetMod()
+        : TargetModSkill("#kuukanken")
+    {
+        frequency = Compulsory;
+    }
+
+    virtual int getResidueNum(const Player *from, const Card *) const
+    {
+        return from->hasWeapon("kuukanken") ? from->getMark("kuukanken") : 0;
+    }
+
+    virtual int getExtraTargetNum(const Player *from, const Card *) const
+    {
+        return from->hasWeapon("kuukanken") ? 1 : 0;
+    }
+};
+
+Kuukanken::Kuukanken(Suit suit, int number)
+    : Weapon(suit, number, 2, 2)
+{
+    setObjectName("kuukanken");
+}
+
+class ThMingren : public OneCardViewAsSkill
+{
+public:
+    ThMingren()
+        : OneCardViewAsSkill("thmingren")
+    {
+        filter_pattern = ".|.|.|hand";
+        response_or_use = true;
+    }
+
+    virtual const Card *viewAs(const Card *originalCard) const
+    {
+        if (originalCard->isBlack()) {
+            Card *card = new QinggangSword(originalCard->getSuit(), originalCard->getNumber());
+            card->addSubcard(originalCard);
+            card->setSkillName(objectName());
+            return card;
+        } else if (originalCard->isRed()) {
+            Card *card = new Kuukanken(originalCard->getSuit(), originalCard->getNumber());
+            card->addSubcard(originalCard);
+            card->setSkillName(objectName());
+            return card;
+        }
+        return NULL;
+    }
+
+    virtual bool isEnabledAtPlay(const Player *player) const
+    {
+        return !player->getWeapon();
+    }
+};
+
+class ThChuntie : public TriggerSkill
+{
+public:
+    ThChuntie()
+        : TriggerSkill("thchuntie")
+    {
+        events << BeforeCardsMove << EventPhaseChanging;
+    }
+
+    virtual QStringList triggerable(TriggerEvent e, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (e == EventPhaseChanging) {
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAlivePlayers())
+                    p->setMark("thchuntie", 0);
+            }
+            return QStringList();
+        }
+        if (TriggerSkill::triggerable(player) && player->getMark("thchuntie") == 0) {
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (move.from != player)
+                return QStringList();
+            int i = 0;
+            foreach (int card_id, move.card_ids) {
+                if (room->getCardOwner(card_id) == move.from && move.from_places[i] == Player::PlaceEquip
+                    && room->getCard(card_id)->isKindOf("Weapon")) {
+                    return QStringList(objectName());
+                }
+                i++;
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        ServerPlayer *target
+            = room->askForPlayerChosen(player, room->getOtherPlayers(player), objectName(), "@thchuntie", true, true);
+        if (target) {
+            room->broadcastSkillInvoke(objectName());
+            player->tag["ThChuntieTarget"] = QVariant::fromValue(target);
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    {
+        ServerPlayer *target = player->tag["ThChuntieTarget"].value<ServerPlayer *>();
+        player->tag.remove("ThChuntieTarget");
+        if (target) {
+            player->addMark("thchuntie");
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            QList<int> ids;
+            ids << player->getWeapon()->getEffectiveId();
+            move.removeCardIds(ids);
+            data = QVariant::fromValue(move);
+            CardMoveReason reason(CardMoveReason::S_REASON_GIVE, player->objectName(), target->objectName(), objectName(),
+                                  QString());
+            room->obtainCard(target, player->getWeapon(), reason);
+
+            player->drawCards(1, objectName());
+        }
+        return false;
+    }
+};
+
 TouhouKamiPackage::TouhouKamiPackage()
     : Package("touhou-kami")
 {
@@ -3530,6 +3736,13 @@ TouhouKamiPackage::TouhouKamiPackage()
     General *kami018 = new General(this, "kami018", "kami", 3);
     kami018->addSkill(new ThSanjie);
 
+    General *kami019 = new General(this, "kami019", "kami");
+    kami019->addSkill(new ThJiesha);
+    kami019->addSkill(new ThMingren);
+    kami019->addSkill(new ThChuntie);
+
+    //General *kami020 = new General(this, "kami020", "kami", 3);
+
     addMetaObject<ThShenfengCard>();
     addMetaObject<ThGugaoCard>();
     addMetaObject<ThLeshiCard>();
@@ -3545,8 +3758,13 @@ TouhouKamiPackage::TouhouKamiPackage()
     addMetaObject<ThJiefuCard>();
     addMetaObject<ThShuangfengCard>();
     addMetaObject<ThXianhuCard>();
+    addMetaObject<ThJieshaCard>();
 
-    skills << new ThKuangmo;
+    Card *card = new Kuukanken(Card::Heart, 1);
+    card->setParent(this);
+
+    skills << new ThKuangmo << new KuukankenSkill << new KuukankenTargetMod;
+    related_skills.insertMulti("kuukanken", "#kuukanken");
 }
 
 ADD_PACKAGE(TouhouKami)

@@ -4,6 +4,7 @@
 #include "card.h"
 #include "package.h"
 #include "skill.h"
+#include "standard-equips.h"
 
 class TouhouKamiPackage : public Package
 {
@@ -191,6 +192,27 @@ public:
     Q_INVOKABLE ThXianhuCard();
 
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
+class ThJieshaCard : public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThJieshaCard();
+
+    virtual bool targetFilter(const QList<const Player *> &targets, const Player *to_select, const Player *Self) const;
+    virtual bool targetsFeasible(const QList<const Player *> &targets, const Player *Self) const;
+
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
+class Kuukanken : public Weapon
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE Kuukanken(Card::Suit suit, int number);
 };
 
 #endif // TOUHOUKAMI_H

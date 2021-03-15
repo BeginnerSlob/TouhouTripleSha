@@ -463,9 +463,10 @@ void DelayedTrick::onNullified(ServerPlayer *target) const
     }
 }
 
-Weapon::Weapon(Suit suit, int number, int range)
+Weapon::Weapon(Suit suit, int number, int upper_limit_range, int lower_limit_range)
     : EquipCard(suit, number)
-    , range(range)
+    , upper_limit_range(upper_limit_range)
+    , lower_limit_range(lower_limit_range)
 {
     can_recast = true;
 }
@@ -481,7 +482,12 @@ bool Weapon::isAvailable(const Player *player) const
 
 int Weapon::getRange() const
 {
-    return range;
+    return getRanges().last();
+}
+
+QList<int> Weapon::getRanges() const
+{
+    return QList<int>() << lower_limit_range << upper_limit_range;
 }
 
 QString Weapon::getSubtype() const
