@@ -3954,7 +3954,7 @@ public:
 
         if (!card_ids.isEmpty()) {
             DummyCard *dummy = new DummyCard(card_ids);
-            CardMoveReason reason(CardMoveReason::S_REASON_NATURAL_ENTER, QString(), objectName(), QString()));
+            CardMoveReason reason(CardMoveReason::S_REASON_NATURAL_ENTER, QString(), objectName(), QString());
             room->throwCard(dummy, reason, NULL);
             delete dummy;
         }
