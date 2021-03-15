@@ -817,8 +817,7 @@ bool Player::hasWeapon(const QString &weapon_name) const
         return false;
     if (wp->objectName() == weapon_name || wp->isKindOf(weapon_name.toStdString().c_str()))
         return true;
-    const Card *real_weapon = Sanguosha->getEngineCard(wp->getEffectiveId());
-    return real_weapon->objectName() == weapon_name || real_weapon->isKindOf(weapon_name.toStdString().c_str());
+    return false;
 }
 
 bool Player::hasArmorEffect(const QString &armor_name) const
