@@ -4518,7 +4518,8 @@ void RoomScene::skillStateChange(const QString &skill_name)
     static QStringList button_remain;
     if (button_remain.isEmpty())
         button_remain << "ikqiyu"
-                      << "thhuanlong";
+                      << "thhuanlong"
+                      << "thzuishengv";
     if (button_remain.contains(skill_name)) {
         const Skill *skill = Sanguosha->getSkill(skill_name);
         addSkillButton(skill);

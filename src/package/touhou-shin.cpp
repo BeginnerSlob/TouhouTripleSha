@@ -3876,6 +3876,9 @@ public:
         if (to_select->isEquipped())
             return false;
 
+        if (selected.length() > 2)
+            return false;
+
         foreach (const Card *card, selected) {
             if (to_select->getNumber() == card->getNumber())
                 return false;
@@ -3944,9 +3947,17 @@ public:
         room->notifyMoveCards(true, moves, false, _player);
         room->notifyMoveCards(false, moves, false, _player);
 
-        room->returnToTopDrawPile(card_ids);
-
         player->addToPile("feed", put_ids);
+
+        foreach (int id, put_ids)
+            card_ids.removeOne(id);
+
+        if (!card_ids.isEmpty()) {
+            DummyCard *dummy = new DummyCard(card_ids);
+            CardMoveReason reason(CardMoveReason::S_REASON_NATURAL_ENTER, QString(), objectName(), QString()));
+            room->throwCard(dummy, reason, NULL);
+            delete dummy;
+        }
 
         QString target_obj = data.value<DeathStruct>().who->objectName();
         QStringList targets = player->tag["ThMinwangTargets"].toString().split("+");
@@ -3990,7 +4001,7 @@ public:
             room->obtainCard(player, dummy, reason, false);
             delete dummy;
             player->tag.remove("ThMinwangHandCards");
-            dummy = new DummyCard(to_back);
+            dummy = new DummyCard(hand);
             CardMoveReason reason2(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), objectName(), QString());
             room->throwCard(dummy, reason2, NULL);
             delete dummy;
@@ -4012,8 +4023,11 @@ public:
         player->setFlags("ThLingboUsed");
         QStringList target_str = player->tag["ThMinwangTargets"].toString().split("+");
         QList<ServerPlayer *> targets;
-        foreach (QString str, target_str)
-            targets << room->findPlayer(str, true);
+        foreach (QString str, target_str) {
+            ServerPlayer *p = room->findPlayer(str, true);
+            if (p)
+                targets << p;
+        }
 
         ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName());
         target_str.removeOne(target->objectName());
@@ -4036,7 +4050,7 @@ public:
                 list << skill->objectName();
         }
         if (!list.isEmpty()) {
-            room->handleAcquireDetachSkills(target, list.join("|"), true, true);
+            room->handleAcquireDetachSkills(player, list.join("|"), true, true);
             player->tag["ThMinwangSkillList"] = list.join("|");
         }
 
@@ -4115,8 +4129,10 @@ void ThYuguangCard::onEffect(const CardEffectStruct &effect) const
         }
     }
 
-    DummyCard *dummy = new DummyCard(to_discard);
-    room->throwCard(dummy, effect.to, effect.from);
+    if (!to_discard.isEmpty()) {
+        DummyCard *dummy = new DummyCard(to_discard);
+        room->throwCard(dummy, effect.to, effect.from);
+    }
 }
 
 class ThYuguang : public ZeroCardViewAsSkill
@@ -4925,7 +4941,7 @@ void ThHaixingCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> 
         room->addPlayerMark(source, "@haixingused");
         foreach (ServerPlayer *p, room->getAllPlayers()) {
             if (!p->isNude()) {
-                const Card *card = room->askForCard(p, "..!", "@thhaixing:" + source->objectName());
+                const Card *card = room->askForCard(p, "..!", "@thhaixing-put:" + source->objectName());
                 if (!card) {
                     QList<const Card *> cards = p->getCards("he");
                     card = cards.at(qrand() % cards.length());
@@ -5044,6 +5060,7 @@ public:
                    && data.value<PhaseChangeStruct>().to == Player::NotActive) {
             room->removePlayerMark(player, "@zuisheng");
             room->detachSkillFromPlayer(player, "thzuishengv", true);
+            room->setPlayerFlag(player, "-thzuishengv");
             room->removePlayerMark(player, "@skill_invalidity");
 
             foreach (ServerPlayer *pl, room->getAllPlayers())
@@ -5074,6 +5091,7 @@ public:
             if (player->getMark("@zuisheng") == 0) {
                 room->addPlayerMark(player, "@zuisheng");
                 room->attachSkillToPlayer(player, "thzuishengv");
+                room->setPlayerFlag(player, "thzuishengv");
                 room->addPlayerMark(player, "@skill_invalidity");
 
                 foreach (ServerPlayer *pl, room->getAllPlayers())
