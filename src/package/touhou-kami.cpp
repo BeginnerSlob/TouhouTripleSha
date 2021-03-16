@@ -3571,6 +3571,299 @@ public:
     }
 };
 
+class ThYuexiang : public TriggerSkill
+{
+public:
+    ThYuexiang()
+        : TriggerSkill("thyuexiang")
+    {
+        events << GameStart << EventPhaseStart << EventPhaseChanging;
+        frequency = Compulsory;
+        owner_only_skill = true;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const
+    {
+        TriggerList skill_list;
+        if (event == GameStart) {
+            if (TriggerSkill::triggerable(player))
+                skill_list.insert(player, QStringList(objectName()));
+        } else if (event == EventPhaseStart) {
+            if (player->getPhase() == Player::NotActive) {
+                foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName()))
+                    skill_list.insert(p, QStringList(objectName()));
+            }
+
+            if (player->getPhase() == Player::Play && !player->hasFlag("Global_ThYuexiangDisabled")) {
+                if (!player->hasFlag("Global_OriginalPhase") && player->getMark("thyuexiang_lastquarter") > 0) {
+                    player->removeMark("thyuexiang_lastquarter");
+                    player->setFlags("Global_ThYuexiangDisabled");
+                } else {
+                    foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                        if (p->getMark("@yuexiang_newmoon") > 0 && player->hasFlag("thyuexiang_newmoon"))
+                            continue;
+                        if (p->getMark("@yuexiang_quarter") > 0) {
+                            bool can_invoke = false;
+                            foreach (ServerPlayer *sp, room->getAlivePlayers()) {
+                                foreach (const Card *c, sp->getJudgingArea()) {
+                                    foreach (ServerPlayer *op, room->getOtherPlayers(sp)) {
+                                        if (!op->containsTrick(c->objectName())) {
+                                            can_invoke = true;
+                                            break;
+                                        }
+                                    }
+                                    if (can_invoke)
+                                        break;
+                                }
+                                if (!can_invoke) {
+                                    for (int i = 0; i < S_EQUIP_AREA_LENGTH; ++i) {
+                                        const EquipCard *equip = sp->getEquip(i);
+                                        if (equip) {
+                                            foreach (ServerPlayer *op, room->getOtherPlayers(sp)) {
+                                                if (!op->getEquip(i)) {
+                                                    can_invoke = true;
+                                                    break;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                                if (can_invoke)
+                                    break;
+                            }
+                            if (!can_invoke)
+                                continue;
+                        }
+                        if (p->getMark("@yuexiang_fullmoon") > 0 && player->isKongcheng()
+                            && player->hasFlag("thyuexiang_fullmoon"))
+                            continue;
+                        if (p->getMark("@yuexiang_lunareclipse") > 0 && player->isSkipped(Player::Discard)
+                            && player->hasFlag("thyuexiang_lunareclipse"))
+                            continue;
+
+                        skill_list.insert(p, QStringList(objectName()));
+                    }
+                }
+            }
+        } else if (event == EventPhaseChanging) {
+            if (data.value<PhaseChangeStruct>().from == Player::Play) {
+                if (player->hasFlag("Global_ThYuexiangDisabled"))
+                    player->setFlags("-Global_ThYuexiangDisabled");
+                if (player->hasFlag("Global_OriginalPhase"))
+                    player->setFlags("-Global_OriginalPhase");
+            }
+        }
+        return skill_list;
+    }
+
+    virtual bool effect(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    {
+        room->sendCompulsoryTriggerLog(ask_who, objectName());
+
+        if (event == GameStart)
+            room->addPlayerMark(ask_who, "@yuexiang_newmoon");
+        else if (event == EventPhaseStart) {
+            if (player->getPhase() == Player::NotActive) {
+                static QMap<QString, QString> yuexiangMap;
+                if (yuexiangMap.isEmpty()) {
+                    yuexiangMap.insert("@yuexiang_newmoon", "@yuexiang_quarter");
+                    yuexiangMap.insert("@yuexiang_quarter", "@yuexiang_fullmoon");
+                    yuexiangMap.insert("@yuexiang_fullmoon", "@yuexiang_lastquarter");
+                    yuexiangMap.insert("@yuexiang_lastquarter", "@yuexiang_newmoon");
+                    yuexiangMap.insert("@yuexiang_lunareclipse", "@yuexiang_newmoon");
+                }
+                foreach (QString key, yuexiangMap.keys()) {
+                    if (ask_who->getMark(key) > 0) {
+                        room->setPlayerMark(ask_who, key, 0);
+                        room->addPlayerMark(ask_who, yuexiangMap[key]);
+                        break;
+                    }
+                }
+            } else {
+                if (ask_who->getMark("@yuexiang_newmoon") > 0)
+                    room->setPlayerFlag(player, "thyuexiang_newmoon");
+                else if (ask_who->getMark("@yuexiang_quarter") > 0) {
+                    QList<ServerPlayer *> targets;
+                    QMap<ServerPlayer *, QList<int> > disableMap;
+                    foreach (ServerPlayer *sp, room->getAlivePlayers()) {
+                        foreach (const Card *c, sp->getJudgingArea()) {
+                            bool can_use = false;
+                            foreach (ServerPlayer *op, room->getOtherPlayers(sp)) {
+                                if (!op->containsTrick(c->objectName())) {
+                                    if (!targets.contains(sp))
+                                        targets << sp;
+                                    can_use = true;
+                                    break;
+                                }
+                            }
+                            if (!can_use) {
+                                if (!disableMap.contains(sp))
+                                    disableMap[sp] = QList<int>();
+                                disableMap[sp] << c->getEffectiveId();
+                            }
+                        }
+                        for (int i = 0; i < S_EQUIP_AREA_LENGTH; ++i) {
+                            const EquipCard *equip = sp->getEquip(i);
+                            if (equip) {
+                                bool can_use = false;
+                                foreach (ServerPlayer *op, room->getOtherPlayers(sp)) {
+                                    if (!op->getEquip(i)) {
+                                        if (!targets.contains(sp))
+                                            targets << sp;
+                                        can_use = true;
+                                        break;
+                                    }
+                                }
+                                if (!can_use) {
+                                    if (!disableMap.contains(sp))
+                                        disableMap[sp] = QList<int>();
+                                    disableMap[sp] << equip->getEffectiveId();
+                                }
+                            }
+                        }
+                    }
+                    ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "@thyuexiang-move", true);
+                    if (target) {
+                        int card_id = room->askForCardChosen(player, target, "ej", objectName(), false, Card::MethodNone,
+                                                             disableMap.value(target, QList<int>()));
+                        const Card *card = Sanguosha->getCard(card_id);
+                        Player::Place place = room->getCardPlace(card_id);
+
+                        int equip_index = -1;
+                        if (place == Player::PlaceEquip) {
+                            const EquipCard *equip = qobject_cast<const EquipCard *>(card->getRealCard());
+                            equip_index = static_cast<int>(equip->location());
+                        }
+
+                        QList<ServerPlayer *> tos;
+                        foreach (ServerPlayer *p, room->getOtherPlayers(target)) {
+                            if (equip_index != -1) {
+                                if (p->getEquip(equip_index) == NULL)
+                                    tos << p;
+                            } else {
+                                if (!player->isProhibited(p, card) && !p->containsTrick(card->objectName()))
+                                    tos << p;
+                            }
+                        }
+                        Q_ASSERT(!tos.isEmpty());
+                        ServerPlayer *to = room->askForPlayerChosen(player, tos, objectName(), "@thyuexiang-to:::" + card->objectName());
+                        if (to)
+                            room->moveCardTo(card, target, to, place,
+                                             CardMoveReason(CardMoveReason::S_REASON_TRANSFER, player->objectName(), objectName(), QString()));
+                    }
+                } else if (ask_who->getMark("@yuexiang_fullmoon") > 0) {
+                    if (!player->isKongcheng())
+                        room->showAllCards(player);
+                    room->setPlayerFlag(player, "thyuexiang_fullmoon");
+                } else if (ask_who->getMark("@yuexiang_lastquarter") > 0) {
+                    player->setFlags("Global_OriginalPhase");
+                    player->addMark("thyuexiang_lastquarter");
+                    player->insertPhase(Player::Play);
+                } else if (ask_who->getMark("@yuexiang_lunareclipse") > 0) {
+                    player->skip(Player::Discard);
+                    room->setPlayerFlag(player, "thyuexiang_lunareclipse");
+                }
+            }
+        }
+
+        return false;
+    }
+};
+
+class ThYuexiangProhibit : public ProhibitSkill
+{
+public:
+    ThYuexiangProhibit()
+        : ProhibitSkill("#thyuexiang-prohibit")
+    {
+    }
+
+    virtual bool isProhibited(const Player *from, const Player *to, const Card *card, const QList<const Player *> &) const
+    {
+        if (from->hasFlag("thyuexiang_newmoon") && card->isKindOf("Slash")) {
+            foreach (const Player *p, from->getAliveSiblings()) {
+                if (from->distanceTo(p) < from->distanceTo(to))
+                    return true;
+            }
+        }
+
+        if (from->hasFlag("thyuexiang_lunareclipse"))
+            return card->isKindOf("Slash");
+
+        return false;
+    }
+};
+
+class ThYuexiangTargetMod : public TargetModSkill
+{
+public:
+    ThYuexiangTargetMod()
+        : TargetModSkill("#thyuexiang-tar")
+    {
+    }
+
+    virtual int getDistanceLimit(const Player *from, const Card *) const
+    {
+        if (from->hasFlag("thyuexiang_fullmoon")) {
+            return 1000;
+        }
+        return 0;
+    }
+};
+
+class ThMishu : public TriggerSkill
+{
+public:
+    ThMishu()
+        : TriggerSkill("thmishu")
+    {
+        events << EventPhaseStart;
+    }
+
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const
+    {
+        TriggerList skill_list;
+        if (player->getPhase() == Player::RoundStart) {
+            foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                QString mark = "thmishu_" + p->objectName();
+                if (player->getMark(mark) > 0) {
+                    p->removeMark("thmishuused", player->getMark(mark));
+                    player->setMark(mark, 0);
+                }
+            }
+        } else if (player->getPhase() == Player::Start) {
+            foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                if (p->getMark("thmishuused") > 0)
+                    continue;
+                skill_list.insert(p, QStringList(objectName()));
+            }
+        }
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
+    {
+        if (ask_who->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
+        return false;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *ask_who) const
+    {
+        room->setPlayerMark(ask_who, "@yuexiang_newmoon", 0);
+        room->setPlayerMark(ask_who, "@yuexiang_quarter", 0);
+        room->setPlayerMark(ask_who, "@yuexiang_fullmoon", 0);
+        room->setPlayerMark(ask_who, "@yuexiang_lastquarter", 0);
+        room->addPlayerMark(ask_who, "@yuexiang_lunareclipse");
+
+        ask_who->addMark("thmishuused");
+        player->addMark("thmishu_" + ask_who->objectName());
+        return false;
+    }
+};
+
 TouhouKamiPackage::TouhouKamiPackage()
     : Package("touhou-kami")
 {
@@ -3685,9 +3978,13 @@ TouhouKamiPackage::TouhouKamiPackage()
     kami019->addSkill(new ThMingren);
     kami019->addSkill(new ThChuntie);
 
-    /*General *kami020 = new General(this, "kami020", "kami", 3);
+    General *kami020 = new General(this, "kami020", "kami", 3);
     kami020->addSkill(new ThYuexiang);
-    kami020->addSkill(new ThMishu);*/
+    kami020->addSkill(new ThYuexiangProhibit);
+    kami020->addSkill(new ThYuexiangTargetMod);
+    related_skills.insertMulti("thyuexiang", "#thyuexiang-prohibit");
+    related_skills.insertMulti("thyuexiang", "#thyuexiang-tar");
+    kami020->addSkill(new ThMishu);
 
     addMetaObject<ThShenfengCard>();
     addMetaObject<ThGugaoCard>();
