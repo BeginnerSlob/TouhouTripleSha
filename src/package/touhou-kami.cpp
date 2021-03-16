@@ -3472,62 +3472,6 @@ public:
     }
 };
 
-class KuukankenSkill : public WeaponSkill
-{
-public:
-    KuukankenSkill()
-        : WeaponSkill("kuukanken")
-    {
-        events << CardFinished;
-        frequency = Compulsory;
-    }
-
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
-    {
-        if (WeaponSkill::triggerable(player)) {
-            CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card->isKindOf("Slash")) {
-                if (use.to.length() == 1)
-                    return QStringList(objectName());
-            }
-        }
-        return QStringList();
-    }
-
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
-    {
-        room->sendCompulsoryTriggerLog(player, objectName());
-        room->addPlayerMark(player, objectName());
-        return false;
-    }
-};
-
-class KuukankenTargetMod : public TargetModSkill
-{
-public:
-    KuukankenTargetMod()
-        : TargetModSkill("#kuukanken")
-    {
-        frequency = Compulsory;
-    }
-
-    virtual int getResidueNum(const Player *from, const Card *) const
-    {
-        return from->hasWeapon("kuukanken") ? from->getMark("kuukanken") : 0;
-    }
-
-    virtual int getExtraTargetNum(const Player *from, const Card *) const
-    {
-        return from->hasWeapon("kuukanken") ? 1 : 0;
-    }
-};
-
-Kuukanken::Kuukanken(Suit suit, int number)
-    : Weapon(suit, number, 2, 2)
-{
-    setObjectName("kuukanken");
-}
-
 class ThMingren : public OneCardViewAsSkill
 {
 public:
@@ -3741,7 +3685,9 @@ TouhouKamiPackage::TouhouKamiPackage()
     kami019->addSkill(new ThMingren);
     kami019->addSkill(new ThChuntie);
 
-    //General *kami020 = new General(this, "kami020", "kami", 3);
+    /*General *kami020 = new General(this, "kami020", "kami", 3);
+    kami020->addSkill(new ThYuexiang);
+    kami020->addSkill(new ThMishu);*/
 
     addMetaObject<ThShenfengCard>();
     addMetaObject<ThGugaoCard>();
@@ -3760,11 +3706,84 @@ TouhouKamiPackage::TouhouKamiPackage()
     addMetaObject<ThXianhuCard>();
     addMetaObject<ThJieshaCard>();
 
-    Card *card = new Kuukanken(Card::Heart, 1);
-    card->setParent(this);
-
-    skills << new ThKuangmo << new KuukankenSkill << new KuukankenTargetMod;
-    related_skills.insertMulti("kuukanken", "#kuukanken");
+    skills << new ThKuangmo;
 }
 
 ADD_PACKAGE(TouhouKami)
+
+class KuukankenSkill : public WeaponSkill
+{
+public:
+    KuukankenSkill()
+        : WeaponSkill("kuukanken")
+    {
+        events << CardFinished << EventPhaseChanging;
+        frequency = Compulsory;
+    }
+
+    virtual QStringList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    {
+        if (event == EventPhaseChanging) {
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                    if (p->getMark(objectName()) > 0)
+                        room->setPlayerMark(p, objectName(), 0);
+                }
+            }
+            return QStringList();
+        }
+        if (WeaponSkill::triggerable(player)) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->isKindOf("Slash")) {
+                if (use.to.length() == 1)
+                    return QStringList(objectName());
+            }
+        }
+        return QStringList();
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        room->sendCompulsoryTriggerLog(player, objectName());
+        room->addPlayerMark(player, objectName());
+        return false;
+    }
+};
+
+class KuukankenTargetMod : public TargetModSkill
+{
+public:
+    KuukankenTargetMod()
+        : TargetModSkill("#kuukanken")
+    {
+        frequency = Compulsory;
+    }
+
+    virtual int getResidueNum(const Player *from, const Card *) const
+    {
+        return from->hasWeapon("kuukanken") ? from->getMark("kuukanken") : 0;
+    }
+
+    virtual int getExtraTargetNum(const Player *from, const Card *) const
+    {
+        return from->hasWeapon("kuukanken") ? 1 : 0;
+    }
+};
+
+Kuukanken::Kuukanken(Suit suit, int number)
+    : Weapon(suit, number, 2, 2)
+{
+    setObjectName("kuukanken");
+}
+
+TouhouKamiCardPackage::TouhouKamiCardPackage()
+    : Package("touhou-kami_cards", Package::CardPack)
+{
+    Card *card = new Kuukanken(Card::Heart, 1);
+    card->setParent(this);
+
+    skills << new KuukankenSkill << new KuukankenTargetMod;
+    related_skills.insertMulti("kuukanken", "#kuukanken");
+}
+
+ADD_PACKAGE(TouhouKamiCard)

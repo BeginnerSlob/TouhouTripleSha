@@ -2,6 +2,7 @@
 
 return {
 	["touhou-kami"] = "东方的神祝",
+	["touhou-kami_cards"] = "神魂魄妖梦专属卡牌",
 
 	["#kami001"] = "往昔的圣迹",
 	["kami001"] = "神东风谷早苗",--神 - 空 - 3血

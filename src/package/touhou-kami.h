@@ -6,14 +6,6 @@
 #include "skill.h"
 #include "standard-equips.h"
 
-class TouhouKamiPackage : public Package
-{
-    Q_OBJECT
-
-public:
-    TouhouKamiPackage();
-};
-
 class ThShenfengCard : public SkillCard
 {
     Q_OBJECT
@@ -207,12 +199,28 @@ public:
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
+class TouhouKamiPackage : public Package
+{
+    Q_OBJECT
+
+public:
+    TouhouKamiPackage();
+};
+
 class Kuukanken : public Weapon
 {
     Q_OBJECT
 
 public:
     Q_INVOKABLE Kuukanken(Card::Suit suit, int number);
+};
+
+class TouhouKamiCardPackage : public Package
+{
+    Q_OBJECT
+
+public:
+    TouhouKamiCardPackage();
 };
 
 #endif // TOUHOUKAMI_H

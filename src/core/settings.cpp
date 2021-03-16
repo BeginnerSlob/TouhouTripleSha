@@ -114,7 +114,8 @@ void Settings::init()
                        << "New3v3Card"
                        << "New3v3_2013Card"
                        << "New1v1Card"
-                       << "hulaopass";
+                       << "hulaopass"
+                       << "touhou-kami_cards";
     }
     setValue("BanPackages", banpackagelist);
 
@@ -255,7 +256,8 @@ void Settings::init()
                         << "New3v3Card"
                         << "New3v3_2013Card"
                         << "New1v1Card"
-                        << "hulaopass";
+                        << "hulaopass"
+                        << "touhou-kami_cards";
         setValue("ForbidPackages", forbid_packages);
     }
 }
