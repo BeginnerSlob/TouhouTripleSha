@@ -3634,7 +3634,7 @@ public:
                             if (!can_invoke)
                                 continue;
                         }
-                        if (p->getMark("@yuexiang_fullmoon") > 0 && player->isKongcheng()
+                        if (p->getMark("@yuexiang_fullmoon") > 0 && player->isKongcheng() && player->hasFlag("Global_HandOpen")
                             && player->hasFlag("thyuexiang_fullmoon"))
                             continue;
                         if (p->getMark("@yuexiang_lunareclipse") > 0 && player->isSkipped(Player::Discard)
@@ -3746,15 +3746,20 @@ public:
                             }
                         }
                         Q_ASSERT(!tos.isEmpty());
-                        ServerPlayer *to = room->askForPlayerChosen(player, tos, objectName(), "@thyuexiang-to:::" + card->objectName());
+                        ServerPlayer *to
+                            = room->askForPlayerChosen(player, tos, objectName(), "@thyuexiang-to:::" + card->objectName());
                         if (to)
                             room->moveCardTo(card, target, to, place,
-                                             CardMoveReason(CardMoveReason::S_REASON_TRANSFER, player->objectName(), objectName(), QString()));
+                                             CardMoveReason(CardMoveReason::S_REASON_TRANSFER, player->objectName(),
+                                                            objectName(), QString()));
                     }
                 } else if (ask_who->getMark("@yuexiang_fullmoon") > 0) {
                     if (!player->isKongcheng())
                         room->showAllCards(player);
-                    room->setPlayerFlag(player, "thyuexiang_fullmoon");
+                    if (!player->hasFlag("Global_HandOpen"))
+                        room->setPlayerFlag(player, "Global_HandOpen");
+                    if (!player->hasFlag("thyuexiang_fullmoon"))
+                        room->setPlayerFlag(player, "thyuexiang_fullmoon");
                 } else if (ask_who->getMark("@yuexiang_lastquarter") > 0) {
                     player->setFlags("Global_OriginalPhase");
                     player->addMark("thyuexiang_lastquarter");

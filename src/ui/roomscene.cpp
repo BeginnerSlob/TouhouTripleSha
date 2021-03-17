@@ -1637,31 +1637,32 @@ void RoomScene::contextMenuEvent(QGraphicsSceneContextMenuEvent *event)
         private_pile->setEnabled(enabled);
         menu->addSeparator();
 
-        if (ServerInfo.EnableCheat) {
-            QMenu *known_cards = menu->addMenu(tr("Known cards"));
+        bool cheat = ServerInfo.EnableCheat;
+        QMenu *known_cards = menu->addMenu(tr("Known cards"));
 
-            foreach (PlayerCardContainer *container, item2player.keys()) {
-                const ClientPlayer *player = item2player.value(container, NULL);
-                if (player == Self)
-                    continue;
-                QList<const Card *> known = player->getHandcards();
-                if (known.isEmpty()) {
-                    known_cards->addAction(ClientInstance->getPlayerName(player->objectName()))->setEnabled(false);
-                } else {
-                    QMenu *submenu = known_cards->addMenu(ClientInstance->getPlayerName(player->objectName()));
-                    QAction *action = submenu->addAction(tr("View in new dialog"));
-                    action->setData(player->objectName());
-                    connect(action, &QAction::triggered, this, &RoomScene::showPlayerCards);
+        foreach (PlayerCardContainer *container, item2player.keys()) {
+            const ClientPlayer *player = item2player.value(container, NULL);
+            if (player == Self)
+                continue;
+            if (!cheat && !player->hasFlag("Global_HandOpen"))
+                continue;
+            QList<const Card *> known = player->getHandcards();
+            if (known.isEmpty()) {
+                known_cards->addAction(ClientInstance->getPlayerName(player->objectName()))->setEnabled(false);
+            } else {
+                QMenu *submenu = known_cards->addMenu(ClientInstance->getPlayerName(player->objectName()));
+                QAction *action = submenu->addAction(tr("View in new dialog"));
+                action->setData(player->objectName());
+                connect(action, &QAction::triggered, this, &RoomScene::showPlayerCards);
 
-                    submenu->addSeparator();
-                    foreach (const Card *card, known) {
-                        const Card *engine_card = Sanguosha->getEngineCard(card->getId());
-                        submenu->addAction(G_ROOM_SKIN.getCardSuitPixmap(engine_card->getSuit()), engine_card->getFullName());
-                    }
+                submenu->addSeparator();
+                foreach (const Card *card, known) {
+                    const Card *engine_card = Sanguosha->getEngineCard(card->getId());
+                    submenu->addAction(G_ROOM_SKIN.getCardSuitPixmap(engine_card->getSuit()), engine_card->getFullName());
                 }
             }
-            menu->addSeparator();
         }
+        menu->addSeparator();
 
         QAction *distance = menu->addAction(tr("View distance"));
         connect(distance, &QAction::triggered, this, &RoomScene::viewDistance);

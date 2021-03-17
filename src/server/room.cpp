@@ -4806,6 +4806,10 @@ bool Room::notifyMoveCards(bool isLostPhase, QList<CardsMoveStruct> &cards_moves
                 || cards_moves[i].to_place == Player::PlaceEquip || cards_moves[i].from_place == Player::PlaceEquip
                 || cards_moves[i].to_place == Player::PlaceDelayedTrick
                 || cards_moves[i].from_place == Player::PlaceDelayedTrick
+                || (cards_moves[i].from_place == Player::PlaceHand && cards_moves[i].from
+                    && cards_moves[i].from->hasFlag("Global_HandOpen"))
+                || (cards_moves[i].to_place == Player::PlaceHand && cards_moves[i].to
+                    && cards_moves[i].to->hasFlag("Global_HandOpen"))
                 // only cards moved to hand/special can be invisible
                 || cards_moves[i].from_place == Player::DiscardPile
                 || cards_moves[i].to_place == Player::DiscardPile
@@ -4817,7 +4821,7 @@ bool Room::notifyMoveCards(bool isLostPhase, QList<CardsMoveStruct> &cards_moves
                     && to->pileOpen(cards_moves[i].to_pile_name, player->objectName()))
                 // pile open to specific players
                 || player->hasFlag("Global_GongxinOperator");
-            // the player put someone's cards to the drawpile
+                // the player put someone's cards to the drawpile
             args << cards_moves[i].toVariant();
         }
         doNotify(player, isLostPhase ? S_COMMAND_LOSE_CARD : S_COMMAND_GET_CARD, args);
