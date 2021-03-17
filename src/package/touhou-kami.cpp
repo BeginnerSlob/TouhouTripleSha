@@ -3840,7 +3840,12 @@ public:
             foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
                 if (p->getMark("thmishuused") > 0)
                     continue;
-                skill_list.insert(p, QStringList(objectName()));
+                foreach (QString name, p->getMarkNames()) {
+                    if (name.startsWith("@yuexiang_") && p->getMark(name) > 0) {
+                        skill_list.insert(p, QStringList(objectName()));
+                        break;
+                    }
+                }
             }
         }
         return skill_list;

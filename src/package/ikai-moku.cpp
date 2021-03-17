@@ -4995,8 +4995,10 @@ public:
         if (banned.isEmpty())
             banned << "luna009"
                    << "snow034"
+                   << "kami016"
                    << "kami018"
-                   << "kami020";
+                   << "wind044"
+                   << "bloom036";
 
         return (all - banned - huashen_set - room_set).toList();
     }
