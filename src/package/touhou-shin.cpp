@@ -3975,39 +3975,37 @@ public:
     ThLingbo()
         : TriggerSkill("thlingbo")
     {
-        events << EventPhaseStart << EventPhaseEnd << TurnBroken;
+        events << EventPhaseStart << EventPhaseChanging;
     }
 
-    virtual QStringList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
         if (event == EventPhaseStart) {
             if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Play && !player->getPile("feed").isEmpty())
                 return QStringList(objectName());
-        } else if (event == TurnBroken || (event == EventPhaseEnd && player->getPhase() == Player::Play)) {
-            if (player->hasFlag("ThLingboUsed")) {
-                player->setFlags("-ThLingboUsed");
+        } else if (player->hasFlag("ThLingboUsed") && data.value<PhaseChangeStruct>().from == Player::Play) {
+            player->setFlags("-ThLingboUsed");
 
-                QStringList remove_list;
-                QStringList skill_list = player->tag["ThMinwangSkillList"].toString().split("|", QString::SkipEmptyParts);
-                player->tag.remove("ThMinwangSkillList");
-                foreach (QString name, skill_list)
-                    remove_list << "-" + name;
-                room->handleAcquireDetachSkills(player, remove_list.join("|"), true, true);
+            QStringList remove_list;
+            QStringList skill_list = player->tag["ThMinwangSkillList"].toString().split("|", QString::SkipEmptyParts);
+            player->tag.remove("ThMinwangSkillList");
+            foreach (QString name, skill_list)
+                remove_list << "-" + name;
+            room->handleAcquireDetachSkills(player, remove_list.join("|"), true, true);
 
-                QList<int> hand = player->handCards();
-                player->addToPile("feed", hand);
-                QList<int> to_back
-                    = StringList2IntList(player->tag["ThMinwangHandCards"].toString().split("+", QString::SkipEmptyParts));
-                DummyCard *dummy = new DummyCard(to_back);
-                CardMoveReason reason(CardMoveReason::S_REASON_EXCHANGE_FROM_PILE, player->objectName());
-                room->obtainCard(player, dummy, reason, false);
-                delete dummy;
-                player->tag.remove("ThMinwangHandCards");
-                dummy = new DummyCard(hand);
-                CardMoveReason reason2(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), objectName(), QString());
-                room->throwCard(dummy, reason2, NULL);
-                delete dummy;
-            }
+            QList<int> hand = player->handCards();
+            player->addToPile("feed", hand);
+            QList<int> to_back
+                = StringList2IntList(player->tag["ThMinwangHandCards"].toString().split("+", QString::SkipEmptyParts));
+            DummyCard *dummy = new DummyCard(to_back);
+            CardMoveReason reason(CardMoveReason::S_REASON_EXCHANGE_FROM_PILE, player->objectName());
+            room->obtainCard(player, dummy, reason, false);
+            delete dummy;
+            player->tag.remove("ThMinwangHandCards");
+            dummy = new DummyCard(hand);
+            CardMoveReason reason2(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), objectName(), QString());
+            room->throwCard(dummy, reason2, NULL);
+            delete dummy;
         }
         return QStringList();
     }
