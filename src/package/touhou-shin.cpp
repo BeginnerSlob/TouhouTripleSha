@@ -3904,11 +3904,19 @@ public:
     ThMinwang()
         : TriggerSkill("thminwang")
     {
-        events << Death;
+        events << BuryVictim;
         view_as_skill = new ThMinwangViewAsSkill;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *, QVariant &) const
+    {
+        TriggerList skill_list;
+        foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName()))
+            skill_list.insert(p, QStringList(objectName()));
+        return skill_list;
+    }
+
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *player) const
     {
         if (player->askForSkillInvoke(objectName())) {
             room->broadcastSkillInvoke(objectName());
@@ -3917,7 +3925,7 @@ public:
         return false;
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *victim, QVariant &, ServerPlayer *player) const
     {
         QList<ServerPlayer *> _player;
         _player.append(player);
@@ -3959,7 +3967,7 @@ public:
             delete dummy;
         }
 
-        QString gnr_str = data.value<DeathStruct>().who->getGeneralName();
+        QString gnr_str = victim->getGeneralName();
         QStringList targets = player->tag["ThMinwangTargets"].toStringList();
         targets << gnr_str;
         player->tag["ThMinwangTargets"] = QVariant::fromValue(targets);
