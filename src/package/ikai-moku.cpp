@@ -5401,11 +5401,14 @@ const Card *IkGuihuoCard::validate(CardUseStruct &card_use) const
     room->broadcastSkillInvoke("ikguihuo");
 
     LogMessage log;
-    log.type = card_use.to.isEmpty() ? "#IkGuihuoNoTarget" : "#IkGuihuo";
+    log.type = card_use.from->hasFlag("Global_HandOpen") ? "$IkGuihuo" : "#IkGuihuo";
+    if (card_use.to.isEmpty())
+        log.type += "NoTarget";
     log.from = yuji;
     log.to = card_use.to;
     log.arg = to_ikguihuo;
     log.arg2 = "ikguihuo";
+    log.card_str = QString::number(subcards.first());
 
     room->sendLog(log);
 
@@ -5456,10 +5459,11 @@ const Card *IkGuihuoCard::validateInResponse(ServerPlayer *yuji) const
         to_ikguihuo = user_string;
 
     LogMessage log;
-    log.type = "#IkGuihuoNoTarget";
+    log.type = yuji->hasFlag("Global_HandOpen") ? "$IkGuihuoNoTarget" : "#IkGuihuoNoTarget";
     log.from = yuji;
     log.arg = to_ikguihuo;
     log.arg2 = "ikguihuo";
+    log.card_str = QString::number(subcards.first());
     room->sendLog(log);
 
     if (ikguihuo(yuji)) {

@@ -3960,10 +3960,10 @@ public:
         }
 
         QString gnr_str = data.value<DeathStruct>().who->getGeneralName();
-        QStringList targets = player->tag["ThMinwangTargets"].toString().split("+", QString::SkipEmptyParts);
+        QStringList targets = player->tag["ThMinwangTargets"].toStringList();
         targets << gnr_str;
-        player->tag["ThMinwangTargets"] = targets.join("+");
-        player->tag["ThMinwang_" + gnr_str] = IntList2StringList(put_ids).join("+");
+        player->tag["ThMinwangTargets"] = QVariant::fromValue(targets);
+        player->tag["ThMinwang_" + gnr_str] = QVariant::fromValue(IntList2StringList(put_ids));
 
         return false;
     }
@@ -3987,7 +3987,7 @@ public:
             player->setFlags("-ThLingboUsed");
 
             QStringList remove_list;
-            QStringList skill_list = player->tag["ThMinwangSkillList"].toString().split("|", QString::SkipEmptyParts);
+            QStringList skill_list = player->tag["ThMinwangSkillList"].toStringList();
             player->tag.remove("ThMinwangSkillList");
             foreach (QString name, skill_list)
                 remove_list << "-" + name;
@@ -3995,8 +3995,7 @@ public:
 
             QList<int> hand = player->handCards();
             player->addToPile("feed", hand);
-            QList<int> to_back
-                = StringList2IntList(player->tag["ThMinwangHandCards"].toString().split("+", QString::SkipEmptyParts));
+            QList<int> to_back = StringList2IntList(player->tag["ThMinwangHandCards"].toStringList());
             DummyCard *dummy = new DummyCard(to_back);
             CardMoveReason reason(CardMoveReason::S_REASON_EXCHANGE_FROM_PILE, player->objectName());
             room->obtainCard(player, dummy, reason, false);
@@ -4022,7 +4021,7 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         player->setFlags("ThLingboUsed");
-        QStringList gnr_list = player->tag["ThMinwangTargets"].toString().split("+", QString::SkipEmptyParts);
+        QStringList gnr_list = player->tag["ThMinwangTargets"].toStringList();
 
         QStringList _gnr_list = gnr_list;
         _gnr_list.prepend("mute");
@@ -4030,14 +4029,13 @@ public:
         const General *general = Sanguosha->getGeneral(general_name);
 
         gnr_list.removeOne(general_name);
-        player->tag["ThMinwangTargets"] = gnr_list.join("+");
+        player->tag["ThMinwangTargets"] = QVariant::fromValue(gnr_list);
         // for handcards
         QList<int> hand = player->handCards();
-        player->tag["ThMinwangHandCards"] = IntList2StringList(hand).join("+");
+        player->tag["ThMinwangHandCards"] = QVariant::fromValue(IntList2StringList(hand));
         player->addToPile("feed", hand, false);
         QString tag_str = "ThMinwang_" + general_name;
-        DummyCard *dummy
-            = new DummyCard(StringList2IntList(player->tag[tag_str].toString().split("+", QString::SkipEmptyParts)));
+        DummyCard *dummy = new DummyCard(StringList2IntList(player->tag[tag_str].toStringList()));
         player->tag.remove(tag_str);
         CardMoveReason reason(CardMoveReason::S_REASON_EXCHANGE_FROM_PILE, player->objectName());
         room->obtainCard(player, dummy, reason);
@@ -4051,7 +4049,7 @@ public:
         }
         if (!list.isEmpty()) {
             room->handleAcquireDetachSkills(player, list.join("|"), true, true);
-            player->tag["ThMinwangSkillList"] = list.join("|");
+            player->tag["ThMinwangSkillList"] = QVariant::fromValue(list);
         }
 
         return false;

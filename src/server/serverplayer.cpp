@@ -1325,12 +1325,16 @@ void ServerPlayer::addToPile(const QString &pile_name, QList<int> card_ids, bool
         setPileOpen(pile_name, p->objectName());
     piles[pile_name].append(card_ids);
 
-    CardsMoveStruct move;
-    move.card_ids = card_ids;
-    move.to = this;
-    move.to_place = Player::PlaceSpecial;
-    move.reason = reason;
-    room->moveCardsAtomic(move, open);
+    QList<CardsMoveStruct> moves;
+    foreach (int id, card_ids) {
+        CardsMoveStruct move;
+        move.card_ids = QList<int>() << id;
+        move.to = this;
+        move.to_place = Player::PlaceSpecial;
+        move.reason = reason;
+        moves.append(move);
+    }
+    room->moveCardsAtomic(moves, open);
 }
 
 void ServerPlayer::exchangeFreelyFromPrivatePile(const QString &skill_name, const QString &pile_name, int upperlimit,

@@ -1352,6 +1352,8 @@ int Room::askForCardChosen(ServerPlayer *player, ServerPlayer *who, const QStrin
     if (available.isEmpty())
         return Card::S_UNKNOWN_CARD_ID;
 
+    handcard_visible = handcard_visible || who->hasFlag("Global_HandOpen");
+
     if (handcard_visible && !who->isKongcheng()) {
         QList<int> handcards = who->handCards();
         JsonArray args;
