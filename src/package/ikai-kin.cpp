@@ -2113,7 +2113,7 @@ public:
         Room *room = target->getRoom();
         if (TriggerSkill::triggerable(target)) {
             ServerPlayer *target2 = room->findPlayer(target->objectName());
-            room->filterCards(target2, target2->getCards("he"), true);
+            room->filterCards(target2, target2->getHandcards(), true);
         }
         return false;
     }

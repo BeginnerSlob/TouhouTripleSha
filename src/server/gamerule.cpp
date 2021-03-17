@@ -318,7 +318,7 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *play
         }
 
         if (refilter)
-            room->filterCards(player, player->getCards("he"), triggerEvent == EventLoseSkill);
+            room->filterCards(player, player->getHandcards(), triggerEvent == EventLoseSkill);
 
         break;
     }

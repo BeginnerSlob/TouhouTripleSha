@@ -1024,7 +1024,7 @@ public:
             if (change.to == Player::NotActive) {
                 room->setPlayerMark(player, objectName(), 0);
                 room->detachSkillFromPlayer(player, "#thhuaimie", false, true);
-                room->filterCards(player, player->getCards("he"), true);
+                room->filterCards(player, player->getHandcards(), true);
             }
             return QStringList();
         }
@@ -1047,7 +1047,7 @@ public:
         room->addPlayerMark(player, objectName(), 1);
         if (!player->hasSkill("#thhuaimie", true)) {
             room->acquireSkill(player, "#thhuaimie", false);
-            room->filterCards(player, player->getCards("he"), false);
+            room->filterCards(player, player->getHandcards(), false);
         }
         return false;
     }
@@ -2176,7 +2176,7 @@ public:
     {
         Room *room = target->getRoom();
         foreach (ServerPlayer *p, room->findPlayersBySkillName("thbazhi"))
-            room->filterCards(p, p->getCards("he"), true);
+            room->filterCards(p, p->getHandcards(), true);
 
         return false;
     }
@@ -2547,7 +2547,7 @@ void ThSangzhiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> 
 {
     room->setPlayerMark(targets.first(), "@sangzhi", 1);
     foreach (ServerPlayer *pl, room->getAllPlayers())
-        room->filterCards(pl, pl->getCards("he"), true);
+        room->filterCards(pl, pl->getHandcards(), true);
     JsonArray args;
     args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
     room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
@@ -2609,7 +2609,7 @@ public:
                 room->setPlayerMark(p, "@sangzhi", 0);
 
                 foreach (ServerPlayer *pl, room->getAllPlayers())
-                    room->filterCards(pl, pl->getCards("he"), false);
+                    room->filterCards(pl, pl->getHandcards(), false);
                 JsonArray args;
                 args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
                 room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);

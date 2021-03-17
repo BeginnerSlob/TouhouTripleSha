@@ -5070,7 +5070,7 @@ public:
             room->removePlayerMark(player, "@skill_invalidity");
 
             foreach (ServerPlayer *pl, room->getAllPlayers())
-                room->filterCards(pl, pl->getCards("he"), false);
+                room->filterCards(pl, pl->getHandcards(), false);
             JsonArray args;
             args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
             room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
@@ -5101,7 +5101,7 @@ public:
                 room->addPlayerMark(player, "@skill_invalidity");
 
                 foreach (ServerPlayer *pl, room->getAllPlayers())
-                    room->filterCards(pl, pl->getCards("he"), true);
+                    room->filterCards(pl, pl->getHandcards(), true);
                 JsonArray args;
                 args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
                 room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);

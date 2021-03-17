@@ -4768,7 +4768,7 @@ void Room::updateCardsOnGet(const CardsMoveStruct &move)
 
     player = (ServerPlayer *)move.to;
     if (player != NULL
-        && (move.to_place == Player::PlaceHand || move.to_place == Player::PlaceEquip || move.to_place == Player::PlaceJudge
+        && (move.to_place == Player::PlaceHand || move.to_place == Player::PlaceJudge
             || move.to_place == Player::PlaceSpecial)) {
         QList<const Card *> cards;
         foreach (int cardId, move.card_ids)
@@ -4823,7 +4823,7 @@ bool Room::notifyMoveCards(bool isLostPhase, QList<CardsMoveStruct> &cards_moves
                     && to->pileOpen(cards_moves[i].to_pile_name, player->objectName()))
                 // pile open to specific players
                 || player->hasFlag("Global_GongxinOperator");
-                // the player put someone's cards to the drawpile
+            // the player put someone's cards to the drawpile
             args << cards_moves[i].toVariant();
         }
         doNotify(player, isLostPhase ? S_COMMAND_LOSE_CARD : S_COMMAND_GET_CARD, args);
@@ -4938,7 +4938,7 @@ void Room::changePlayerGeneral(ServerPlayer *player, const QString &new_general)
     player->setGender(player->getGeneral()->getGender());
     foreach (const Skill *skill, player->getGeneral()->getSkillList())
         player->addSkill(skill->objectName());
-    filterCards(player, player->getCards("he"), true);
+    filterCards(player, player->getHandcards(), true);
 }
 
 void Room::changePlayerGeneral2(ServerPlayer *player, const QString &new_general)
@@ -4952,7 +4952,7 @@ void Room::changePlayerGeneral2(ServerPlayer *player, const QString &new_general
         foreach (const Skill *skill, player->getGeneral2()->getSkillList())
             player->addSkill(skill->objectName());
     }
-    filterCards(player, player->getCards("he"), true);
+    filterCards(player, player->getHandcards(), true);
 }
 
 void Room::filterCards(ServerPlayer *player, QList<const Card *> cards, bool refilter)

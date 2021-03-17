@@ -5520,7 +5520,7 @@ public:
                 }
                 room->setPlayerMark(player, "@linbu", 0);
                 room->detachSkillFromPlayer(player, "#iklinbu", false, true);
-                room->filterCards(player, player->getCards("he"), true);
+                room->filterCards(player, player->getHandcards(), true);
             }
             return skill_list;
         }
@@ -5549,7 +5549,7 @@ public:
         room->addPlayerMark(player, "@linbu", 1);
         if (!player->hasSkill("#iklinbu", true)) {
             room->acquireSkill(player, "#iklinbu", false);
-            room->filterCards(player, player->getCards("he"), false);
+            room->filterCards(player, player->getHandcards(), false);
         }
         QVariantList sunluyus = player->tag[objectName()].toList();
         sunluyus << QVariant::fromValue(owner);

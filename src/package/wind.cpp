@@ -727,7 +727,7 @@ public:
             return false;
 
         foreach (ServerPlayer *p, room->getOtherPlayers(player))
-            room->filterCards(p, p->getCards("he"), true);
+            room->filterCards(p, p->getHandcards(), true);
         JsonArray args;
         args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
         room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);

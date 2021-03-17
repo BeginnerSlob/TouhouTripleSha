@@ -845,7 +845,7 @@ public:
                 room->setPlayerMark(player, "@stitch", 0);
                 foreach (ServerPlayer *p, room->getOtherPlayers(player))
                     room->removeFixedDistance(player, p, 1);
-                room->filterCards(player, player->getCards("he"), true);
+                room->filterCards(player, player->getHandcards(), true);
                 foreach (ServerPlayer *p, room->getOtherPlayers(player))
                     room->removeFixedDistance(player, p, 1);
             }
@@ -868,7 +868,7 @@ public:
         room->addPlayerMark(player, "@stitch");
         foreach (ServerPlayer *p, room->getOtherPlayers(player))
             room->setFixedDistance(player, p, 1);
-        room->filterCards(player, player->getCards("he"), false);
+        room->filterCards(player, player->getHandcards(), false);
         QList<ServerPlayer *> players = room->getOtherPlayers(player);
         foreach (ServerPlayer *p, players)
             room->setFixedDistance(player, p, 1);
@@ -2801,7 +2801,7 @@ void ThJiefuCard::onEffect(const CardEffectStruct &effect) const
     room->setPlayerFlag(effect.to, "thjiefu_null");
 
     foreach (ServerPlayer *pl, room->getAllPlayers())
-        room->filterCards(pl, pl->getCards("he"), true);
+        room->filterCards(pl, pl->getHandcards(), true);
     JsonArray args;
     args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
     room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
@@ -2851,7 +2851,7 @@ public:
             if (death.who->hasFlag("thjiefu_null")) {
                 room->setPlayerFlag(death.who, "-thjiefu_null");
                 foreach (ServerPlayer *pl, room->getAllPlayers())
-                    room->filterCards(pl, pl->getCards("he"), false);
+                    room->filterCards(pl, pl->getHandcards(), false);
                 JsonArray args;
                 args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
                 room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
@@ -2863,7 +2863,7 @@ public:
             if (p->hasFlag("thjiefu_null")) {
                 room->setPlayerFlag(p, "-thjiefu_null");
                 foreach (ServerPlayer *pl, room->getAllPlayers())
-                    room->filterCards(pl, pl->getCards("he"), false);
+                    room->filterCards(pl, pl->getHandcards(), false);
                 JsonArray args;
                 args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
                 room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
