@@ -374,7 +374,9 @@ void RoomThread::_handleTurnBrokenNormal(GameRule *game_rule)
             player->changePhase(player->getPhase(), Player::NotActive);
         }
 
-        ServerPlayer *regular_next = qobject_cast<ServerPlayer *>(room->getCurrent()->getNextAlive(1, false));
+        ServerPlayer *regular_next = room->getTag("NormalNext").value<ServerPlayer *>();
+        if (!regular_next)
+            regular_next = qobject_cast<ServerPlayer *>(room->getCurrent()->getNextAlive(1, false));
         while (!room->getTag("ExtraTurnList").isNull()) {
             QStringList extraTurnList = room->getTag("ExtraTurnList").toStringList();
             if (!extraTurnList.isEmpty()) {

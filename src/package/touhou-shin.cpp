@@ -3959,11 +3959,11 @@ public:
             delete dummy;
         }
 
-        QString target_obj = data.value<DeathStruct>().who->objectName();
-        QStringList targets = player->tag["ThMinwangTargets"].toString().split("+");
-        targets << target_obj;
+        QString gnr_str = data.value<DeathStruct>().who->getGeneralName();
+        QStringList targets = player->tag["ThMinwangTargets"].toString().split("+", QString::SkipEmptyParts);
+        targets << gnr_str;
         player->tag["ThMinwangTargets"] = targets.join("+");
-        player->tag["ThMinwang_" + target_obj] = IntList2StringList(put_ids).join("+");
+        player->tag["ThMinwang_" + gnr_str] = IntList2StringList(put_ids).join("+");
 
         return false;
     }
@@ -3975,7 +3975,7 @@ public:
     ThLingbo()
         : TriggerSkill("thlingbo")
     {
-        events << EventPhaseStart << EventPhaseEnd;
+        events << EventPhaseStart << EventPhaseEnd << TurnBroken;
     }
 
     virtual QStringList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *&) const
@@ -3983,28 +3983,31 @@ public:
         if (event == EventPhaseStart) {
             if (TriggerSkill::triggerable(player) && player->getPhase() == Player::Play && !player->getPile("feed").isEmpty())
                 return QStringList(objectName());
-        } else if (player->hasFlag("ThLingboUsed") && player->getPhase() == Player::Play) {
-            player->setFlags("-ThLingboUsed");
+        } else if (event == TurnBroken || (event == EventPhaseEnd && player->getPhase() == Player::Play)) {
+            if (player->hasFlag("ThLingboUsed")) {
+                player->setFlags("-ThLingboUsed");
 
-            QStringList remove_list;
-            QStringList skill_list = player->tag["ThMinwangSkillList"].toString().split("|");
-            player->tag.remove("ThMinwangSkillList");
-            foreach (QString name, skill_list)
-                remove_list << "-" + name;
-            room->handleAcquireDetachSkills(player, remove_list.join("|"), true, true);
+                QStringList remove_list;
+                QStringList skill_list = player->tag["ThMinwangSkillList"].toString().split("|", QString::SkipEmptyParts);
+                player->tag.remove("ThMinwangSkillList");
+                foreach (QString name, skill_list)
+                    remove_list << "-" + name;
+                room->handleAcquireDetachSkills(player, remove_list.join("|"), true, true);
 
-            QList<int> hand = player->handCards();
-            player->addToPile("feed", hand);
-            QList<int> to_back = StringList2IntList(player->tag["ThMinwangHandCards"].toString().split("+"));
-            DummyCard *dummy = new DummyCard(to_back);
-            CardMoveReason reason(CardMoveReason::S_REASON_EXCHANGE_FROM_PILE, player->objectName());
-            room->obtainCard(player, dummy, reason, false);
-            delete dummy;
-            player->tag.remove("ThMinwangHandCards");
-            dummy = new DummyCard(hand);
-            CardMoveReason reason2(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), objectName(), QString());
-            room->throwCard(dummy, reason2, NULL);
-            delete dummy;
+                QList<int> hand = player->handCards();
+                player->addToPile("feed", hand);
+                QList<int> to_back
+                    = StringList2IntList(player->tag["ThMinwangHandCards"].toString().split("+", QString::SkipEmptyParts));
+                DummyCard *dummy = new DummyCard(to_back);
+                CardMoveReason reason(CardMoveReason::S_REASON_EXCHANGE_FROM_PILE, player->objectName());
+                room->obtainCard(player, dummy, reason, false);
+                delete dummy;
+                player->tag.remove("ThMinwangHandCards");
+                dummy = new DummyCard(hand);
+                CardMoveReason reason2(CardMoveReason::S_REASON_REMOVE_FROM_PILE, QString(), objectName(), QString());
+                room->throwCard(dummy, reason2, NULL);
+                delete dummy;
+            }
         }
         return QStringList();
     }
@@ -4021,29 +4024,28 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         player->setFlags("ThLingboUsed");
-        QStringList target_str = player->tag["ThMinwangTargets"].toString().split("+");
-        QList<ServerPlayer *> targets;
-        foreach (QString str, target_str) {
-            ServerPlayer *p = room->findPlayer(str, true);
-            if (p)
-                targets << p;
-        }
+        QStringList gnr_list = player->tag["ThMinwangTargets"].toString().split("+", QString::SkipEmptyParts);
 
-        ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName());
-        target_str.removeOne(target->objectName());
-        player->tag["ThMinwangTargets"] = target_str.join("+");
+        QStringList _gnr_list = gnr_list;
+        _gnr_list.prepend("mute");
+        QString general_name = room->askForGeneral(player, _gnr_list);
+        const General *general = Sanguosha->getGeneral(general_name);
+
+        gnr_list.removeOne(general_name);
+        player->tag["ThMinwangTargets"] = gnr_list.join("+");
         // for handcards
         QList<int> hand = player->handCards();
         player->tag["ThMinwangHandCards"] = IntList2StringList(hand).join("+");
         player->addToPile("feed", hand, false);
-        QString tag_str = "ThMinwang_" + target->objectName();
-        DummyCard *dummy = new DummyCard(StringList2IntList(player->tag[tag_str].toString().split("+")));
+        QString tag_str = "ThMinwang_" + general_name;
+        DummyCard *dummy
+            = new DummyCard(StringList2IntList(player->tag[tag_str].toString().split("+", QString::SkipEmptyParts)));
         player->tag.remove(tag_str);
         CardMoveReason reason(CardMoveReason::S_REASON_EXCHANGE_FROM_PILE, player->objectName());
         room->obtainCard(player, dummy, reason);
         delete dummy;
 
-        QList<const Skill *> skills = target->getGeneral()->getVisibleSkillList();
+        QList<const Skill *> skills = general->getVisibleSkillList();
         QStringList list;
         foreach (const Skill *skill, skills) {
             if (!player->hasSkill(skill->objectName()))
@@ -5227,7 +5229,7 @@ public:
     {
         room->sendCompulsoryTriggerLog(ask_who, objectName());
         room->broadcastSkillInvoke(objectName());
-        int n = (qMin(5, ask_who->getMark("@spirits")) + 3) / 4;
+        int n = (qMin(4, ask_who->getMark("@spirits")) + 2) / 3;
         ask_who->drawCards(n, objectName());
         ask_who->loseAllMarks("@spirits");
         return false;
