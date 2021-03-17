@@ -270,7 +270,8 @@ public:
 
     virtual bool triggerable(const ServerPlayer *target) const
     {
-        return TriggerSkill::triggerable(target) && target->getPhase() == Player::Finish && isLeastHand(target);
+        return TriggerSkill::triggerable(target) && target->getPhase() == Player::Finish && !target->isKongcheng()
+            && isLeastHand(target);
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
@@ -464,8 +465,7 @@ void ThXumeiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &)
             continue;
         choices << str;
     }
-    QString type
-        = room->askForChoice(source, "thxumei", choices.join("+"), QVariant::fromValue(IntList2VariantList(card_ids)));
+    QString type = room->askForChoice(source, "thxumei", choices.join("+"), QVariant::fromValue(IntList2VariantList(card_ids)));
     DummyCard *dummy = new DummyCard;
     dummy->deleteLater();
     foreach (int id, card_ids) {
@@ -939,8 +939,7 @@ public:
                             equips << id;
                         }
                         while (!equips.isEmpty()) {
-                            const Card *card
-                                = room->askForUseCard(p, IntList2StringList(equips).join("#") + "!", "@thxingxie");
+                            const Card *card = room->askForUseCard(p, IntList2StringList(equips).join("#") + "!", "@thxingxie");
                             if (!card) {
                                 int id = equips.at(qrand() % equips.length());
                                 equips.removeOne(id);
