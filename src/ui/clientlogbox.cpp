@@ -192,7 +192,8 @@ void ClientLogBox::appendLog(const QString &type, const QString &from_general, c
 
     log = QString("<font color='%2'>%1</font>").arg(log).arg(Config.TextEditColor.name());
     QString final_log = append(log);
-    if (type == "#IkGuihuo" || type == "#IkGuihuoQuery")
+    if (type == "#IkGuihuo" || type == "#IkGuihuoNoTarget" || type == "$IkGuihuo" || type == "$IkGuihuoNoTarget"
+        || type == "#IkGuihuoQuery")
         RoomSceneInstance->setIkGuihuoLog(final_log);
 }
 
