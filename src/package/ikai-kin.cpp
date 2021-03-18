@@ -5402,8 +5402,7 @@ bool IkHuanzhouCard::targetFilter(const QList<const Player *> &targets, const Pl
             if (moved.contains(card->getEffectiveId()))
                 continue;
             const EquipCard *equip = qobject_cast<const EquipCard *>(card->getRealCard());
-            EquipCard::Location location = equip->location();
-            if (!to_select->getEquip(location))
+            if (!to_select->getEquip(equip->location()))
                 return true;
         }
     }

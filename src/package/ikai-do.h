@@ -99,6 +99,11 @@ class IkYumeng : public MasochismSkill
 
 public:
     IkYumeng();
+
+    virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data,
+                                    ServerPlayer *&ask_who) const;
+    virtual bool cost(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data,
+                      ServerPlayer *ask_who = NULL) const;
     virtual void onDamaged(ServerPlayer *target, const DamageStruct &damage) const;
 
 protected:
@@ -111,6 +116,8 @@ class IkZhihengCard : public SkillCard
 
 public:
     Q_INVOKABLE IkZhihengCard();
+
+    virtual void onUse(Room *room, const CardUseStruct &card_use) const;
     virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
 };
 
