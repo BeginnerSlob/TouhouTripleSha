@@ -1881,8 +1881,10 @@ public:
     {
     }
 
-    virtual bool viewFilter(const QList<const Card *> &, const Card *to_select) const
+    virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
     {
+        if (selected.length() >= Self->getMaxHp())
+            return false;
         return !Self->isJilei(to_select);
     }
 
@@ -2244,8 +2246,9 @@ public:
 
             ServerPlayer *to = room->askForPlayerChosen(player, tos, objectName(), "@ikpojian-to:::" + card->objectName());
             if (to)
-                room->moveCardTo(card, target, to, place,
-                                 CardMoveReason(CardMoveReason::S_REASON_TRANSFER, player->objectName(), objectName(), QString()));
+                room->moveCardTo(
+                    card, target, to, place,
+                    CardMoveReason(CardMoveReason::S_REASON_TRANSFER, player->objectName(), objectName(), QString()));
         }
         return false;
     }
