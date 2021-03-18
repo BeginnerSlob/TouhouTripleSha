@@ -392,7 +392,7 @@ return {
 	["#shin030"] = "誂然造形神",
 	["shin030"] = "埴安神袿姬",--花 - 空 - 3血
 	["&shin030"] = "袿姬",
-	["designer:shin030"] = "永恒の须臾",
+	["designer:shin030"] = "永恒的须臾",
 	["illustrator:shin030"] = "minusT",
 	["cv:shin030"] = "暂无",
 	["thchuanyu"] = "穿窬",
@@ -424,7 +424,7 @@ return {
 	["shin032"] = "奥野田美宵",--月 - 空 - 3血
 	["&shin032"] = "美宵",
 	["designer:shin032"] = "名和行年",
-	["illustrator:shin032"] = "uranaishi_miraura",
+	["illustrator:shin032"] = "うらないし",
 	["cv:shin032"] = "暂无",
 	["thzuisheng"] = "醉生",
 	[":thzuisheng"] = "一名角色的出牌阶段开始时，你可令其选择是否弃置一张手牌并获得以下效果直到回合结束：1.可将一张红色基本牌当【酒】使用；2.非锁定技失效；3.使用【杀】仅能指定距离最近的其他角色为目标。",

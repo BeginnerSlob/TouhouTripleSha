@@ -271,7 +271,7 @@ return {
 	["#kami018"] = "永萃异梦",
 	["kami018"] = "神赫卡缇雅•拉碧丝拉祖利",--神 - 空 - 3血
 	["&kami018"] = "神赫卡缇雅",
-	["designer:kami018"] = "永恒の须臾",
+	["designer:kami018"] = "永恒的须臾",
 	["illustrator:kami018"] = "60枚",
 	["cv:kami018"] = "暂无",
 	["thsanjie"] = "三界",
