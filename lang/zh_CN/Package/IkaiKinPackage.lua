@@ -133,8 +133,6 @@ return {
 	["illustrator:wind037"] = "八城惺架",
 	["ikxuanren"] = "炫刃",
 	[":ikxuanren"] = "你可以将一张装备牌当【杀】使用或打出，你以此法使用的【杀】无距离限制，你以此法使用的【杀】指定目标后，你可以弃置其一张牌。",
-	["#ikxuanren-trigger"] = "炫刃",
-	["#ikxuanren-target"] = "炫刃",
 	["iklanjian"] = "岚剑",
 	[":iklanjian"] = "当你于出牌阶段内使用的【杀】被目标角色的【闪】抵消时，你可以将此【闪】交给除该角色外的一名角色。若获得该牌的角色不是你，你可对相同的目标再使用一张无视距离且不计入使用限制的【杀】。",
 	["iklanjian-invoke"] = "你可以发动“岚剑”<br/> <b>操作提示</b>: 选择除 %src 外的一名角色→点击确定<br/>",
@@ -448,9 +446,6 @@ return {
 	["ikjieyou"] = "解忧",
 	[":ikjieyou"] = "当一名角色进入濒死状态时，你可以对当前回合的角色使用一张无视距离且不计入使用限制的【杀】，此【杀】造成伤害时，视为对该濒死角色使用了一张【桃】。",
 	["ikjieyou-slash"] = "你可以对当前回合角色使用一张无视距离的【杀】发动“解忧”",
-	["#IkJieyouPrevent"] = "%from 的“<font color=\"yellow\"><b>解忧</b></font>”效果被触发，防止了对 %to 的伤害",
-	["#IkJieyouNull1"] = "%from 已经脱离濒死状态，“<font color=\"yellow\"><b>解忧</b></font>”第二项效果无法执行",
-	["#IkJieyouNull2"] = "%from 已经死亡，“<font color=\"yellow\"><b>解忧</b></font>”第二项效果无法执行",
 
 	["#snow023"] = "绯樱的妖精",
 	["snow023"] = "艾露莎•斯卡雷特",--雪 - 空 - 4血

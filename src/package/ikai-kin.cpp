@@ -1550,10 +1550,10 @@ public:
     }
 };
 
-class IkXuanren : public OneCardViewAsSkill
+class IkXuanrenViewAsSkill : public OneCardViewAsSkill
 {
 public:
-    IkXuanren()
+    IkXuanrenViewAsSkill()
         : OneCardViewAsSkill("ikxuanren")
     {
     }
@@ -1591,53 +1591,45 @@ public:
     }
 };
 
-class IkXuanrenTrigger : public TriggerSkill
+class IkXuanren : public TriggerSkill
 {
 public:
-    IkXuanrenTrigger()
-        : TriggerSkill("#ikxuanren-trigger")
+    IkXuanren()
+        : TriggerSkill("ikxuanren")
     {
-        events << CardUsed << CardResponded;
-        frequency = NotCompulsory;
+        events << TargetSpecified;
+        view_as_skill = new IkXuanrenViewAsSkill;
     }
 
-    virtual QStringList triggerable(TriggerEvent e, Room *, ServerPlayer *, QVariant &d, ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
-        const Card *card = NULL;
-        if (e == CardUsed) {
-            card = d.value<CardUseStruct>().card;
-        } else if (e == CardResponded) {
-            CardResponseStruct resp = d.value<CardResponseStruct>();
-            if (resp.m_isUse)
-                card = resp.m_card;
+        CardUseStruct use = data.value<CardUseStruct>();
+        if (use.from && use.from->isAlive() && use.card->isKindOf("Slash") && use.card->getSkillName() == objectName()) {
+            QStringList targets;
+            foreach (ServerPlayer *to, use.to) {
+                if (use.from->canDiscard(to, "he"))
+                    targets << to->objectName();
+            }
+            if (!targets.isEmpty())
+                return QStringList(objectName() + "->" + targets.join("+"));
         }
-        if (card && card->isKindOf("Slash") && card->getSkillName() == "ikxuanren" && card->isRed())
-            return QStringList(objectName());
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *skill_target, QVariant &, ServerPlayer *player) const
     {
-        room->sendCompulsoryTriggerLog(player, "ikxuanren");
-        player->drawCards(1, "ikxuanren");
+        if (player->askForSkillInvoke(objectName(), QVariant::fromValue(skill_target))) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
         return false;
     }
-};
 
-class IkXuanrenTargetMod : public TargetModSkill
-{
-public:
-    IkXuanrenTargetMod()
-        : TargetModSkill("#ikxuanren-target")
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *p, QVariant &, ServerPlayer *player) const
     {
-    }
-
-    virtual int getDistanceLimit(const Player *, const Card *card) const
-    {
-        if (card->getSkillName() == "ikxuanren")
-            return 1000;
-        else
-            return 0;
+        int id = room->askForCardChosen(player, p, "he", objectName(), false, Card::MethodDiscard);
+        room->throwCard(id, p, player);
+        return false;
     }
 };
 
@@ -2711,10 +2703,10 @@ public:
     virtual bool triggerable(const ServerPlayer *target) const
     {
         if (PhaseChangeSkill::triggerable(target) && target->getPhase() == Player::Start) {
-            if (target->getHandcardNum() > target->getHp() && target->canDiscard(target, "h"))
+            if (target->getCards("he").length() > target->getHp() && target->canDiscard(target, "he"))
                 return true;
             foreach (const Player *p, target->getAliveSiblings()) {
-                if (p->getHandcardNum() > p->getHp() && target->canDiscard(p, "h"))
+                if (p->getCards("he").length() > p->getHp() && target->canDiscard(p, "he"))
                     return true;
             }
         }
@@ -2725,7 +2717,7 @@ public:
     {
         QList<ServerPlayer *> targets;
         foreach (ServerPlayer *p, room->getAlivePlayers()) {
-            if (p->getHandcardNum() > p->getHp() && player->canDiscard(p, "h"))
+            if (p->getCards("he").length() > p->getHp() && player->canDiscard(p, "he"))
                 targets << p;
         }
 
@@ -2744,15 +2736,17 @@ public:
         ServerPlayer *target = player->tag["IkPiaohuTarget"].value<ServerPlayer *>();
         player->tag.remove("IkPiaohuTarget");
         if (target) {
-            int n = target->getHandcardNum() - target->getHp();
-            if (n <= 0 || !player->canDiscard(target, "h"))
+            int n = target->getCards("he").length() - target->getHp();
+            if (n <= 0 || !player->canDiscard(target, "he"))
                 return false;
             int not_equip = 0;
             room->setPlayerFlag(target, "ikpiaohu_InTempMoving");
             DummyCard *dummy = new DummyCard;
             QList<int> card_ids;
+            QList<Player::Place> original_places;
             for (int i = 0; i < n; i++) {
-                card_ids << room->askForCardChosen(player, target, "h", objectName(), false, Card::MethodDiscard);
+                card_ids << room->askForCardChosen(player, target, "he", objectName(), false, Card::MethodDiscard);
+                original_places << room->getCardPlace(card_ids[i]);
                 const Card *card = Sanguosha->getCard(card_ids[i]);
                 if (!card->isKindOf("EquipCard"))
                     ++not_equip;
@@ -2762,7 +2756,7 @@ public:
                     break;
             }
             for (int i = 0; i < dummy->subcardsLength(); i++)
-                room->moveCardTo(Sanguosha->getCard(card_ids[i]), target, Player::PlaceHand, false);
+                room->moveCardTo(Sanguosha->getCard(card_ids[i]), target, original_places[i], false);
             room->setPlayerFlag(target, "-ikpiaohu_InTempMoving");
             if (dummy->subcardsLength() > 0)
                 room->throwCard(dummy, target, player);
@@ -5264,56 +5258,36 @@ public:
             }
         } else if (triggerEvent == DamageCaused) {
             DamageStruct damage = data.value<DamageStruct>();
-            if (damage.card && damage.card->isKindOf("Slash") && damage.card->hasFlag("ikjieyou-slash"))
-                return QStringList(objectName());
+            if (damage.card && damage.card->isKindOf("Slash") && damage.card->hasFlag("ikjieyou-slash")) {
+                ServerPlayer *target = room->getTag("IkJieyouTarget").value<ServerPlayer *>();
+                if (target && target->isAlive() && target->getHp() < 0) {
+                    ServerPlayer *current = room->getCurrent();
+                    if (current && current->isAlive() && current->getPhase() != Player::NotActive && current != handang
+                        && target != handang && current->hasSkill("iksishideng"))
+                        return QStringList();
+                    Peach *peach = new Peach(Card::NoSuit, 0);
+                    peach->deleteLater();
+                    if (!handang->isCardLimited(peach, Card::MethodUse) && !handang->isProhibited(target, peach))
+                        return QStringList(objectName());
+                }
+            }
         } else if (triggerEvent == CardFinished && !room->getTag("IkJieyouTarget").isNull()) {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card->isKindOf("Slash") && use.card->hasFlag("ikjieyou-slash")) {
+            if (use.card->isKindOf("Slash") && use.card->hasFlag("ikjieyou-slash"))
                 room->removeTag("IkJieyouTarget");
-            }
         }
         return QStringList();
     }
 
-    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *handang, QVariant &data, ServerPlayer *) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *handang, QVariant &, ServerPlayer *) const
     {
-        DamageStruct damage = data.value<DamageStruct>();
-        LogMessage log2;
-        log2.type = "#IkJieyouPrevent";
-        log2.from = handang;
-        log2.to << damage.to;
-        room->sendLog(log2);
-
         ServerPlayer *target = room->getTag("IkJieyouTarget").value<ServerPlayer *>();
-        if (!target)
-            return true;
-        if (target->getHp() > 0) {
-            LogMessage log;
-            log.type = "#IkJieyouNull1";
-            log.from = target;
-            room->sendLog(log);
-        } else if (target->isDead()) {
-            LogMessage log;
-            log.type = "#IkJieyouNull2";
-            log.from = target;
-            log.to << handang;
-            room->sendLog(log);
-        } else {
+        if (target) {
             Peach *peach = new Peach(Card::NoSuit, 0);
             peach->setSkillName("_ikjieyou");
-            ServerPlayer *current = room->getCurrent();
-            if (current && current->isAlive() && current->getPhase() != Player::NotActive && current != handang
-                && target != handang && current->hasSkill("iksishideng")) {
-                delete peach;
-                return true;
-            }
-            if (!handang->isCardLimited(peach, Card::MethodUse) && Sanguosha->isProhibited(handang, target, peach)) {
-                delete peach;
-                return true;
-            }
             room->useCard(CardUseStruct(peach, handang, target));
         }
-        return true;
+        return false;
     }
 };
 
@@ -8597,10 +8571,8 @@ IkaiKinPackage::IkaiKinPackage()
 
     General *wind037 = new General(this, "wind037", "kaze", 4, true, true);
     wind037->addSkill(new IkXuanren);
-    wind037->addSkill(new IkXuanrenTrigger);
-    wind037->addSkill(new IkXuanrenTargetMod);
-    related_skills.insertMulti("ikxuanren", "#ikxuanren-trigger");
-    related_skills.insertMulti("ikxuanren", "#ikxuanren-target");
+    wind037->addSkill(new SlashNoDistanceLimitSkill("ikxuanren"));
+    related_skills.insertMulti("ikxuanren", "#ikxuanren-slash-ndl");
     wind037->addSkill(new IkLanjian);
 
     General *wind038 = new General(this, "wind038", "kaze", 3);
