@@ -576,7 +576,7 @@ public:
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
-        if (player == room->getCurrent() && player->isAlive() && player->getPhase() != Player::NotActive) {
+        if (room->isSomeonesTurn(player)) {
             CardUseStruct use = data.value<CardUseStruct>();
             if (use.card && use.card->isKindOf("Slash"))
                 return QStringList(objectName());
@@ -2442,17 +2442,14 @@ public:
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
-        if (TriggerSkill::triggerable(player)) {
-            ServerPlayer *current = room->getCurrent();
-            if (current == player && current->isAlive() && current->getPhase() != Player::NotActive) {
-                CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-                if (move.to == player && move.to_place == Player::PlaceHand) {
-                    foreach (int id, move.card_ids) {
-                        if (player->isJilei(Sanguosha->getCard(id), true))
-                            continue;
-                        if (room->getCardOwner(id) == player && room->getCardPlace(id) == Player::PlaceHand)
-                            return QStringList(objectName());
-                    }
+        if (TriggerSkill::triggerable(player) && room->isSomeonesTurn()) {
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (move.to == player && move.to_place == Player::PlaceHand) {
+                foreach (int id, move.card_ids) {
+                    if (player->isJilei(Sanguosha->getCard(id), true))
+                        continue;
+                    if (room->getCardOwner(id) == player && room->getCardPlace(id) == Player::PlaceHand)
+                        return QStringList(objectName());
                 }
             }
         }
@@ -3699,7 +3696,7 @@ public:
             CardResponseStruct resp = data.value<CardResponseStruct>();
             if (resp.m_isUse && resp.m_card->isKindOf("Jink")) {
                 foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
-                    if (p == player || (room->getCurrent() == p && p->getPhase() != Player::NotActive))
+                    if (p == player || room->isSomeonesTurn(p))
                         skill_list.insert(p, QStringList(objectName()));
                 }
             }
@@ -3707,7 +3704,7 @@ public:
             CardUseStruct use = data.value<CardUseStruct>();
             if (use.card->isKindOf("Peach")) {
                 foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
-                    if (p == player || (room->getCurrent() == p && p->getPhase() != Player::NotActive))
+                    if (p == player || room->isSomeonesTurn(p))
                         skill_list.insert(p, QStringList(objectName()));
                 }
             }
@@ -4493,11 +4490,8 @@ public:
     {
         if (triggerEvent == EventPhaseChanging) {
             room->setTag("ikxinzuo", false);
-        } else {
-            ServerPlayer *current = room->getCurrent();
-            if (current && current->isAlive() && current->getPhase() == Player::Play)
-                room->setTag("ikxinzuo", true);
-        }
+        } else if (room->isSomeonesTurn() && room->getCurrent()->getPhase() == Player::Play)
+            room->setTag("ikxinzuo", true);
 
         return QStringList();
     }
@@ -5207,10 +5201,9 @@ public:
     {
         if (!TriggerSkill::triggerable(handang))
             return QStringList();
-        ServerPlayer *current = room->getCurrent();
-        if (!current || current->isDead() || current->getPhase() == Player::NotActive)
+        if (!room->isSomeonesTurn())
             return QStringList();
-        if (current == handang || !handang->canSlash(current, false))
+        if (!handang->canSlash(room->getCurrent(), false))
             return QStringList();
         DyingStruct dying = data.value<DyingStruct>();
         if (dying.who->isDead() || dying.who->getHp() > 0)
@@ -5260,8 +5253,7 @@ public:
                 ServerPlayer *target = room->getTag("IkJieyouTarget").value<ServerPlayer *>();
                 if (target && target->isAlive() && target->getHp() < 0) {
                     ServerPlayer *current = room->getCurrent();
-                    if (current && current->isAlive() && current->getPhase() != Player::NotActive && current != handang
-                        && target != handang && current->hasSkill("iksishideng"))
+                    if (room->isSomeonesTurn() && current != handang && target != handang && current->hasSkill("iksishideng"))
                         return QStringList();
                     Peach *peach = new Peach(Card::NoSuit, 0);
                     peach->deleteLater();
@@ -5896,11 +5888,10 @@ public:
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         player->drawCards(1, objectName());
-        ServerPlayer *current = room->getCurrent();
-        if (current && current->isAlive() && current->getPhase() != Player::NotActive) {
+        if (room->isSomeonesTurn()) {
             LogMessage log;
             log.type = "#SkipAllPhase";
-            log.from = current;
+            log.from = room->getCurrent();
             room->sendLog(log);
         }
         throw TurnBroken;
@@ -7240,8 +7231,7 @@ public:
             return QStringList();
         if (player->getPhase() != Player::NotActive)
             return QStringList();
-        ServerPlayer *current = room->getCurrent();
-        if (current && current->isAlive() && current->getPhase() != Player::NotActive)
+        if (room->isSomeonesTurn())
             return QStringList(objectName());
         return QStringList();
     }
@@ -7507,8 +7497,8 @@ public:
         if (!TriggerSkill::triggerable(player))
             return QStringList();
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        if (player == room->getCurrent() && player->getPhase() != Player::NotActive && move.from
-            && move.from_places.contains(Player::PlaceHand) && move.from->getHandcardNum() <= 1 && move.from->isAlive())
+        if (room->isSomeonesTurn(player) && move.from && move.from_places.contains(Player::PlaceHand)
+            && move.from->getHandcardNum() <= 1 && move.from->isAlive())
             return QStringList(objectName());
         return QStringList();
     }
@@ -8057,12 +8047,9 @@ public:
                 foreach (ServerPlayer *p, room->getAlivePlayers())
                     p->setMark("ikguijing", 0);
             }
-        } else if (triggerEvent == PreDamageDone) {
-            ServerPlayer *current = room->getCurrent();
-            if (!current || current->isDead() || current->getPhase() == Player::NotActive)
-                return QStringList();
+        } else if (triggerEvent == PreDamageDone && room->isSomeonesTurn())
             return QStringList(objectName());
-        }
+
         return QStringList();
     }
 

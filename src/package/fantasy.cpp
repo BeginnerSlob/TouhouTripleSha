@@ -338,14 +338,13 @@ void LureTiger::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &tar
 void LureTiger::onEffect(const CardEffectStruct &effect) const
 {
     Room *room = effect.to->getRoom();
-    ServerPlayer *current = room->getCurrent();
-    if (!current || current->getPhase() == Player::NotActive || current->isDead())
+    if (!room->isSomeonesTurn())
         return;
 
     effect.to->addMark("LureTigerTarget");
     room->setPlayerCardLimitation(effect.to, "use", ".", false);
     room->setPlayerProperty(effect.to, "removed", true);
-    current->setFlags("LureTigerTurn");
+    room->getCurrent()->setFlags("LureTigerTurn");
 }
 
 class ThMengxuan : public TriggerSkill

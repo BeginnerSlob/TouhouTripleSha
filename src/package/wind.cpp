@@ -582,10 +582,9 @@ public:
 
     virtual bool isEnabledAtNullification(const ServerPlayer *player) const
     {
-        ServerPlayer *current = player->getRoom()->getCurrent();
-        if (!current || current->isDead() || current->getPhase() == Player::NotActive)
-            return false;
-        return !player->isKongcheng() && !player->hasFlag("GuhuoUsed");
+        if (player->getRoom()->isSomeonesTurn())
+            return !player->isKongcheng() && !player->hasFlag("GuhuoUsed");
+        return false;
     }
 };
 

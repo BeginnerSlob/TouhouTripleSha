@@ -1258,8 +1258,7 @@ public:
                     room->setPlayerMark(p, objectName(), 0);
             }
         } else if (TriggerSkill::triggerable(player) && player->getMark(objectName()) == 0) {
-            ServerPlayer *current = room->getCurrent();
-            if (current && current->isAlive() && current->getPhase() != Player::NotActive) {
+            if (room->isSomeonesTurn()) {
                 CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
                 if (!room->getTag("FirstRound").toBool() && player->getPhase() != Player::Draw && move.to == player
                     && move.to_place == Player::PlaceHand) {
@@ -2096,7 +2095,7 @@ public:
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *lvmeng, QVariant &data,
                                     ServerPlayer *&) const
     {
-        if (lvmeng == room->getCurrent() && lvmeng->getPhase() == Player::Play) {
+        if (room->isSomeonesTurn(lvmeng) && lvmeng->getPhase() == Player::Play) {
             const Card *card = NULL;
             if (triggerEvent == PreCardUsed)
                 card = data.value<CardUseStruct>().card;

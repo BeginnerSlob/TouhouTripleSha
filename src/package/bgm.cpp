@@ -520,8 +520,8 @@ public:
                 ServerPlayer *to_give = room->askForPlayerChosen(pindian->from, to_givelist, "dahe", "@dahe-give", true);
                 if (!to_give)
                     return false;
-                CardMoveReason reason(CardMoveReason::S_REASON_GIVE, pindian->from->objectName(), to_give->objectName(),
-                                      "dahe", QString());
+                CardMoveReason reason(CardMoveReason::S_REASON_GIVE, pindian->from->objectName(), to_give->objectName(), "dahe",
+                                      QString());
                 to_give->obtainCard(pindian->to_card);
             }
         } else {
@@ -1197,8 +1197,7 @@ public:
             const Card *card = room->askForCard(target, "Jink", "@junwei-show", ai_data, Card::MethodNone);
             if (card) {
                 room->showCard(target, card->getEffectiveId());
-                ServerPlayer *receiver
-                    = room->askForPlayerChosen(ganning, room->getAllPlayers(), "junweigive", "@junwei-give");
+                ServerPlayer *receiver = room->askForPlayerChosen(ganning, room->getAllPlayers(), "junweigive", "@junwei-give");
                 if (receiver != target)
                     receiver->obtainCard(card);
             } else {
@@ -1938,8 +1937,7 @@ public:
 
     virtual bool trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *liuxie, QVariant &data) const
     {
-        ServerPlayer *current = room->getCurrent();
-        if (current == NULL || !current->isAlive())
+        if (!room->isSomeonesTurn())
             return false;
         if (liuxie->getPile("edict").length() == 0)
             return false;

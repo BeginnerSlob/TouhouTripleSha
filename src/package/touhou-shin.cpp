@@ -250,8 +250,7 @@ public:
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *&) const
     {
-        ServerPlayer *current = room->getCurrent();
-        if (!TriggerSkill::triggerable(player) || current != player)
+        if (!TriggerSkill::triggerable(player) || !room->isSomeonesTurn(player))
             return QStringList();
         if (player->getPhase() == Player::Draw)
             return QStringList(objectName());
@@ -2417,7 +2416,7 @@ public:
 
     virtual QStringList triggerable(TriggerEvent e, Room *r, ServerPlayer *p, QVariant &d, ServerPlayer *&) const
     {
-        if (e == PreCardUsed && p->getPhase() != Player::NotActive && r->getCurrent() == p) {
+        if (e == PreCardUsed && r->isSomeonesTurn(p)) {
             CardUseStruct use = d.value<CardUseStruct>();
             int type = use.card->getTypeId();
             if (type != 0) {

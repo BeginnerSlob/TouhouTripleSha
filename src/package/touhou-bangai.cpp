@@ -547,20 +547,29 @@ public:
     ThMengwei()
         : TriggerSkill("thmengwei")
     {
-        events << CardsShown;
+        events << CardsShown << EventPhaseChanging;
         frequency = Frequent;
     }
 
-    virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *, QVariant &data) const
+    virtual TriggerList triggerable(TriggerEvent event, Room *room, ServerPlayer *, QVariant &data) const
     {
         TriggerList skill_list;
-        CardsShowStruct show = data.value<CardsShowStruct>();
-        if (show.viewer == NULL) {
-            foreach (int id, show.card_ids) {
-                if (room->getCardPlace(id) == Player::PlaceHand) {
-                    foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName()))
-                        skill_list.insert(p, QStringList(objectName()));
-                    break;
+        if (event == EventPhaseChanging) {
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAlivePlayers())
+                    p->setMark(objectName(), 0);
+            }
+        } else if (room->isSomeonesTurn()) {
+            CardsShowStruct show = data.value<CardsShowStruct>();
+            if (show.viewer == NULL) {
+                foreach (int id, show.card_ids) {
+                    if (room->getCardPlace(id) == Player::PlaceHand) {
+                        foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                            if (p->getMark(objectName()) == 0)
+                                skill_list.insert(p, QStringList(objectName()));
+                        }
+                        break;
+                    }
                 }
             }
         }
@@ -570,6 +579,7 @@ public:
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *ask_who) const
     {
         if (ask_who->askForSkillInvoke(objectName())) {
+            ask_who->addMark(objectName());
             room->broadcastSkillInvoke(objectName());
             return true;
         }
@@ -589,12 +599,17 @@ public:
     ThXijing()
         : TriggerSkill("thxijing")
     {
-        events << AskForRetrial;
+        events << AskForRetrial << EventPhaseChanging;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent e, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
-        if (TriggerSkill::triggerable(player)) {
+        if (e == EventPhaseChanging) {
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAlivePlayers())
+                    p->setMark(objectName(), 0);
+            }
+        } else if (TriggerSkill::triggerable(player) && room->isSomeonesTurn() && player->getMark(objectName()) == 0) {
             JudgeStruct *judge = data.value<JudgeStruct *>();
             if (!judge->who->isKongcheng())
                 return QStringList(objectName());
@@ -605,6 +620,7 @@ public:
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
         if (player->askForSkillInvoke(objectName(), data)) {
+            player->addMark(objectName());
             room->broadcastSkillInvoke(objectName());
             return true;
         }

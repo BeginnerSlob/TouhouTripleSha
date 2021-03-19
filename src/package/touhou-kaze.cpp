@@ -510,7 +510,7 @@ public:
             return skill_list;
 
         foreach (ServerPlayer *owner, room->findPlayersBySkillName(objectName())) {
-            if (owner == player || owner == room->getCurrent())
+            if (owner == player || room->isSomeonesTurn(owner))
                 continue;
             Slash *slash = new Slash(Card::NoSuit, 0);
             slash->setSkillName("_thzhanye");

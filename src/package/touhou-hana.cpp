@@ -487,7 +487,7 @@ public:
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data,
                                     ServerPlayer *&) const
     {
-        if (!TriggerSkill::triggerable(player) || player == room->getCurrent())
+        if (!TriggerSkill::triggerable(player) || room->isSomeonesTurn(player))
             return QStringList();
         if (triggerEvent == CardsMoveOneTime) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
@@ -1837,7 +1837,7 @@ void ThGuaitanCard::onEffect(const CardEffectStruct &effect) const
     room->addPlayerMark(target, "@guaitan_" + choice.left(5).toLower());
 
     room->setPlayerCardLimitation(target, "use,response", choice, false);
-    if (target == room->getCurrent() && target->getPhase() != Player::NotActive)
+    if (room->isSomeonesTurn(target))
         target->setFlags("guaitan_current");
 }
 

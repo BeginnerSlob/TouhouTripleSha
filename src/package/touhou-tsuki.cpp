@@ -29,9 +29,7 @@ public:
             DamageStruct damage = data.value<DamageStruct>();
             for (int i = 0; i < damage.damage; i++)
                 skills << objectName();
-        } else if (triggerEvent == BeforeCardsMove) {
-            if (player != room->getCurrent() || player->getPhase() == Player::NotActive)
-                return skills;
+        } else if (triggerEvent == BeforeCardsMove && room->isSomeonesTurn(player)) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             if (move.from && move.from->isAlive() && move.to_place == Player::DiscardPile
                 && (move.from_places.contains(Player::PlaceHand) || move.from_places.contains(Player::PlaceEquip)
@@ -601,7 +599,7 @@ public:
         room->judge(judge);
 
         if (judge.isBad()) {
-            if (room->getCurrent() == damage.from && damage.from->getPhase() != Player::NotActive)
+            if (room->isSomeonesTurn(damage.from))
                 room->setPlayerFlag(damage.from, objectName());
             if (damage.from->getMark("@jiaotu") <= 0) {
                 room->addPlayerMark(damage.from, "@jiaotu");
@@ -763,7 +761,7 @@ public:
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
-        if (!TriggerSkill::triggerable(player) || (player == room->getCurrent() && player->getPhase() != Player::NotActive))
+        if (!TriggerSkill::triggerable(player) || room->isSomeonesTurn(player))
             return QStringList();
         QString pattern = data.toStringList().first();
         if (pattern != "slash" && pattern != "jink")
@@ -1670,8 +1668,7 @@ public:
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        if (TriggerSkill::triggerable(player) && (room->getCurrent() != player || player->getPhase() == Player::NotActive)
-            && move.from == player
+        if (TriggerSkill::triggerable(player) && !room->isSomeonesTurn(player) && move.from == player
             && (move.from_places.contains(Player::PlaceHand) || move.from_places.contains(Player::PlaceEquip)))
             return QStringList(objectName());
         return QStringList();
@@ -2526,20 +2523,18 @@ public:
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data,
                                     ServerPlayer *&) const
     {
-        if (triggerEvent == PreCardUsed) {
-            if (player == room->getCurrent() && player->getPhase() != Player::NotActive) {
-                const Card *card = data.value<CardUseStruct>().card;
-                if (card->getTypeId() != Card::TypeSkill) {
-                    QString color_str;
-                    if (card->isRed())
-                        color_str = "red";
-                    else if (card->isBlack())
-                        color_str = "black";
-                    else
-                        color_str = "no_color";
-                    QString str = QString("%1|%2").arg(card->getType()).arg(color_str);
-                    player->tag["ThGuixuRecord"] = str;
-                }
+        if (triggerEvent == PreCardUsed && room->isSomeonesTurn(player)) {
+            const Card *card = data.value<CardUseStruct>().card;
+            if (card->getTypeId() != Card::TypeSkill) {
+                QString color_str;
+                if (card->isRed())
+                    color_str = "red";
+                else if (card->isBlack())
+                    color_str = "black";
+                else
+                    color_str = "no_color";
+                QString str = QString("%1|%2").arg(card->getType()).arg(color_str);
+                player->tag["ThGuixuRecord"] = str;
             }
         } else if (triggerEvent == EventPhaseChanging) {
             if (data.value<PhaseChangeStruct>().to == Player::NotActive)

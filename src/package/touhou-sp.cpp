@@ -142,9 +142,9 @@ public:
             if (use.card->getTypeId() == Card::TypeSkill)
                 return QStringList();
         }
-        ServerPlayer *current = room->getCurrent();
-        if (!current || current->isDead() || current->getPhase() == Player::NotActive)
+        if (!room->isSomeonesTurn())
             return QStringList();
+        ServerPlayer *current = room->getCurrent();
         if (current != player && TriggerSkill::triggerable(current)) {
             ask_who = current;
             return QStringList(objectName());
@@ -526,15 +526,12 @@ public:
                     p->setMark(objectName(), 0);
             }
         } else if (triggerEvent == DamageInflicted) {
-            if (TriggerSkill::triggerable(player) && player->getMark(objectName()) < 3) {
-                ServerPlayer *current = room->getCurrent();
-                if (current && current->isAlive() && current->getPhase() != Player::NotActive) {
-                    DamageStruct damage = data.value<DamageStruct>();
-                    if (!damage.from || damage.from->isDead())
-                        return QStringList();
-                    ask_who = damage.from;
-                    return QStringList(objectName());
-                }
+            if (TriggerSkill::triggerable(player) && player->getMark(objectName()) < 3 && room->isSomeonesTurn()) {
+                DamageStruct damage = data.value<DamageStruct>();
+                if (!damage.from || damage.from->isDead())
+                    return QStringList();
+                ask_who = damage.from;
+                return QStringList(objectName());
             }
         }
         return QStringList();
@@ -745,7 +742,7 @@ public:
         JsonArray args;
         args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
         room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
-        if (player == room->getCurrent() && player->getPhase() != Player::NotActive)
+        if (room->isSomeonesTurn(player))
             room->setPlayerFlag(player, "thmengsheng");
 
         return false;
@@ -1037,7 +1034,7 @@ const Card *ThYuduCard::validate(CardUseStruct &cardUse) const
               << "thunder_slash";
 
     ServerPlayer *current = room->getCurrent();
-    if (!current || current->getPhase() == Player::NotActive || current->isKongcheng()) {
+    if (!room->isSomeonesTurn() || current->isKongcheng()) {
         room->setPlayerFlag(user, "Global_ThYuduFailed");
         return NULL;
     }
@@ -1077,7 +1074,7 @@ const Card *ThYuduCard::validateInResponse(ServerPlayer *user) const
               << "thunder_slash";
 
     ServerPlayer *current = room->getCurrent();
-    if (!current || current->getPhase() == Player::NotActive || current->isKongcheng()) {
+    if (!room->isSomeonesTurn() || current->isKongcheng()) {
         room->setPlayerFlag(user, "Global_ThYuduFailed");
         return NULL;
     }
@@ -1173,7 +1170,7 @@ public:
         ServerPlayer *current = room->getCurrent();
         if (!TriggerSkill::triggerable(player) || player->hasFlag("thyudu"))
             return QStringList();
-        if (!current || current == player || current->getPhase() == Player::NotActive || current->isKongcheng())
+        if (!room->isSomeonesTurn() || current == player || current->isKongcheng())
             return QStringList();
         if (Sanguosha->currentRoomState()->getCurrentCardUseReason() != CardUseStruct::CARD_USE_REASON_RESPONSE_USE)
             return QStringList();
@@ -2144,12 +2141,10 @@ public:
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
         QStringList skills;
-        if (TriggerSkill::triggerable(player)) {
-            if (room->getCurrent() == player && player->getPhase() != Player::NotActive) {
-                CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-                if (move.from && move.from->isAlive() && move.from_places.contains(Player::PlaceEquip))
-                    skills << objectName();
-            }
+        if (TriggerSkill::triggerable(player) && room->isSomeonesTurn(player)) {
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            if (move.from && move.from->isAlive() && move.from_places.contains(Player::PlaceEquip))
+                skills << objectName();
         }
         return skills;
     }

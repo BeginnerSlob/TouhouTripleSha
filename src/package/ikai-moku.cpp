@@ -2232,7 +2232,7 @@ public:
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
-        if (!TriggerSkill::triggerable(player) || (room->getCurrent() == player && player->getPhase() != Player::NotActive))
+        if (!TriggerSkill::triggerable(player) || room->isSomeonesTurn(player))
             return QStringList();
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         if (move.from == player
@@ -4723,8 +4723,7 @@ public:
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *&) const
     {
         if (player && player == room->getAllPlayers().first()) {
-            ServerPlayer *jiaxu = room->getCurrent();
-            if (jiaxu && TriggerSkill::triggerable(jiaxu) && jiaxu->getPhase() != Player::NotActive)
+            if (room->isSomeonesTurn() && TriggerSkill::triggerable(room->getCurrent()))
                 return QStringList(objectName());
         }
         return QStringList();

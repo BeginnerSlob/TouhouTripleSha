@@ -61,6 +61,7 @@ public:
     RoomThread *getThread() const;
     ServerPlayer *getCurrent() const;
     void setCurrent(ServerPlayer *current);
+    bool isSomeonesTurn(const ServerPlayer *who = NULL) const;
     int alivePlayerCount() const;
     QList<ServerPlayer *> getOtherPlayers(ServerPlayer *except, bool include_dead = false) const;
     QList<ServerPlayer *> getPlayers() const;

@@ -344,12 +344,10 @@ bool GameRule::trigger(TriggerEvent triggerEvent, Room *room, ServerPlayer *play
             peach = NULL;
 
             // coupling IkSishideng here to deal with complicated rule problems
-            ServerPlayer *current = room->getCurrent();
-            if (current && current->isAlive() && current->getPhase() != Player::NotActive && current->hasSkill("iksishideng")) {
-                if (player != current && player != dying.who) {
-                    player->setFlags("iksishideng");
-                    room->addPlayerMark(player, "Global_PreventPeach");
-                }
+            if (room->isSomeonesTurn() && room->getCurrent()->hasSkill("iksishideng") && player != room->getCurrent()
+                && player != dying.who) {
+                player->setFlags("iksishideng");
+                room->addPlayerMark(player, "Global_PreventPeach");
             }
 
             if (dying.who->isAlive())

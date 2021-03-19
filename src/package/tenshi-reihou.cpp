@@ -2664,8 +2664,7 @@ public:
             return QStringList();
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         if (move.from && move.from->isAlive() && move.from_places.contains(Player::PlaceHand)
-            && ((move.reason.m_reason == CardMoveReason::S_REASON_DISMANTLE
-                 && move.reason.m_playerId != move.reason.m_targetId)
+            && ((move.reason.m_reason == CardMoveReason::S_REASON_DISMANTLE && move.reason.m_playerId != move.reason.m_targetId)
                 || (move.to && move.to != move.from && move.to_place == Player::PlaceHand
                     && move.reason.m_reason != CardMoveReason::S_REASON_GIVE
                     && move.reason.m_reason != CardMoveReason::S_REASON_SWAP)))
@@ -2709,23 +2708,16 @@ public:
     virtual TriggerList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data) const
     {
         TriggerList skill_list;
-        if (triggerEvent == CardFinished) {
-            ServerPlayer *current = room->getCurrent();
-            if (current == player && player->isAlive() && player->getPhase() != Player::NotActive) {
-                CardUseStruct use = data.value<CardUseStruct>();
-                if (use.card->getTypeId() != Card::TypeSkill) {
-                    foreach (ServerPlayer *p, use.to)
-                        p->setMark("rhjiyu_use", 1);
-                }
+        if (triggerEvent == CardFinished && room->isSomeonesTurn(player)) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->getTypeId() != Card::TypeSkill) {
+                foreach (ServerPlayer *p, use.to)
+                    p->setMark("rhjiyu_use", 1);
             }
         } else if (triggerEvent == PreDamageDone) {
             DamageStruct damage = data.value<DamageStruct>();
-            if (damage.from && damage.from->isAlive()) {
-                ServerPlayer *current = room->getCurrent();
-                if (damage.from == current) {
-                    player->setMark("rhjiyu_damage", 1);
-                }
-            }
+            if (damage.from && room->isSomeonesTurn(damage.from))
+                player->setMark("rhjiyu_damage", 1);
         } else if (triggerEvent == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
             if (change.to == Player::RoundStart) {
@@ -2943,7 +2935,7 @@ public:
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
-        if (!TriggerSkill::triggerable(player) || (room->getCurrent() == player && player->getPhase() != Player::NotActive))
+        if (!TriggerSkill::triggerable(player) || !room->isSomeonesTurn(player))
             return QStringList();
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         if (move.from == player
@@ -3847,8 +3839,7 @@ public:
             return true;
         }
 
-        ServerPlayer *target
-            = room->askForPlayerChosen(player, room->getAlivePlayers(), objectName(), "@rhyaodao", true, true);
+        ServerPlayer *target = room->askForPlayerChosen(player, room->getAlivePlayers(), objectName(), "@rhyaodao", true, true);
         if (target) {
             player->tag["RhYaodaoTarget"] = QVariant::fromValue(target);
             room->broadcastSkillInvoke(objectName());
@@ -4522,19 +4513,16 @@ public:
                 foreach (ServerPlayer *p, room->getAlivePlayers())
                     room->setPlayerMark(p, objectName(), 0);
             }
-        } else {
-            if (player->isAlive() && room->getCurrent() && room->getCurrent() == player
-                && player->getPhase() != Player::NotActive) {
-                CardUseStruct use = data.value<CardUseStruct>();
-                if (use.card->getTypeId() != Card::TypeSkill && use.card->getTypeId() != Card::TypeEquip) {
-                    Card *card = Sanguosha->cloneCard(use.card);
-                    card->deleteLater();
-                    if (card->isAvailable(player)) {
-                        foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
-                            if (p->getMark(objectName()) > 0)
-                                continue;
-                            skill_list.insert(p, QStringList(objectName()));
-                        }
+        } else if (room->isSomeonesTurn(player)) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->getTypeId() != Card::TypeSkill && use.card->getTypeId() != Card::TypeEquip) {
+                Card *card = Sanguosha->cloneCard(use.card);
+                card->deleteLater();
+                if (card->isAvailable(player)) {
+                    foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                        if (p->getMark(objectName()) > 0)
+                            continue;
+                        skill_list.insert(p, QStringList(objectName()));
                     }
                 }
             }

@@ -1729,7 +1729,7 @@ public:
     {
         if (!TriggerSkill::triggerable(player) || !player->hasSkill("thlingyun"))
             return QStringList();
-        if (room->getCurrent() == player && player->getPhase() != Player::NotActive)
+        if (room->isSomeonesTurn(player))
             return QStringList();
         CardUseStruct use = data.value<CardUseStruct>();
         if (!use.to.contains(player))
@@ -2299,10 +2299,7 @@ public:
     {
         QStringList skills;
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        if (!TriggerSkill::triggerable(player) || move.from != player)
-            return skills;
-        ServerPlayer *current = room->getCurrent();
-        if (current == player && player->getPhase() != Player::NotActive)
+        if (!TriggerSkill::triggerable(player) || move.from != player || room->isSomeonesTurn(player))
             return skills;
 
         for (int i = 0; i < move.card_ids.length(); i++)

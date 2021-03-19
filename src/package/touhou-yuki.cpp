@@ -169,13 +169,10 @@ public:
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data,
                                     ServerPlayer *&) const
     {
-        if (triggerEvent == PreCardUsed) {
-            ServerPlayer *current = room->getCurrent();
-            if (player == current && player->isAlive() && player->getPhase() != Player::NotActive) {
-                CardUseStruct use = data.value<CardUseStruct>();
-                if (use.card->isKindOf("Slash"))
-                    player->setFlags("ThErchongSlash");
-            }
+        if (triggerEvent == PreCardUsed && room->isSomeonesTurn(player)) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->isKindOf("Slash"))
+                player->setFlags("ThErchongSlash");
         } else if (triggerEvent == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
             if (change.to == Player::NotActive) {
@@ -471,7 +468,7 @@ public:
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
         CardUseStruct use = data.value<CardUseStruct>();
-        if (TriggerSkill::triggerable(player) && player == room->getCurrent() && player->getPhase() != Player::NotActive) {
+        if (TriggerSkill::triggerable(player) && room->isSomeonesTurn(player)) {
             if (!player->hasFlag("ThXuguFailed") && use.card->isKindOf("Analeptic"))
                 return QStringList(objectName());
         }
@@ -619,7 +616,7 @@ public:
             CardUseStruct use = data.value<CardUseStruct>();
             if (use.card->isKindOf("Slash")) {
                 foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
-                    if (p == room->getCurrent() && p->getPhase() != Player::NotActive)
+                    if (room->isSomeonesTurn(p))
                         continue;
                     if (p->inMyAttackRange(player) || p == player)
                         skill_list.insert(p, QStringList(objectName()));
@@ -1312,7 +1309,7 @@ public:
                 return QStringList();
         }
         if (triggerEvent == CardsMoveOneTime) {
-            if (player == room->getCurrent() && player->getPhase() != Player::NotActive)
+            if (room->isSomeonesTurn(player))
                 return QStringList();
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             if (move.from != player
@@ -2026,7 +2023,7 @@ public:
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         if (move.from == player && move.from_places.contains(Player::PlaceHand)
             && (move.to != player || move.to_place != Player::PlaceEquip)) {
-            if (player != room->getCurrent())
+            if (!room->isSomeonesTurn(player))
                 return QStringList(objectName());
         }
         return QStringList();

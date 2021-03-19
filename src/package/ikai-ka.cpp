@@ -149,16 +149,9 @@ public:
             if (phase != Player::Play)
                 return QStringList();
         }
-        ServerPlayer *current = room->getCurrent();
-        if (current && current->isAlive() && current->getPhase() != Player::NotActive) {
-            while (player->getMark("@arrangement") > 0) {
-                if (player->getHandcardNum() >= player->getHp())
-                    break;
-                room->removePlayerMark(player, "@arrangement");
-                player->drawCards(1, "ikyingqi");
-                if (current->isDead())
-                    break;
-            }
+        while (room->isSomeonesTurn() && player->getMark("@arrangement") > 0 && player->getHandcardNum() < player->getHp()) {
+            room->removePlayerMark(player, "@arrangement");
+            player->drawCards(1, "ikyingqi");
         }
         room->setPlayerMark(player, "@arrangement", 0);
         return QStringList();
@@ -693,7 +686,7 @@ public:
             return QStringList();
         if (triggerEvent == CardsMoveOneTime) {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if (room->getCurrent() == player && player->getPhase() != Player::NotActive)
+            if (room->isSomeonesTurn(player))
                 return QStringList();
             if (move.from == player && move.from_places.contains(Player::PlaceHand) && player->getHandcardNum() <= 1)
                 return QStringList(objectName());
@@ -1109,8 +1102,8 @@ public:
             CardUseStruct use = data.value<CardUseStruct>();
             if (use.card->isKindOf("Slash") && use.card->hasFlag("ikelu_slash")) {
                 room->setCardFlag(use.card, "-ikelu_slash");
-                ServerPlayer *current = room->getCurrent();
-                if (current && current->isAlive() && current->getPhase() != Player::NotActive) {
+                if (room->isSomeonesTurn()) {
+                    ServerPlayer *current = room->getCurrent();
                     room->broadcastSkillInvoke(objectName(), 3);
                     room->addPlayerMark(current, "ikelu_" + player->objectName());
                     room->addPlayerMark(current, objectName());
@@ -2872,7 +2865,7 @@ public:
         if (triggerEvent == EventPhaseChanging) {
             if (data.value<PhaseChangeStruct>().to == Player::NotActive)
                 player->tag.remove("IkPingwei");
-        } else if (player && player->isAlive() && player == room->getCurrent() && player->getPhase() != Player::NotActive) {
+        } else if (room->isSomeonesTurn(player)) {
             CardUseStruct use = data.value<CardUseStruct>();
             if (!use.to.isEmpty() && use.card->getTypeId() != Card::TypeSkill)
                 return QStringList(objectName());
@@ -5683,8 +5676,7 @@ public:
                 card = response.m_card;
         }
         if (card && card->getHandlingMethod() == Card::MethodUse && card->getTypeId() != Card::TypeSkill) {
-            ServerPlayer *current = room->getCurrent();
-            if (current && current->getPhase() != Player::NotActive) {
+            if (room->isSomeonesTurn()) {
                 player->setFlags("ikqimu");
                 QList<int> ids;
                 if (!card->isVirtualCard())
@@ -6083,11 +6075,8 @@ public:
     {
         if (triggerEvent == PreDamageDone) {
             DamageStruct damage = data.value<DamageStruct>();
-            if (damage.from && damage.from->isAlive() && !damage.from->hasFlag("IkKezhanDamage")) {
-                ServerPlayer *current = room->getCurrent();
-                if (current == damage.from && current->getPhase() != Player::NotActive)
-                    current->setFlags("IkKezhanDamage");
-            }
+            if (damage.from && room->isSomeonesTurn(damage.from) && !damage.from->hasFlag("IkKezhanDamage"))
+                damage.from->setFlags("IkKezhanDamage");
             return QStringList();
         }
         if (!TriggerSkill::triggerable(player))
@@ -6144,12 +6133,10 @@ public:
     virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const
     {
         TriggerList skill_list;
-        if (player->isAlive() && player->getPhase() != Player::NotActive && player == room->getCurrent()) {
-            if (player->getMark("ikhuwu") == 2) {
-                foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
-                    if (p->canDiscard(p, "he"))
-                        skill_list.insert(p, QStringList(objectName()));
-                }
+        if (room->isSomeonesTurn(player) && player->getMark("ikhuwu") == 2) {
+            foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
+                if (p->canDiscard(p, "he"))
+                    skill_list.insert(p, QStringList(objectName()));
             }
         }
         return skill_list;
@@ -6188,10 +6175,9 @@ public:
         if (triggerEvent == EventPhaseChanging) {
             if (data.value<PhaseChangeStruct>().to == Player::NotActive)
                 player->setMark("ikhuwu", 0);
-        } else if (triggerEvent == DamageCaused) {
-            if (player->isAlive() && player->getPhase() != Player::NotActive && player == room->getCurrent())
-                return QStringList(objectName());
-        }
+        } else if (triggerEvent == DamageCaused && room->isSomeonesTurn(player))
+            return QStringList(objectName());
+
         return QStringList();
     }
 
@@ -6213,13 +6199,10 @@ public:
 
     virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
-        if (TriggerSkill::triggerable(player) && !player->hasFlag("IkMosuUsed")) {
-            ServerPlayer *current = room->getCurrent();
-            if (current && current->isAlive() && current->getPhase() != Player::NotActive) {
-                DamageStruct damage = data.value<DamageStruct>();
-                if (damage.from && damage.from->getMark("ikmosu") != 1)
-                    return QStringList(objectName());
-            }
+        if (TriggerSkill::triggerable(player) && room->isSomeonesTurn() && !player->hasFlag("IkMosuUsed")) {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.from && damage.from->getMark("ikmosu") != 1)
+                return QStringList(objectName());
         }
         return QStringList();
     }
@@ -6271,13 +6254,10 @@ public:
                     p->setMark("ikmosu", 0);
                 }
             }
-        } else if (triggerEvent == DamageInflicted) {
-            ServerPlayer *current = room->getCurrent();
-            if (current && current->isAlive() && current->getPhase() != Player::NotActive) {
-                DamageStruct damage = data.value<DamageStruct>();
-                if (damage.from)
-                    return QStringList(objectName());
-            }
+        } else if (triggerEvent == DamageInflicted && room->isSomeonesTurn()) {
+            DamageStruct damage = data.value<DamageStruct>();
+            if (damage.from)
+                return QStringList(objectName());
         }
         return QStringList();
     }

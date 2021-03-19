@@ -122,6 +122,13 @@ void Room::setCurrent(ServerPlayer *current)
     this->current = current;
 }
 
+bool Room::isSomeonesTurn(const ServerPlayer *who) const
+{
+    if (current && current->isAlive() && current->getPhase() != Player::NotActive)
+        return !who || current == who;
+    return false;
+}
+
 int Room::alivePlayerCount() const
 {
     return m_alivePlayers.count();

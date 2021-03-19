@@ -412,8 +412,7 @@ public:
     {
         if (triggerEvent == PreDamageDone) {
             DamageStruct damage = data.value<DamageStruct>();
-            if (damage.from && damage.from->isAlive() && damage.from == room->getCurrent()
-                && damage.from->getMark("@jiuming") == 0)
+            if (room->isSomeonesTurn(damage.from) && damage.from->getMark("@jiuming") == 0)
                 return QStringList(objectName());
         } else if (triggerEvent == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
@@ -2845,8 +2844,7 @@ public:
             }
             return QStringList();
         }
-        ServerPlayer *current = room->getCurrent();
-        if (current && current->isAlive() && current->getPhase() != Player::NotActive) {
+        if (room->isSomeonesTurn()) {
             DamageStruct damage = data.value<DamageStruct>();
             if (damage.from && damage.from->isAlive())
                 return QStringList(objectName());
@@ -3298,8 +3296,7 @@ public:
             return QStringList();
         DamageStruct damage = data.value<DamageStruct>();
         QStringList skill;
-        ServerPlayer *current = room->getCurrent();
-        if (!current || current->isDead() || current->getPhase() == Player::NotActive)
+        if (!room->isSomeonesTurn())
             return skill;
         for (int i = 1; i <= damage.damage; i++)
             skill << objectName();
@@ -3981,8 +3978,7 @@ public:
                     peach->setSkillName("_ikchenqing");
                     bool jiaxu = false;
                     ServerPlayer *current = room->getCurrent();
-                    if (current && current->isAlive() && current->getPhase() != Player::NotActive
-                        && current->hasSkill("iksishideng") && current != target && dying.who != target)
+                    if (room->isSomeonesTurn() && current->hasSkill("iksishideng") && current != target && dying.who != target)
                         jiaxu = true;
                     if (jiaxu || target->isCardLimited(peach, Card::MethodUse) || target->isProhibited(dying.who, peach)) {
                         delete peach;
@@ -4101,17 +4097,14 @@ public:
         if (triggerEvent == EventPhaseChanging) {
             if (data.value<PhaseChangeStruct>().to == Player::NotActive)
                 player->setMark(objectName(), 0);
-        } else if (TriggerSkill::triggerable(player) && player->getPhase() != Player::NotActive) {
-            ServerPlayer *current = room->getCurrent();
-            if (current == player) {
-                CardUseStruct use = data.value<CardUseStruct>();
-                if (use.card->getTypeId() != Card::TypeSkill && use.card->getTypeId() != Card::TypeEquip) {
-                    foreach (ServerPlayer *p, room->getAlivePlayers()) {
-                        if (use.to.contains(p))
-                            continue;
-                        if (player->canDiscard(p, "he"))
-                            return QStringList(objectName());
-                    }
+        } else if (TriggerSkill::triggerable(player) && room->isSomeonesTurn(player)) {
+            CardUseStruct use = data.value<CardUseStruct>();
+            if (use.card->getTypeId() != Card::TypeSkill && use.card->getTypeId() != Card::TypeEquip) {
+                foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                    if (use.to.contains(p))
+                        continue;
+                    if (player->canDiscard(p, "he"))
+                        return QStringList(objectName());
                 }
             }
         }
@@ -5796,7 +5789,7 @@ public:
     virtual TriggerList triggerable(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const
     {
         TriggerList skill_list;
-        if (player && player->isAlive() && player == room->getCurrent() && player->getPhase() == Player::Play) {
+        if (room->isSomeonesTurn(player) && player->getPhase() == Player::Play) {
             foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName()))
                 skill_list.insert(p, QStringList(objectName()));
         }
@@ -6071,8 +6064,7 @@ public:
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
             if (TriggerSkill::triggerable(player) && player != move.from && move.from && move.from->isAlive()) {
                 if (move.from_places.contains(Player::PlaceHand) && move.is_last_handcard) {
-                    ServerPlayer *current = room->getCurrent();
-                    if (current && current->isAlive() && current->getPhase() != Player::NotActive) {
+                    if (room->isSomeonesTurn()) {
                         QStringList targets = player->tag["IkYixiangTargets"].toStringList();
                         targets << move.from->objectName();
                         player->tag["IkYixiangTargets"] = QVariant::fromValue(targets);
@@ -7773,7 +7765,6 @@ public:
                 return skill_list;
             ServerPlayer *killer = death.damage ? death.damage->from : NULL;
             ServerPlayer *current = room->getCurrent();
-
             if (killer && current && (current->isAlive() || death.who == current) && current->getPhase() != Player::NotActive)
                 killer->setMark(objectName(), 1);
         } else {

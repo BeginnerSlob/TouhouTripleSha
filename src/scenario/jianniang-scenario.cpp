@@ -1049,7 +1049,7 @@ public:
     {
         if (triggerEvent == DamageDone) {
             DamageStruct damage = data.value<DamageStruct>();
-            if (damage.from && damage.from == room->getCurrent() && damage.from->getPhase() != Player::NotActive)
+            if (damage.from && room->isSomeonesTurn(damage.from))
                 player->setMark(objectName(), 1);
         } else {
             if (player->getPhase() == Player::RoundStart) {
