@@ -599,7 +599,7 @@ public:
         room->judge(judge);
 
         if (judge.isBad()) {
-            if (room->isSomeonesTurn(damage.from))
+            if (damage.from && room->isSomeonesTurn(damage.from))
                 room->setPlayerFlag(damage.from, objectName());
             if (damage.from->getMark("@jiaotu") <= 0) {
                 room->addPlayerMark(damage.from, "@jiaotu");

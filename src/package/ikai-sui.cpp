@@ -412,7 +412,7 @@ public:
     {
         if (triggerEvent == PreDamageDone) {
             DamageStruct damage = data.value<DamageStruct>();
-            if (room->isSomeonesTurn(damage.from) && damage.from->getMark("@jiuming") == 0)
+            if (damage.from && room->isSomeonesTurn(damage.from) && damage.from->getMark("@jiuming") == 0)
                 return QStringList(objectName());
         } else if (triggerEvent == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
