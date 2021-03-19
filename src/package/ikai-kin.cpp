@@ -1601,7 +1601,7 @@ public:
         view_as_skill = new IkXuanrenViewAsSkill;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer *&) const
     {
         CardUseStruct use = data.value<CardUseStruct>();
         if (use.from && use.from->isAlive() && use.card->isKindOf("Slash") && use.card->getSkillName() == objectName()) {
@@ -2700,17 +2700,15 @@ public:
     {
     }
 
-    virtual bool triggerable(const ServerPlayer *target) const
+    virtual QStringList triggerable(TriggerEvent, Room *room, ServerPlayer *target, QVariant &, ServerPlayer *&) const
     {
         if (PhaseChangeSkill::triggerable(target) && target->getPhase() == Player::Start) {
-            if (target->getCards("he").length() > target->getHp() && target->canDiscard(target, "he"))
-                return true;
-            foreach (const Player *p, target->getAliveSiblings()) {
+            foreach (ServerPlayer *p, room->getAlivePlayers()) {
                 if (p->getCards("he").length() > p->getHp() && target->canDiscard(p, "he"))
-                    return true;
+                    return QStringList(objectName());
             }
         }
-        return false;
+        return QStringList();
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const

@@ -1871,90 +1871,87 @@ public:
         events << EventPhaseStart;
     }
 
-    static int getWeaponCount(ServerPlayer *caoren)
-    {
-        int n = 0;
-        foreach (ServerPlayer *p, caoren->getRoom()->getAlivePlayers()) {
-            if (p->getWeapon())
-                n++;
-        }
-        return n;
-    }
-
     virtual bool triggerable(const ServerPlayer *target) const
     {
-        return (TriggerSkill::triggerable(target) && target->getPhase() == Player::Finish)
-            || (target->getMark("@geek") > 0 && target->getPhase() == Player::Draw);
+        return TriggerSkill::triggerable(target) && target->getPhase() == Player::Finish;
     }
 
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *caoren, QVariant &, ServerPlayer *) const
     {
-        if (caoren->getPhase() == Player::Finish) {
-            if (caoren->askForSkillInvoke(objectName())) {
-                room->broadcastSkillInvoke(objectName());
-                return true;
-            }
-            return false;
-        } else
+        if (caoren->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
             return true;
+        }
+        return false;
     }
 
-    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *caoren, QVariant &) const
+    virtual bool trigger(TriggerEvent, Room *, ServerPlayer *caoren, QVariant &) const
     {
-        if (caoren->getPhase() == Player::Finish) {
-            int n = getWeaponCount(caoren);
-            caoren->drawCards(n + 2, objectName());
-            caoren->turnOver();
-            room->setPlayerMark(caoren, "@geek", 1);
-        } else {
-            room->removePlayerMark(caoren, "@geek");
-            int n = getWeaponCount(caoren);
-            if (n > 0) {
-                LogMessage log;
-                log.type = "#IkZhaihunDiscard";
-                log.from = caoren;
-                log.arg = QString::number(n);
-                log.arg2 = objectName();
-                room->sendLog(log);
+        caoren->drawCards(1, objectName());
+        caoren->turnOver();
 
-                room->askForDiscard(caoren, objectName(), n, n, false, true);
-            }
-        }
         return false;
     }
 };
 
-class IkFojiao : public OneCardViewAsSkill
+class IkFojiao : public TriggerSkill
 {
 public:
     IkFojiao()
-        : OneCardViewAsSkill("ikfojiao")
+        : TriggerSkill("ikfojiao")
     {
-        filter_pattern = "EquipCard";
-        response_or_use = true;
+        events << TurnedOver;
     }
 
-    virtual bool isEnabledAtPlay(const Player *) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *caoren, QVariant &, ServerPlayer *) const
     {
+        if (caoren->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
+            return true;
+        }
         return false;
     }
 
-    virtual bool isEnabledAtResponse(const Player *player, const QString &pattern) const
+    virtual bool trigger(TriggerEvent, Room *room, ServerPlayer *player, QVariant &) const
     {
-        return pattern == "nullification" && player->getHandcardNum() > player->getHp();
-    }
+        player->drawCards(1, objectName());
 
-    virtual const Card *viewAs(const Card *originalCard) const
-    {
-        Nullification *ncard = new Nullification(originalCard->getSuit(), originalCard->getNumber());
-        ncard->addSubcard(originalCard);
-        ncard->setSkillName(objectName());
-        return ncard;
-    }
+        const Card *card = room->askForUseCard(player, "TrickCard+^Nullification,EquipCard|.|.|hand", "@ikfojiao");
+        if (!card)
+            return false;
 
-    virtual bool isEnabledAtNullification(const ServerPlayer *player) const
-    {
-        return player->isAlive() && player->getHandcardNum() > player->getHp();
+        QList<ServerPlayer *> targets;
+        if (card->getTypeId() == Card::TypeTrick) {
+            foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                bool can_discard = false;
+                foreach (const Card *judge, p->getJudgingArea()) {
+                    if (player->canDiscard(p, judge->getEffectiveId())) {
+                        can_discard = true;
+                        break;
+                    }
+                }
+                if (can_discard)
+                    targets << p;
+            }
+        } else if (card->getTypeId() == Card::TypeEquip) {
+            foreach (ServerPlayer *p, room->getAlivePlayers()) {
+                if (!p->getEquips().isEmpty() && player->canDiscard(p, "e"))
+                    targets << p;
+            }
+        }
+        if (targets.isEmpty())
+            return false;
+        ServerPlayer *to_discard = room->askForPlayerChosen(player, targets, objectName(), "@ikfojiao-discard", true);
+        if (to_discard) {
+            QList<int> disabled_ids;
+            foreach (const Card *c, to_discard->getCards("ej")) {
+                if (c->getTypeId() != card->getTypeId())
+                    disabled_ids << c->getEffectiveId();
+            }
+            int id = room->askForCardChosen(player, to_discard, "ej", objectName(), false, Card::MethodDiscard, disabled_ids);
+            room->throwCard(id, room->getCardPlace(id) == Player::PlaceDelayedTrick ? NULL : to_discard, player);
+        }
+        return false;
     }
 };
 
