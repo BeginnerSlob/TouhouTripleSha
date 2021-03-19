@@ -195,6 +195,14 @@ public:
     virtual void onEffect(const CardEffectStruct &effect) const;
 };
 
+class ThShengzhiDiscardCard : public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThShengzhiDiscardCard();
+};
+
 class ThLiuzhenCard : public SkillCard
 {
     Q_OBJECT
