@@ -3782,14 +3782,14 @@ public:
 
     virtual bool isProhibited(const Player *from, const Player *to, const Card *card, const QList<const Player *> &) const
     {
-        if (from->hasFlag("thyuexiang_newmoon") && card->isKindOf("Slash")) {
+        if (from && from->hasFlag("thyuexiang_newmoon") && card->isKindOf("Slash")) {
             foreach (const Player *p, from->getAliveSiblings()) {
                 if (from->distanceTo(p) < from->distanceTo(to))
                     return true;
             }
         }
 
-        if (from->hasFlag("thyuexiang_lunareclipse"))
+        if (from && from->hasFlag("thyuexiang_lunareclipse"))
             return card->isKindOf("Slash");
 
         return false;

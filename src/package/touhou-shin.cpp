@@ -5147,7 +5147,7 @@ public:
 
     virtual bool isProhibited(const Player *from, const Player *to, const Card *card, const QList<const Player *> &) const
     {
-        if (from->getMark("@zuisheng") > 0 && card->isKindOf("Slash")) {
+        if (from && from->getMark("@zuisheng") > 0 && card->isKindOf("Slash")) {
             foreach (const Player *p, from->getAliveSiblings()) {
                 if (from->distanceTo(p) < from->distanceTo(to))
                     return true;
