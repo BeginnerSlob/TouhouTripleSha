@@ -1747,7 +1747,7 @@ public:
                 }
             } else
                 player->setMark(objectName(), 0);
-        } else if (player->getMark(objectName()) > 0 && (triggerEvent == CardUsed || CardUsed == CardResponded)) {
+        } else if (player->getMark(objectName()) > 0 && (triggerEvent == CardUsed || triggerEvent == CardResponded)) {
             const Card *card = NULL;
             if (triggerEvent == CardUsed) {
                 card = data.value<CardUseStruct>().card;
