@@ -1409,7 +1409,7 @@ public:
                 if (target->isWounded() && room->askForChoice(target, objectName(), "recover+draw") == "recover")
                     room->recover(target, RecoverStruct(player));
                 else
-                    target->drawCards(1, objectName());
+                    target->drawCards(2, objectName());
             }
         }
 
@@ -3004,29 +3004,13 @@ void ThShuangfengCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer 
         room->moveCardsAtomic(CardsMoveStruct(remains, NULL, NULL, Player::PlaceTable, Player::DrawPile, reason3), true);
         room->askForGuanxing(source, remains, Room::GuanxingDownOnly);
     }
+
+    room->setPlayerProperty(source, "thshuangfeng_step", 2);
 }
-
-class ThShuangfeng : public ZeroCardViewAsSkill
-{
-public:
-    ThShuangfeng()
-        : ZeroCardViewAsSkill("thshuangfeng")
-    {
-    }
-
-    virtual const Card *viewAs() const
-    {
-        return new ThShuangfengCard;
-    }
-
-    virtual bool isEnabledAtPlay(const Player *player) const
-    {
-        return !player->hasUsed("ThShuangfengCard") && !player->hasUsed("ThXianhuCard");
-    }
-};
 
 ThXianhuCard::ThXianhuCard()
 {
+    m_skillName = "thshuangfeng";
     target_fixed = true;
 }
 
@@ -3040,7 +3024,7 @@ void ThXianhuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
     int n = 4 + source->getMark("@lake");
     if (card_ids.length() > n)
         card_ids = card_ids.mid(0, n);
-    CardMoveReason reason1(CardMoveReason::S_REASON_TURNOVER, source->objectName(), "thxianhu", QString());
+    CardMoveReason reason1(CardMoveReason::S_REASON_TURNOVER, source->objectName(), "thshuangfeng", QString());
     room->moveCardsAtomic(CardsMoveStruct(card_ids, NULL, Player::PlaceTable, reason1), true);
 
     LogMessage log;
@@ -3059,7 +3043,7 @@ void ThXianhuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
         choices[str] << id;
     }
 
-    QString suit = Suit2String(room->askForSuit(source, "thxianhu", choices.keys().join("+")));
+    QString suit = Suit2String(room->askForSuit(source, "thshuangfeng", choices.keys().join("+")));
 
     DummyCard *dummy = new DummyCard;
     dummy->addSubcards(choices[suit]);
@@ -3072,30 +3056,52 @@ void ThXianhuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
         foreach (QString str, choices.keys()) {
             remains << choices[str];
         }
-        CardMoveReason reason3(CardMoveReason::S_REASON_PUT, source->objectName(), "thxianhu", QString());
+        CardMoveReason reason3(CardMoveReason::S_REASON_PUT, source->objectName(), "thshuangfeng", QString());
         room->moveCardsAtomic(CardsMoveStruct(remains, NULL, NULL, Player::PlaceTable, Player::DrawPile, reason3), true);
         room->askForGuanxing(source, remains, Room::GuanxingDownOnly);
     }
+
+    room->setPlayerProperty(source, "thshuangfeng_step", 1);
 }
 
-class ThXianhu : public ZeroCardViewAsSkill
+class ThShuangfengViewAsSkill : public ZeroCardViewAsSkill
 {
 public:
-    ThXianhu()
-        : ZeroCardViewAsSkill("thxianhu")
+    ThShuangfengViewAsSkill()
+        : ZeroCardViewAsSkill("thshuangfeng")
     {
     }
 
     virtual const Card *viewAs() const
     {
-        return new ThXianhuCard;
+        if (Self->getSkillStep(objectName()) == 2)
+            return new ThXianhuCard;
+        else
+            return new ThShuangfengCard;
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const
     {
-        if (ClientInstance->getDiscardPileNum() == 0)
+        if (player->hasUsed("ThShuangfengCard") || player->hasUsed("ThXianhuCard"))
             return false;
-        return !player->hasUsed("ThShuangfengCard") && !player->hasUsed("ThXianhuCard");
+        return player->getSkillStep(objectName()) != 2 || ClientInstance->getDiscardPileNum() != 0;
+    }
+};
+
+class ThShuangfeng : public TriggerSkill
+{
+public:
+    ThShuangfeng()
+        : TriggerSkill("thshuangfeng")
+    {
+        events << GameStart;
+        view_as_skill = new ThShuangfengViewAsSkill;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        room->setPlayerProperty(player, "thshuangfeng_step", 1);
+        return false;
     }
 };
 
@@ -3130,8 +3136,7 @@ public:
 
     virtual void onDamaged(ServerPlayer *player, const DamageStruct &) const
     {
-        Room *room = player->getRoom();
-        QString choice = room->askForChoice(player, objectName(), "@mountain+@lake", QVariant());
+        QString choice = player->getRoom()->askForChoice(player, objectName(), "@mountain+@lake", QVariant());
         player->gainMark(choice, 1);
     }
 };
@@ -3973,7 +3978,6 @@ TouhouKamiPackage::TouhouKamiPackage()
 
     General *kami017 = new General(this, "kami017", "kami");
     kami017->addSkill(new ThShuangfeng);
-    kami017->addSkill(new ThXianhu);
     kami017->addSkill(new ThXingyong);
     kami017->addSkill(new ThZaishen);
 
