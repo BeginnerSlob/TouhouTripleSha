@@ -3173,6 +3173,10 @@ public:
                             if (can_use)
                                 continue;
                             const Card *card = Sanguosha->getCard(id);
+                            if (card->isKindOf("Slash") && !p->canSlash(player, card, false))
+                                continue;
+                            if (card->isKindOf("DelayedTrick") && player->containsTrick(card->objectName()))
+                                continue;
                             if (!p->isCardLimited(card, Card::MethodUse, false) && !p->isProhibited(player, card))
                                 can_use = true;
                         }
@@ -3256,9 +3260,30 @@ public:
                     QString obj_name = card->objectName();
                     if (obj_name.contains("slash"))
                         obj_name = "slash";
-                    if (choice == obj_name && !ask_who->isCardLimited(card, Card::MethodUse, false)
-                        && !ask_who->isProhibited(player, card))
-                        room->useCard(CardUseStruct(card, ask_who, player, false));
+                    if (choice == obj_name) {
+                        if (card->isKindOf("Slash") && !ask_who->canSlash(player, card, false))
+                            continue;
+                        if (card->isKindOf("DelayedTrick") && player->containsTrick(card->objectName()))
+                            continue;
+                        QList<ServerPlayer *> targets;
+                        targets << player;
+                        if (card->isKindOf("Collateral") || card->isKindOf("FeintAttack")) {
+                            QList<ServerPlayer *> victims;
+                            foreach (ServerPlayer *victim, room->getOtherPlayers(player)) {
+                                if (card->targetFilter(QList<const Player *>() << player, victim, ask_who))
+                                    victims << victim;
+                            }
+                            if (!victims.isEmpty()) {
+                                QString prompt = QString("@thzaishen-%1:%2")
+                                                     .arg(card->isKindOf("Collateral") ? "collateral" : "feint-attack")
+                                                     .arg(player->objectName());
+                                ServerPlayer *victim = room->askForPlayerChosen(ask_who, victims, objectName(), prompt, false);
+                                targets << victim;
+                            }
+                        }
+                        if (!ask_who->isCardLimited(card, Card::MethodUse, false) && !ask_who->isProhibited(player, card))
+                            room->useCard(CardUseStruct(card, ask_who, targets, false));
+                    }
                 }
             }
         } else {
