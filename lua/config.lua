@@ -4,7 +4,7 @@
 config = {
 	version = "v9.0",
 	resources_version = "v9.0",
-	version_name = "0525",
+	version_name = "0321",
 	mod_name = "TouhouTripleSha",
 	big_font = 56,
 	small_font = 27,
