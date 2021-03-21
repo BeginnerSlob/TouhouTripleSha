@@ -1427,10 +1427,10 @@ public:
     }
 };
 
-class ThSibaoVS : public OneCardViewAsSkill
+class ThSibao : public OneCardViewAsSkill
 {
 public:
-    ThSibaoVS()
+    ThSibao()
         : OneCardViewAsSkill("thsibao")
     {
         filter_pattern = "EquipCard,DelayedTrick";
@@ -1452,20 +1452,20 @@ public:
     }
 };
 
-class ThSibao : public TriggerSkill
+class ThSibaoDraw : public TriggerSkill
 {
 public:
-    ThSibao()
-        : TriggerSkill("thsibao")
+    ThSibaoDraw()
+        : TriggerSkill("#thsibao")
     {
         events << CardUsed;
-        view_as_skill = new ThSibaoVS;
+        frequency = NotCompulsory;
     }
 
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *, QVariant &data, ServerPlayer *&ask_who) const
     {
         CardUseStruct use = data.value<CardUseStruct>();
-        if (TriggerSkill::triggerable(use.from)) {
+        if (use.from && use.from->isAlive() && use.from->hasSkill("thsibao")) {
             if (use.card->isKindOf("Analeptic")) {
                 ask_who = use.from;
                 return QStringList(objectName());
@@ -1474,17 +1474,9 @@ public:
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *player) const
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *, QVariant &, ServerPlayer *player) const
     {
-        if (player->askForSkillInvoke(objectName())) {
-            room->broadcastSkillInvoke(objectName());
-            return true;
-        }
-        return false;
-    }
-
-    virtual bool effect(TriggerEvent, Room *, ServerPlayer *, QVariant &, ServerPlayer *player) const
-    {
+        room->sendCompulsoryTriggerLog(player, "thsibao");
         player->drawCards(1, objectName());
         return false;
     }
@@ -2889,6 +2881,8 @@ TouhouKazePackage::TouhouKazePackage()
     General *kaze010 = new General(this, "kaze010", "kaze", 3);
     kaze010->addSkill(new ThCannve);
     kaze010->addSkill(new ThSibao);
+    kaze010->addSkill(new ThSibaoDraw);
+    related_skills.insertMulti("thsibao", "#thsibao");
 
     General *kaze011 = new General(this, "kaze011", "kaze");
     kaze011->addSkill(new ThWangqin);
