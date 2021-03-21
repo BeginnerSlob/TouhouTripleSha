@@ -2743,11 +2743,11 @@ public:
                 card_ids << room->askForCardChosen(player, target, "he", objectName(), false, Card::MethodDiscard);
                 original_places << room->getCardPlace(card_ids[i]);
                 const Card *card = Sanguosha->getCard(card_ids[i]);
-                if (!card->isKindOf("EquipCard"))
+                if (card->getTypeId() != Card::TypeEquip)
                     ++not_equip;
                 dummy->addSubcard(card_ids[i]);
                 target->addToPile("#ikpiaohu", card_ids[i], false);
-                if (!player->canDiscard(target, "h"))
+                if (!player->canDiscard(target, "he"))
                     break;
             }
             for (int i = 0; i < dummy->subcardsLength(); i++)
@@ -2756,11 +2756,11 @@ public:
             if (dummy->subcardsLength() > 0)
                 room->throwCard(dummy, target, player);
             delete dummy;
-            if (not_equip == 0 || !player->canDiscard(player, "he") || player->getCardCount() < not_equip) {
-                QString prompt = QString("@ikpiaohu-discard::%1:%2:%3").arg(target->objectName()).arg(not_equip).arg(n);
-                if (!room->askForDiscard(player, objectName(), not_equip, not_equip, true, true, prompt))
-                    target->drawCards(n, objectName());
-            }
+            QString prompt
+                = QString("@ikpiaohu-discard::%1:%2:%3").arg(target->objectName()).arg(not_equip).arg(card_ids.length());
+            if (not_equip == 0 || !player->canDiscard(player, "he") || player->getCardCount() < not_equip
+                || !room->askForDiscard(player, objectName(), not_equip, not_equip, true, true, prompt))
+                target->drawCards(card_ids.length(), objectName());
         }
 
         return false;

@@ -3161,14 +3161,23 @@ public:
                 foreach (ServerPlayer *p, room->findPlayersBySkillName(objectName())) {
                     if (p->getMark("@zaishen") < 1)
                         continue;
-                    if (draw_pile == VariantList2IntList(p->tag["ThZaishenCards"].toList()).toSet().toList()) {
+                    QSet<int> zaishens = VariantList2IntList(p->tag["ThZaishenCards"].toList()).toSet();
+                    if (draw_pile.length() == zaishens.size()) {
+                        bool can_invoke = true;
+                        bool can_use = false;
                         foreach (int id, draw_pile) {
-                            const Card *card = Sanguosha->getCard(id);
-                            if (!p->isCardLimited(card, Card::MethodUse, false) && !p->isProhibited(player, card)) {
-                                skill_list.insert(p, QStringList(objectName()));
+                            if (!zaishens.contains(id)) {
+                                can_invoke = false;
                                 break;
                             }
+                            if (can_use)
+                                continue;
+                            const Card *card = Sanguosha->getCard(id);
+                            if (!p->isCardLimited(card, Card::MethodUse, false) && !p->isProhibited(player, card))
+                                can_use = true;
                         }
+                        if (can_invoke && can_use)
+                            skill_list.insert(p, QStringList(objectName()));
                     }
                 }
             }
@@ -3254,8 +3263,10 @@ public:
             }
         } else {
             room->sendCompulsoryTriggerLog(ask_who, objectName());
-            room->removePlayerMark(ask_who, "@zaishenused");
-            room->addPlayerMark(ask_who, "@zaishen");
+            while (ask_who->getMark("@zaishenused") > 0) {
+                room->removePlayerMark(ask_who, "@zaishenused");
+                room->addPlayerMark(ask_who, "@zaishen");
+            }
         }
 
         return false;
