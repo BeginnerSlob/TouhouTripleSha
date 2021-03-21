@@ -1496,39 +1496,89 @@ public:
     }
 };
 
+ThHuanjianCard::ThHuanjianCard()
+{
+    target_fixed = true;
+    will_throw = false;
+    handling_method = MethodNone;
+}
+
+void ThHuanjianCard::use(Room *room, ServerPlayer *, QList<ServerPlayer *> &) const
+{
+    room->moveCardTo(this, NULL, Player::DrawPile, true);
+}
+
+class ThHuanjianVS : public OneCardViewAsSkill
+{
+public:
+    ThHuanjianVS()
+        : OneCardViewAsSkill("thhuanjian")
+    {
+        response_pattern = "@@thhuanjian";
+        expand_pile = "note";
+        filter_pattern = ".|.|.|note";
+    }
+
+    const Card *viewAs(const Card *originalCard) const
+    {
+        ThHuanjianCard *card = new ThHuanjianCard;
+        card->addSubcard(originalCard);
+        return card;
+    }
+};
+
 class ThHuanjian : public TriggerSkill
 {
 public:
     ThHuanjian()
         : TriggerSkill("thhuanjian")
     {
-        events << BeforeCardsMove;
+        events << BeforeCardsMove << EventPhaseChanging << EventPhaseStart;
     }
 
-    virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
+    virtual TriggerList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const
     {
-        if (TriggerSkill::triggerable(player) && !player->isKongcheng()) {
-            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            if (move.from_places.contains(Player::PlaceEquip) || move.from_places.contains(Player::PlaceDelayedTrick))
-                return QStringList(objectName());
+        TriggerList skill_list;
+        if (event == EventPhaseChanging) {
+            if (data.value<PhaseChangeStruct>().to == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAllPlayers()) {
+                    if (p->hasFlag("ThHuanjianUsed") && !p->getPile("note").isEmpty())
+                        skill_list.insert(p, QStringList(objectName()));
+                }
+            }
+        } else if (event == EventPhaseStart) {
+            if (player->getPhase() == Player::NotActive) {
+                foreach (ServerPlayer *p, room->getAlivePlayers())
+                    p->setFlags("-ThHuanjianUsed");
+            }
+        } else if (event == BeforeCardsMove) {
+            if (TriggerSkill::triggerable(player) && !player->isKongcheng()) {
+                CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+                if (move.from_places.contains(Player::PlaceEquip) || move.from_places.contains(Player::PlaceDelayedTrick))
+                    skill_list.insert(player, QStringList(objectName()));
+            }
         }
-        return QStringList();
+        return skill_list;
     }
 
-    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
+    virtual bool cost(TriggerEvent event, Room *room, ServerPlayer *, QVariant &data, ServerPlayer *player) const
     {
-        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-        int n = move.from_places.count(Player::PlaceEquip) + move.from_places.count(Player::PlaceDelayedTrick);
-        const Card *card = room->askForExchange(player, objectName(), n, 1, false, "@thhuanjian", true);
-        if (card) {
-            LogMessage log;
-            log.type = "#InvokeSkill";
-            log.from = player;
-            log.arg = objectName();
-            room->sendLog(log);
+        if (event == EventPhaseChanging) {
+            room->askForUseCard(player, "@@thhuanjian", "@thhuanjian-put", -1, Card::MethodNone);
+        } else {
+            CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
+            int n = move.from_places.count(Player::PlaceEquip) + move.from_places.count(Player::PlaceDelayedTrick);
+            const Card *card = room->askForExchange(player, objectName(), n, 1, false, "@thhuanjian", true);
+            if (card) {
+                LogMessage log;
+                log.type = "#InvokeSkill";
+                log.from = player;
+                log.arg = objectName();
+                room->sendLog(log);
 
-            player->tag["ThHuanjianIds"] = QVariant::fromValue(IntList2VariantList(card->getSubcards()));
-            return true;
+                player->tag["ThHuanjianIds"] = QVariant::fromValue(IntList2VariantList(card->getSubcards()));
+                return true;
+            }
         }
         return false;
     }
@@ -1549,8 +1599,9 @@ public:
         if (move_ids.isEmpty() || move_ids.length() < hands.length())
             return false;
 
+        QList<int> to_move;
         if (hands.length() == move_ids.length())
-            player->addToPile("note", hands + move_ids);
+            to_move = move_ids;
         else {
             QList<int> to_move;
             room->fillAG(move.card_ids, NULL, disabled_ids);
@@ -1563,7 +1614,13 @@ public:
                 to_move << id;
             }
             room->clearAG();
+        }
+        if (hands.length() == to_move.length()) {
+            move.removeCardIds(to_move);
+            data = QVariant::fromValue(move);
             player->addToPile("note", hands + to_move);
+            if (room->isSomeonesTurn())
+                player->setFlags("ThHuanjianUsed");
         }
         return false;
     }

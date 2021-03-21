@@ -45,6 +45,16 @@ public:
     Q_INVOKABLE ThMumiCard();
 };
 
+class ThHuanjianCard : public SkillCard
+{
+    Q_OBJECT
+
+public:
+    Q_INVOKABLE ThHuanjianCard();
+
+    virtual void use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const;
+};
+
 class ThShenmiCard : public SkillCard
 {
     Q_OBJECT
