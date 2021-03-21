@@ -2016,27 +2016,27 @@ ThNihuiCard::ThNihuiCard()
 
 void ThNihuiCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
 {
-    if (getUserString() == "1") {
+    if (source->getSkillStep("thnihui") == 1) {
         source->drawCards(3, "thnihui");
         room->askForDiscard(source, "thnihui", 1, 1, false, true);
-        room->setPlayerProperty(source, "thnihui_step", 1);
-    } else if (getUserString() == "2") {
+        room->setPlayerProperty(source, "thnihui_step", 2);
+    } else if (source->getSkillStep("thnihui") == 2) {
         source->drawCards(1, "thnihui");
-        room->setPlayerProperty(source, "thnihui_step", 0);
+        room->setPlayerProperty(source, "thnihui_step", 1);
     }
 }
 
-class ThNihui : public ViewAsSkill
+class ThNihuiVS : public ViewAsSkill
 {
 public:
-    ThNihui()
+    ThNihuiVS()
         : ViewAsSkill("thnihui")
     {
     }
 
     virtual bool viewFilter(const QList<const Card *> &selected, const Card *to_select) const
     {
-        if (Self->getSkillStep(objectName()) == 0)
+        if (Self->getSkillStep(objectName()) < 2)
             return false;
 
         return selected.length() < 3 && !Self->isJilei(to_select);
@@ -2044,17 +2044,13 @@ public:
 
     virtual const Card *viewAs(const QList<const Card *> &cards) const
     {
-        if (Self->getSkillStep(objectName()) == 0) {
-            if (cards.isEmpty()) {
-                ThNihuiCard *card = new ThNihuiCard;
-                card->setUserString("1");
-                return card;
-            }
+        if (Self->getSkillStep(objectName()) < 2) {
+            if (cards.isEmpty())
+                return new ThNihuiCard;
         } else {
             if (cards.length() == 3) {
                 ThNihuiCard *card = new ThNihuiCard;
                 card->addSubcards(cards);
-                card->setUserString("2");
                 return card;
             }
         }
@@ -2064,6 +2060,23 @@ public:
     virtual bool isEnabledAtPlay(const Player *player) const
     {
         return !player->hasUsed("ThNihuiCard");
+    }
+};
+
+class ThNihui : public TriggerSkill
+{
+public:
+    ThNihui()
+        : TriggerSkill("thnihui")
+    {
+        events << GameStart;
+        view_as_skill = new ThNihuiVS;
+    }
+
+    virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    {
+        room->setPlayerProperty(player, "thnihui_step", 1);
+        return false;
     }
 };
 
