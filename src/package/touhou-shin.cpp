@@ -1556,7 +1556,7 @@ public:
             if (TriggerSkill::triggerable(player) && !player->isKongcheng()) {
                 CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
                 if (move.to_place == Player::DiscardPile
-                    && (move.from_places.contains(Player::PlaceEquip) || move.from_places.contains(Player::PlaceDelayedTrick)))
+                    && (move.from_places.contains(Player::PlaceEquip) || move.from_places.contains(Player::PlaceJudge)))
                     skill_list.insert(player, QStringList(objectName()));
             }
         }
@@ -1569,7 +1569,7 @@ public:
             room->askForUseCard(player, "@@thhuanjian", "@thhuanjian-put", -1, Card::MethodNone);
         } else {
             CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-            int n = move.from_places.count(Player::PlaceEquip) + move.from_places.count(Player::PlaceDelayedTrick);
+            int n = move.from_places.count(Player::PlaceEquip) + move.from_places.count(Player::PlaceJudge);
             const Card *card = room->askForExchange(player, objectName(), n, 1, false, "@thhuanjian", true);
             if (card) {
                 LogMessage log;
@@ -1593,7 +1593,7 @@ public:
         CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         QList<int> move_ids, disabled_ids;
         for (int i = 0; i < move.card_ids.length(); ++i) {
-            if (move.from_places[i] == Player::PlaceEquip || move.from_places[i] == Player::PlaceDelayedTrick)
+            if (move.from_places[i] == Player::PlaceEquip || move.from_places[i] == Player::PlaceJudge)
                 move_ids << move.card_ids[i];
             else
                 disabled_ids << move.card_ids[i];
@@ -1757,11 +1757,15 @@ public:
     {
         if (selected.length() > 1 || !Self->getPile("note").contains(to_select->getId()))
             return false;
-        QString pattern = Sanguosha->getCurrentCardUsePattern();
-        if (pattern == "slash" || pattern == "jink" || pattern.contains("peach"))
+        if (Sanguosha->getCurrentCardUseReason() == CardUseStruct::CARD_USE_REASON_PLAY)
             return selected.isEmpty() || to_select->sameColorWith(selected.first());
-        if (pattern == "nullification")
-            return selected.isEmpty() || !to_select->sameColorWith(selected.first());
+        else {
+            QString pattern = Sanguosha->getCurrentCardUsePattern();
+            if (pattern == "slash" || pattern == "jink" || pattern.contains("peach"))
+                return selected.isEmpty() || to_select->sameColorWith(selected.first());
+            if (pattern == "nullification")
+                return selected.isEmpty() || !to_select->sameColorWith(selected.first());
+        }
         return false;
     }
 
