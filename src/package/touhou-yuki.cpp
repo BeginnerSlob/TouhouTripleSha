@@ -2940,7 +2940,7 @@ TouhouYukiPackage::TouhouYukiPackage()
     yuki011->addSkill(new ThDongmo);
     yuki011->addSkill(new ThLinhan);
 
-    General *yuki012 = new General(this, "yuki012", "yuki", 3);
+    General *yuki012 = new General(this, "yuki012", "yuki");
     yuki012->addSkill(new ThFusheng);
     yuki012->addSkill(new ThFushengEffect);
     related_skills.insertMulti("thfusheng", "#thfusheng");

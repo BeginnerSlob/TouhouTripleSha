@@ -498,21 +498,10 @@ public:
         events << AskForRetrial;
     }
 
-    virtual bool triggerable(const ServerPlayer *player) const
-    {
-        return TriggerSkill::triggerable(player) && player->canDiscard(player, "he");
-    }
-
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
-        JudgeStruct *judge = data.value<JudgeStruct *>();
-        QStringList prompt_list;
-        prompt_list << "@thkaiyun" << judge->who->objectName() << objectName() << judge->reason
-                    << QString::number(judge->card->getEffectiveId());
-        QString prompt = prompt_list.join(":");
-        const Card *card = room->askForCard(player, "..", prompt, data, objectName());
-        if (card) {
-            if (judge->who == player)
+        if (player->askForSkillInvoke(objectName(), data)) {
+            if (data.value<JudgeStruct *>()->who == player)
                 room->broadcastSkillInvoke(objectName(), qrand() % 2 + 3);
             else
                 room->broadcastSkillInvoke(objectName(), qrand() % 2 + 1);
