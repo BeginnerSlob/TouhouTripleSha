@@ -2789,7 +2789,7 @@ ThAiminCard::ThAiminCard()
 void ThAiminCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &) const
 {
     foreach (ServerPlayer *p, room->getOtherPlayers(source)) {
-        if (!source->isKongcheng()) {
+        if (!p->isKongcheng()) {
             const Card *card = room->askForCard(p, ".", "@thaimin-give:" + source->objectName(), QVariant(), MethodNone);
             if (card) {
                 CardMoveReason reason(CardMoveReason::S_REASON_GIVE, p->objectName(), source->objectName(), "thaimin",
@@ -2821,7 +2821,7 @@ public:
         foreach (const Player *p, player->getAliveSiblings()) {
             if (p->getHandcardNum() < player->getHandcardNum())
                 return false;
-            if (!p->isKongcheng())
+            if (!has_card && !p->isKongcheng())
                 has_card = true;
         }
         return has_card;
