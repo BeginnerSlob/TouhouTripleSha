@@ -2359,16 +2359,12 @@ public:
         : OneCardViewAsSkill("ikhuanwu")
     {
         expand_pile = "assassinate";
+        filter_pattern = ".|.|.|assassinate";
     }
 
     virtual bool isEnabledAtPlay(const Player *player) const
     {
         return !player->getPile("assassinate").isEmpty();
-    }
-
-    virtual bool viewFilter(const Card *to_select) const
-    {
-        return Self->getPile("assassinate").contains(to_select->getEffectiveId());
     }
 
     virtual const Card *viewAs(const Card *originalCard) const

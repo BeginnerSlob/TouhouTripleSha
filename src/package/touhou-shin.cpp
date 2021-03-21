@@ -1534,6 +1534,7 @@ public:
         : TriggerSkill("thhuanjian")
     {
         events << BeforeCardsMove << EventPhaseChanging << EventPhaseStart;
+        view_as_skill = new ThHuanjianVS;
     }
 
     virtual TriggerList triggerable(TriggerEvent event, Room *room, ServerPlayer *player, QVariant &data) const
