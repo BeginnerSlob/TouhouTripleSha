@@ -1554,7 +1554,8 @@ public:
         } else if (event == BeforeCardsMove) {
             if (TriggerSkill::triggerable(player) && !player->isKongcheng()) {
                 CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
-                if (move.from_places.contains(Player::PlaceEquip) || move.from_places.contains(Player::PlaceDelayedTrick))
+                if (move.to_place == Player::DiscardPile
+                    && (move.from_places.contains(Player::PlaceEquip) || move.from_places.contains(Player::PlaceDelayedTrick)))
                     skill_list.insert(player, QStringList(objectName()));
             }
         }
@@ -1577,6 +1578,7 @@ public:
                 room->sendLog(log);
 
                 player->tag["ThHuanjianIds"] = QVariant::fromValue(IntList2VariantList(card->getSubcards()));
+                delete card;
                 return true;
             }
         }
@@ -1585,9 +1587,9 @@ public:
 
     virtual bool effect(TriggerEvent, Room *room, ServerPlayer *player, QVariant &data, ServerPlayer *) const
     {
-        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         QList<int> hands = VariantList2IntList(player->tag["ThHuanjianIds"].toList());
         player->tag.remove("ThHuanjianIds");
+        CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
         QList<int> move_ids, disabled_ids;
         for (int i = 0; i < move.card_ids.length(); ++i) {
             if (move.from_places[i] == Player::PlaceEquip || move.from_places[i] == Player::PlaceDelayedTrick)
@@ -5507,6 +5509,7 @@ TouhouShinPackage::TouhouShinPackage()
     addMetaObject<ThLuanshenCard>();
     addMetaObject<ThLianyingCard>();
     addMetaObject<ThMumiCard>();
+    addMetaObject<ThHuanjianCard>();
     addMetaObject<ThShenmiCard>();
     addMetaObject<ThMuyuCard>();
     addMetaObject<ThNihuiCard>();
