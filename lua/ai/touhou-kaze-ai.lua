@@ -66,6 +66,9 @@ sgs.ai_skill_use_func.ThJiyiCard = function(card, use, self)
 end
 
 sgs.ai_skill_cardask["@thjiyi"] = function(self, data, pattern, target)
+	if self:needKongcheng(self.player, true) and target and self:isFriend(target) then
+		return "."
+	end
 	local cards = sgs.QList2Table(self.player:getHandcards())
 	self:sortByKeepValue(cards)
 	for _, cd in ipairs(cards) do
@@ -77,6 +80,12 @@ sgs.ai_skill_cardask["@thjiyi"] = function(self, data, pattern, target)
 end
 
 sgs.ai_skill_cardask["@thjiyigive"] = function(self, data, pattern, target)
+	if self:isFriend(target) then
+		local card, _ = self:getCardNeedPlayer(nil, {target})
+		if card then
+			return "$"..card:getEffectiveId()
+		end
+	end
 	local cards = sgs.QList2Table(self.player:getCards("he"))
 	self:sortByKeepValue(cards)
 	return "$"..cards[1]:getEffectiveId()
@@ -102,9 +111,10 @@ end
 --华袛：君主技，当你于回合外失去一次手牌后，其他风势力角色可以各交给你一张手牌。
 sgs.ai_skill_cardask["@thhuazhi"] = function(self, data, pattern, target)
 	if self:isFriend(target) and not self:isWeak(self.player) and not self:isKongcheng() then
-		local cards = sgs.QList2Table(self.player:getHandcards())
-		self:sortByKeepValue(cards, true)
-		return "$"..cards[1]:getEffectiveId()
+		local card, _ = self:getCardNeedPlayer(nil, {target})
+		if card then
+			return "$"..card:getEffectiveId()
+		end
 	end
 	return "."
 end
@@ -130,7 +140,7 @@ sgs.ai_skill_cardchosen.thjilanwen = function(self, who, flags, method)
 	local suit = tonumber(judge.pattern)
 	local suitstr = sgs.Card_Suit2String(suit)
 	local pattern = ".|^" .. suitstr
-	return self:askForCardChosen(who, flags, reason, method, pattern)
+	return self:askForCardChosen(who, flags, "thjilanwen", method, pattern)
 end
 
 sgs.ai_choicemade_filter.cardChosen.thjilanwen = sgs.ai_choicemade_filter.cardChosen.snatch
