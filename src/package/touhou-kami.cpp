@@ -3043,7 +3043,7 @@ void ThXianhuCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &
         choices[str] << id;
     }
 
-    QString suit = Suit2String(room->askForSuit(source, "thshuangfeng", choices.keys().join("+")));
+    QString suit = Suit2String(room->askForSuit(source, "thshuangfeng", choices.keys()));
 
     DummyCard *dummy = new DummyCard;
     dummy->addSubcards(choices[suit]);

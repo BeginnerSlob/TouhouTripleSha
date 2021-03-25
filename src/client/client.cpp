@@ -1482,14 +1482,14 @@ void Client::askForSuit(const QVariant &arg)
 {
     QStringList suits;
     suits << "spade"
-          << "club"
           << "heart"
+          << "club"
           << "diamond";
     QStringList limits;
     JsonArray args = arg.value<JsonArray>();
     //QString skill_name = args[0].toString();
-    if (args.length() > 1)
-        limits = args[1].toString().split("+");
+    if (args.length() > 1 && !tryParse(args[1], limits))
+        limits = QStringList();
     if (!limits.isEmpty()) {
         if (limits.first().startsWith("-")) {
             foreach (QString suit_str, limits)

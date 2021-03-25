@@ -5459,31 +5459,50 @@ void Room::askForLuckCard()
     doBroadcastNotify(S_COMMAND_UPDATE_PILE, QVariant(m_drawPile->length()));
 }
 
-Card::Suit Room::askForSuit(ServerPlayer *player, const QString &reason, const QString &limits)
+Card::Suit Room::askForSuit(ServerPlayer *player, const QString &reason, const QStringList &limits)
 {
     tryPause();
     notifyMoveFocus(player, S_COMMAND_CHOOSE_SUIT);
 
+    static QMap<QString, Card::Suit> suitMap;
+    if (suitMap.isEmpty()) {
+        suitMap.insert("spade", Card::Spade);
+        suitMap.insert("heart", Card::Heart);
+        suitMap.insert("club", Card::Club);
+        suitMap.insert("diamond", Card::Diamond);
+    }
+
+    if (limits.length() == 1 && !limits.first().startsWith("-"))
+        return suitMap[limits.first()];
+
     AI *ai = player->getAI();
     if (ai)
         return ai->askForSuit(reason);
-
     JsonArray args;
-    args << reason << limits;
+    args << reason;
+    if (!limits.isEmpty())
+        args << toJsonArray(limits);
     bool success = doRequest(player, S_COMMAND_CHOOSE_SUIT, args, true);
 
-    Card::Suit suit = Card::AllSuits[qrand() % 4];
+    Card::Suit suit;
+    if (limits.isEmpty())
+        suit = Card::AllSuits[qrand() % 4];
+    else {
+        QList<Card::Suit> abled_suits;
+        if (limits.first().startsWith("-")) {
+            abled_suits << suitMap.values();
+            foreach (QString remove, limits)
+                abled_suits.removeOne(suitMap[remove.right(remove.length() - 1)]);
+        } else {
+            foreach (QString add, limits)
+                abled_suits << suitMap[add];
+        }
+        suit = abled_suits.at(qrand() % abled_suits.length());
+    }
     if (success) {
         QVariant clientReply = player->getClientReply();
         QString suitStr = clientReply.toString();
-        if (suitStr == "spade")
-            suit = Card::Spade;
-        else if (suitStr == "club")
-            suit = Card::Club;
-        else if (suitStr == "heart")
-            suit = Card::Heart;
-        else if (suitStr == "diamond")
-            suit = Card::Diamond;
+        suit = suitMap[suitStr];
     }
 
     return suit;
