@@ -411,9 +411,10 @@ public:
     virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
         QList<ServerPlayer *> targets;
-        foreach (ServerPlayer *p, room->getAlivePlayers())
+        foreach (ServerPlayer *p, room->getAlivePlayers()) {
             if (p->canDiscard(p, "he"))
                 targets << p;
+        }
         if (!targets.isEmpty()) {
             ServerPlayer *target = room->askForPlayerChosen(player, targets, objectName(), "@thjilan", true, true);
             if (target) {
@@ -422,7 +423,6 @@ public:
                 return true;
             }
         }
-
         return false;
     }
 
@@ -430,9 +430,10 @@ public:
     {
         ServerPlayer *target = player->tag["ThJilanTarget"].value<ServerPlayer *>();
         player->tag.remove("ThJilanTarget");
-        int n = qMax(target->getLostHp(), 1);
-        room->askForDiscard(target, objectName(), n, n, false, true);
-
+        if (target) {
+            int n = qMax(target->getLostHp(), 1);
+            room->askForDiscard(target, objectName(), n, n, false, true);
+        }
         return false;
     }
 };
@@ -451,7 +452,7 @@ public:
         if (!TriggerSkill::triggerable(player))
             return QStringList();
         DamageStruct damage = data.value<DamageStruct>();
-        if (damage.to->isDead())
+        if (damage.to->isDead() || damage.to->hasFlag("Global_DebutFlag"))
             return QStringList();
         return QStringList(objectName());
     }
@@ -516,11 +517,11 @@ public:
                 continue;
             Slash *slash = new Slash(Card::NoSuit, 0);
             slash->setSkillName("_thzhanye");
-            if (owner->canSlash(player, slash, false))
-                skill_list.insert(owner, QStringList(objectName()));
+            bool can = owner->canSlash(player, slash, false);
             delete slash;
+            if (can)
+                skill_list.insert(owner, QStringList(objectName()));
         }
-
         return skill_list;
     }
 
@@ -530,7 +531,6 @@ public:
             room->broadcastSkillInvoke(objectName());
             return true;
         }
-
         return false;
     }
 
@@ -616,55 +616,43 @@ public:
         QList<int> card_ids = room->getNCards(qMax(4 - player->getMaxHp(), 1), false);
         CardMoveReason reason(CardMoveReason::S_REASON_TURNOVER, player->objectName(), objectName(), QString());
         room->moveCardsAtomic(CardsMoveStruct(card_ids, NULL, Player::PlaceTable, reason), true);
-        while (!card_ids.isEmpty()) {
-            QStringList choices;
-            choices << "cancel";
+        QMap<QString, QList<int> > choiceMap;
+        choiceMap["red"] = QList<int>();
+        choiceMap["black"] = QList<int>();
+        choiceMap["cancel"] = QList<int>();
+        while (!choiceMap.isEmpty()) {
             foreach (int id, card_ids) {
                 const Card *card = Sanguosha->getCard(id);
-                if (card->isRed() && card->getTypeId() != Card::TypeTrick) {
-                    choices << "red";
-                    break;
+                if (card->getTypeId() == Card::TypeTrick) {
+                    choiceMap["cancel"] << id;
+                    continue;
                 }
+                QString type_str = "cancel";
+                if (card->isRed())
+                    type_str = "red";
+                else if (card->isBlack())
+                    type_str = "black";
+                choiceMap[type_str] << id;
             }
-            foreach (int id, card_ids) {
-                const Card *card = Sanguosha->getCard(id);
-                if (card->isBlack() && card->getTypeId() != Card::TypeTrick) {
-                    choices << "black";
-                    break;
-                }
+            foreach (QString choice, choiceMap.keys()) {
+                if (choiceMap[choice].isEmpty())
+                    choiceMap.remove(choice);
             }
-            QString choice = room->askForChoice(player, objectName(), choices.join("+"),
+            QString choice = room->askForChoice(player, objectName(), choiceMap.keys().join("+"),
                                                 QVariant::fromValue(IntList2VariantList(card_ids)));
 
-            DummyCard *dummy = new DummyCard;
-            dummy->deleteLater();
+            DummyCard dummy;
             CardMoveReason reason2(CardMoveReason::S_REASON_NATURAL_ENTER, QString(), objectName(), QString());
             if (choice == "red") {
-                foreach (int id, card_ids) {
-                    const Card *card = Sanguosha->getCard(id);
-                    if (card->isRed() && card->getTypeId() != Card::TypeTrick) {
-                        dummy->addSubcard(id);
-                        card_ids.removeOne(id);
-                    }
+                dummy.addSubcards(choiceMap[choice]);
+                room->throwCard(&dummy, reason2, NULL);
+                if (player->isWounded()) {
+                    RecoverStruct recover(player);
+                    room->recover(player, recover);
                 }
-                if (dummy->subcardsLength() > 0)
-                    room->throwCard(dummy, reason2, NULL);
-                dummy->clearSubcards();
-                RecoverStruct recover(player);
-                room->recover(player, recover);
             } else if (choice == "black") {
-                foreach (int id, card_ids) {
-                    const Card *card = Sanguosha->getCard(id);
-                    if (card->isBlack() && card->getTypeId() != Card::TypeTrick) {
-                        dummy->addSubcard(id);
-                        card_ids.removeOne(id);
-                    }
-                }
-
-                if (dummy->subcardsLength() > 0)
-                    room->throwCard(dummy, reason2, NULL);
-                dummy->clearSubcards();
-
+                dummy.addSubcards(choiceMap[choice]);
+                room->throwCard(&dummy, reason2, NULL);
                 room->setPlayerProperty(player, "maxhp", player->getMaxHp() + 1);
 
                 LogMessage log;
@@ -680,12 +668,11 @@ public:
                 log2.arg2 = QString::number(player->getMaxHp());
                 room->sendLog(log2);
             } else {
-                dummy->addSubcards(card_ids);
+                dummy.addSubcards(card_ids);
                 if (room->askForChoice(player, objectName(), "get+discard") == "get")
-                    player->obtainCard(dummy);
+                    player->obtainCard(&dummy);
                 else
-                    room->throwCard(dummy, reason2, NULL);
-
+                    room->throwCard(&dummy, reason2, NULL);
                 break;
             }
         }

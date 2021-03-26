@@ -414,7 +414,7 @@ sgs.ai_view_as.thmicaiv = function(card, player, card_place)
 end
 
 local thmicaiv_skill = {}
-thmicaiv_skill.name = "spear"
+thmicaiv_skill.name = "thmicaiv"
 table.insert(sgs.ai_skills, thmicaiv_skill)
 thmicaiv_skill.getTurnUseCard = function(self, inclusive)
 	if self.player:hasWeapon("spear") then
@@ -448,7 +448,7 @@ end
 
 sgs.ai_card_intention.ThMicaiCard = -5
 
---巧工：出牌阶段限一次，你可以弃置两张相同颜色的牌，并获得场上的一张该颜色的装备牌。
+--巧工：阶段技。你可以弃置一张与场上的一张装备牌颜色相同的牌▶获取此牌。
 local thqiaogong_skill = {}
 thqiaogong_skill.name = "thqiaogong"
 table.insert(sgs.ai_skills, thqiaogong_skill)
@@ -462,30 +462,17 @@ end
 
 sgs.ai_skill_use_func.ThQiaogongCard = function(card, use, self)
 	if self.player:getArmor() and self:needToThrowArmor(self.player) then
-		local suit = self.player:getArmor():getSuit()
-		local card_id1 = self.player:getArmor():getEffectiveId()
-		local can_use = {}
-		local cards = self.player:getCards("he")
-		for _, cd in sgs.qlist(cards) do
-			if cd:getSuit() == suit and cd:getId() ~= card_id1 and not isCard("Peach", cd, self.player) and not isCard("ExNihilo", cd, self.player) then
-				table.insert(can_use, cd)
-			end
-		end
-		if #can_use >= 1 then
-			self:sort(self.enemies, "defense")
-			for _, p in ipairs(self.enemies) do
-				if p:hasEquip() then
-					for _, cd in sgs.qlist(p:getEquips()) do
-						if cd:getSuit() == suit then
-							local card_id2 = can_use[1]:getEffectiveId()
-
-							local card_str = ("@ThQiaogong=%d+%d"):format(card_id1, card_id2)
-							use.card = sgs.Card_Parse(card_str)
-							if use.to then
-								use.to:append(p)
-							end
-							return
+		local color = self.player:getArmor():getColor()
+		self:sort(self.enemies, "defense")
+		for _, p in ipairs(self.enemies) do
+			if p:hasEquip() then
+				for _, cd in sgs.qlist(p:getEquips()) do
+					if cd:getColor() == color then
+						use.card = sgs.Card_Parse("@ThQiaogong="..self.player:getArmor():getEffectiveId())
+						if use.to then
+							use.to:append(p)
 						end
+						return
 					end
 				end
 			end
@@ -493,23 +480,19 @@ sgs.ai_skill_use_func.ThQiaogongCard = function(card, use, self)
 	end
 	for _, p in ipairs(self.friends_noself) do
 		if p:getArmor() and self:needToThrowArmor(p) then
-			local suit = p:getArmor():getSuit()
+			local color = p:getArmor():getColor()
 			local target_id = p:getArmor():getId()
-			local can_use = {}
-			local cards = self.player:getCards("he")
-			for _, cd in sgs.qlist(cards) do
-				if cd:getSuit() == suit and cd:getId() ~= target_id and not isCard("Peach", cd, self.player) and not isCard("ExNihilo", cd, self.player) then
-					table.insert(can_use, cd)
+			local cards = sgs.QList2Table(self.player:getCards("he"))
+			self:sortByKeepValue(cards)
+			local id
+			for _, cd in ipairs(cards) do
+				if cd:getColor() == color and not isCard("Peach", cd, self.player) and not isCard("ExNihilo", cd, self.player) then
+					id = cd:getEffectiveId()
+					break
 				end
 			end
-			if #can_use >= 2 then
-				self:sortByKeepValue(can_use)
-
-				local card_id1 = can_use[1]:getEffectiveId()
-				local card_id2 = can_use[2]:getEffectiveId()
-
-				local card_str = ("@ThQiaogong=%d+%d"):format(card_id1, card_id2)
-				use.card = sgs.Card_Parse(card_str)
+			if id then
+				use.card = sgs.Card_Parse("@ThQiaogong="..id)
 				if use.to then
 					use.to:append(p)
 				end
@@ -522,23 +505,18 @@ sgs.ai_skill_use_func.ThQiaogongCard = function(card, use, self)
 		for _, p in ipairs(self.enemies) do
 			if p:hasEquip() then
 				for _, cd in sgs.qlist(p:getEquips()) do
-					local suit = cd:getSuit()
-					local target_id = cd:getId()
-					local can_use = {}
-					local cards = self.player:getCards("he")
-					for _, c in sgs.qlist(cards) do
-						if c:getSuit() == suit and c:getId() ~= target_id and not isCard("Peach", c, self.player) and not isCard("ExNihilo", c, self.player) then
-							table.insert(can_use, c)
+					local color = cd:getColor()
+					local cards = sgs.QList2Table(self.player:getCards("he"))
+					self:sortByKeepValue(cards)
+					local id
+					for _, c in ipairs(cards) do
+						if c:getColor() == color and not isCard("Peach", c, self.player) and not isCard("ExNihilo", c, self.player) then
+							id = c:getEffectiveId()
+							break
 						end
 					end
-					if #can_use >= 2 then
-						self:sortByKeepValue(can_use)
-		
-						local card_id1 = can_use[1]:getEffectiveId()
-						local card_id2 = can_use[2]:getEffectiveId()
-		
-						local card_str = ("@ThQiaogong=%d+%d"):format(card_id1, card_id2)
-						use.card = sgs.Card_Parse(card_str)
+					if id then
+						use.card = sgs.Card_Parse("@ThQiaogong="..id)
 						if use.to then
 							use.to:append(p)
 						end
