@@ -500,7 +500,7 @@ sgs.ai_skill_use_func.ThQiaogongCard = function(card, use, self)
 			end
 		end
 	end
-	if self:getOverflow() > 0 then
+	if self:getOverflow() > 0 or not self:isWeak() then
 		self:sort(self.enemies, "defense")
 		for _, p in ipairs(self.enemies) do
 			if p:hasEquip() then
@@ -559,7 +559,7 @@ sgs.ai_choicemade_filter.cardChosen.thguiyu = sgs.ai_choicemade_filter.cardChose
 
 --酎华：限定技。摸牌阶段结束时，若有已死亡的角色，你可以回复1点体力或摸两张牌，然后获得技能“坏灭”（出牌阶段开始时，你可以令你的锦囊牌均视为【杀】，直到回合结束。）。
 sgs.ai_skill_invoke.thzhouhua = function(self, data)
-	if not self:willSkipPlayPhase() and not self:isWounded() then
+	if self:willSkipPlayPhase() and not self:isWounded() then
 		return false
 	end
 	return true

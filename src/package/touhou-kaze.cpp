@@ -889,16 +889,17 @@ public:
     {
         if (triggerEvent == CardFinished) {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (use.card->hasFlag("ThGuiyuUsed")) {
+            if (use.m_addHistory && use.card->hasFlag("ThGuiyuUsed")) {
                 room->setCardFlag(use.card, "-ThGuiyuUsed");
                 room->addPlayerHistory(player, use.card->getClassName(), -1);
+                data = QVariant::fromValue(use);
             }
             return QStringList();
         }
         if (TriggerSkill::triggerable(player)) {
             DamageStruct damage = data.value<DamageStruct>();
             if (damage.card && damage.card->isKindOf("Slash") && damage.by_user && !damage.chain && !damage.transfer
-                && damage.to && damage.to->isAlive()) {
+                && damage.to && damage.to->isAlive() && !damage.to->hasFlag("Global_DebutFlag")) {
                 if (room->getCardPlace(damage.card->getEffectiveId()) == Player::PlaceTable)
                     return QStringList(objectName());
             }
@@ -996,7 +997,7 @@ public:
     {
         if (triggerEvent == EventPhaseChanging) {
             PhaseChangeStruct change = data.value<PhaseChangeStruct>();
-            if (change.to == Player::NotActive) {
+            if (change.to == Player::NotActive && player->getMark(objectName()) > 0) {
                 room->setPlayerMark(player, objectName(), 0);
                 room->detachSkillFromPlayer(player, "#thhuaimie", false, true);
                 room->filterCards(player, player->getHandcards(), true);
