@@ -1015,10 +1015,7 @@ end
 --罔擒：当人物牌横置的其他角色使用或打出一张红色牌时，若你的人物牌背面朝上，你可以将你的人物牌翻至正面朝上，然后将该角色的人物牌翻面，并重置之。
 sgs.ai_skill_invoke.thwangqin = function(self, data)
 	local target = data:toPlayer()
-	if self:isFriend(target) and not target:faceUp() then
-		return true
-	end
-	return target:faceUp()
+	return self:isFriend(target) ~= target:faceUp()
 end
 
 sgs.ai_choicemade_filter.skillInvoke.thwangqin = function(self, player, promptlist)
@@ -1073,7 +1070,7 @@ sgs.ai_skill_cardask["@thfusuo"] = function(self, data, pattern, target)
 	self:sortByKeepValue(cards)
 	for _, c in ipairs(cards) do
 		if c:getTypeId() ~= sgs.Card_TypeBasic then
-			return "$" .. c:getId()
+			return "$" .. c:getEffectiveId()
 		end
 	end
 	return "."
@@ -1180,7 +1177,7 @@ sgs.ai_choicemade_filter.cardChosen.thgelong = sgs.ai_choicemade_filter.cardChos
 
 --怨咒：结束阶段开始时，若你的手牌数是全场最少的（或之一），你可以弃置场上手牌数最多的一名角色的区域内的一张牌。
 sgs.ai_skill_playerchosen.thyuanzhou = function(self, targets)
-	return self:findPlayerToDiscard("ej", true, true, targets)
+	return self:findPlayerToDiscard("hej", true, true, targets)
 end
 
 sgs.ai_choicemade_filter.cardChosen.thyuanzhou = sgs.ai_choicemade_filter.cardChosen.dismantlement

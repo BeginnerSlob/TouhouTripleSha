@@ -1571,7 +1571,6 @@ public:
             }
         } else if (player->getPhase() == Player::Finish) {
             room->sendCompulsoryTriggerLog(player, objectName());
-
             if (!room->askForCard(player, "^BasicCard", "@thfusuo"))
                 room->loseHp(player);
         }
