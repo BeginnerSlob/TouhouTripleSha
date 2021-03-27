@@ -2175,10 +2175,15 @@ public:
     virtual QStringList triggerable(TriggerEvent triggerEvent, Room *room, ServerPlayer *player, QVariant &data,
                                     ServerPlayer *&) const
     {
-        if (triggerEvent == PreCardUsed) {
+        if (triggerEvent == PreCardUsed || triggerEvent == PreCardResponded) {
             CardUseStruct use = data.value<CardUseStruct>();
-            if (!use.card->isNDTrick() || use.card->isKindOf("Nullification"))
+            if (!use.card->isNDTrick())
                 return QStringList();
+
+            if (use.card->isKindOf("Nullification")) {
+                room->setPlayerProperty(player, "thhuilve", "");
+                return QStringList();
+            }
 
             QString skill_name = use.card->getSkillName();
             bool changed = false;
