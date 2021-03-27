@@ -1087,32 +1087,30 @@ public:
         QList<int> card_ids = room->getNCards(qMin(room->alivePlayerCount(), 5));
         CardMoveReason reason(CardMoveReason::S_REASON_TURNOVER, player->objectName(), objectName(), QString());
         room->moveCardsAtomic(CardsMoveStruct(card_ids, NULL, Player::PlaceTable, reason), true);
-        QStringList choices;
+        QMap<QString, QList<int> > choiceMap;
         foreach (int id, card_ids) {
             QString str = Sanguosha->getCard(id)->getType();
             if (str == "skill")
                 continue;
-            if (choices.contains(str))
-                continue;
-            choices << str;
+            if (!choiceMap.contains(str))
+                choiceMap[str] = QList<int>();
+            choiceMap[str] << id;
         }
-        QString type
-            = room->askForChoice(player, objectName(), choices.join("+"), QVariant::fromValue(IntList2VariantList(card_ids)));
+        QString type = room->askForChoice(player, objectName(), choiceMap.keys().join("+"),
+                                          QVariant::fromValue(IntList2VariantList(card_ids)));
         ServerPlayer *target = room->askForPlayerChosen(player, room->getAllPlayers(), objectName(), QString(), false, true);
-        CardMoveReason reason2(CardMoveReason::S_REASON_NATURAL_ENTER, QString(), objectName(), QString());
-        DummyCard *dummy = new DummyCard;
-        dummy->deleteLater();
-        foreach (int id, card_ids)
-            if (Sanguosha->getCard(id)->getType() == type) {
-                card_ids.removeOne(id);
-                dummy->addSubcard(id);
-            }
-        room->obtainCard(target, dummy);
-        dummy->clearSubcards();
-        dummy->addSubcards(card_ids);
-        if (dummy->subcardsLength() > 0)
-            room->throwCard(dummy, reason2, NULL);
-
+        DummyCard dummy(choiceMap[type]);
+        choiceMap.remove(type);
+        CardMoveReason reason2(CardMoveReason::S_REASON_GIVE, player->objectName(), target->objectName(), objectName(),
+                               QString());
+        room->obtainCard(target, &dummy, reason2);
+        dummy.clearSubcards();
+        if (!choiceMap.isEmpty()) {
+            foreach (QList<int> ids, choiceMap.values())
+                dummy.addSubcards(ids);
+            CardMoveReason reason3(CardMoveReason::S_REASON_NATURAL_ENTER, QString(), objectName(), QString());
+            room->throwCard(&dummy, reason3, NULL);
+        }
         return false;
     }
 };

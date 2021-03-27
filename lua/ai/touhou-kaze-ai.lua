@@ -710,77 +710,59 @@ end
 sgs.ai_use_priority.ThQianyiCard = -5
 sgs.ai_card_intention.ThQianyiCard = -150
 
---祸祟：出牌阶段限一次，你可以弃置一张手牌并选择你攻击范围内的一名角色，该角色需打出一张【闪】，否则你摸一张牌，或对该角色使用一张不计入使用限制的【杀】。
-local thhuosui_skill = {}
-thhuosui_skill.name = "thhuosui"
-table.insert(sgs.ai_skills, thhuosui_skill)
-thhuosui_skill.getTurnUseCard = function(self)
-	if self.player:hasUsed("ThHuosuiCard") then return end
-	local cards = self.player:getCards("h")
-	cards = sgs.QList2Table(cards)
-	self:sortByUseValue(cards, true)
-
-	return sgs.Card_Parse("@ThHuosuiCard=" .. cards[1]:getEffectiveId())
+--祸祟：当你使用【杀】指定目标后/成为其他角色使用【杀】的目标后，你可以将一张牌交给该角色/令该角色将一张牌交给你▶此【杀】不是【闪】的合法目标。
+sgs.ai_skill_invoke.thhuosui = function(self, data)
+	local from = data:toPlayer()
+	if self:getCardsNum("Jink") == 0 and (not self:isFriend(from) or self:needToThrowArmor(from) or (self:needKongcheng(from) and from:getHandcardNum() == 1)) then
+		return true
+	end
+	if self:isEnemy(from) and self:isWeak(from) and not self:isWaak() then
+		return true
+	end
+	return false
 end
 
-sgs.ai_skill_use_func.ThHuosuiCard = function(card, use, self)
-	local target = nil
-	self:sort(self.enemies, "defense")
-	for _, enemy in ipairs(self.enemies) do
-		if self.player:inMyAttackRange(enemy) then
-			use.card = card
-			if use.to then
-				use.to:append(enemy)
-			end
-			return
-		end
-	end
-	for _, friend in ipairs(self.friends_noself) do
-		if self.player:inMyAttackRange(friend) then
-			use.card = card
-			if use.to then
-				use.to:append(friend)
-			end
-			return
-		end
-	end
-end
-
-sgs.ai_skill_cardask["@thhuosuijink"] = function(self, data, pattern, target)
+sgs.ai_skill_cardask["@thhuosui"] = function(self, data, pattern, target)
 	if self:isFriend(target) then
+		local card, _ = self:getCardNeedPlayer(sgs.QList2Table(self.player:getCards("he")), {target})
+		if card and not self:slashIsEffective(use.card, self.player, use.from) then
+			return "$"..card:getEffectiveId()
+		end
 		return "."
 	end
-	for _, card in ipairs(self:getCards("Jink")) do
-		return card:toString()
+	local ret_str = "."
+	local cards = sgs.QList2Table(self.player:getCards("he"))
+	self:sortByUseValue(cards)
+	for _, c in ipairs(cards) do
+		if isCard("Peach", c, self.player) or isCard("ExNihilo", c, self.player) then
+			continue
+		end
+		if not isCard("Peach", c, target) and not isCard("Analeptic", c, target) and not (target:getHp() > 1 and isCard("Jink", c, target)) then
+			ret_str = "$"..c:getEffectiveId()
+			break
+		end
+	end
+	local use = data:toCardUse()
+	if self:slashIsEffective(use.card, self.player, use.from) and self:hasHeavySlashDamage(self.player, use.card, target) then
+		return ret_str
 	end
 	return "."
 end
 
-sgs.ai_skill_cardask["@thhuosui-slash"] = function(self, data, pattern, target)
-	if self:getCardsNum("Slash") == 1 then
-		return "."
+sgs.ai_skill_cardask["@thhuosui-target"] = function(self, data, pattern, target)
+	if self:needToThrowArmor() and self:getArmor() then
+		return "$"..self.player:getArmor():getEffectiveId()
 	end
-	for _, slash in ipairs(self:getCards("Slash")) do
-		if self:isFriend(target) and self:slashIsEffective(slash, target) then
-			if self:findLeijiTarget(target, 50, self.player) then return slash:toString() end
-			if self:getDamagedEffects(target, self.player, true) then return slash:toString() end
-		end
-
-		local nature = sgs.DamageStruct_Normal
-		if slash:isKindOf("FireSlash") then nature = sgs.DamageStruct_Fire
-		elseif slash:isKindOf("ThunderSlash") then nature = sgs.DamageStruct_Thunder end
-		if self:isEnemy(target) and self:slashIsEffective(slash, target) and self:canAttack(target, self.player, nature)
-			and not self:getDamagedEffects(target, self.player, true) and not self:findLeijiTarget(target, 50, self.player) then
-			return slash:toString()
+	if self:isFriend(target) then
+		local card, _ = self:getCardNeedPlayer(sgs.QList2Table(self.player:getCards("he")), {target})
+		if card then
+			return "$"..card:getEffectiveId()
 		end
 	end
-	return "."
+	local cards = sgs.QList2Table(self.player:getCards("he"))
+	self:sortByKeepValue(cards, false, true)
+	return "$"..cards[1]:getEffectiveId()
 end
-
-sgs.ai_use_priority.ThHuosuiCard = sgs.ai_use_priority.Slash + 0.3
-
---天滴：当你成为【杀】的目标时，你可以摸一张牌。
-sgs.ai_skill_invoke.thtiandi = true
 
 --坤仪：限定技，出牌阶段，你可以将你的人物牌翻面，并对一名其他角色造成1点伤害。
 local thkunyi_skill = {}
@@ -846,8 +828,6 @@ thcannve_skill.getTurnUseCard = function(self)
 	local card_id = card:getEffectiveId()
 	local card_str = "@ThCannveCard=" .. card_id
 	local skillcard = sgs.Card_Parse(card_str)
-
-	assert(skillcard)
 	return skillcard
 end
 
@@ -982,7 +962,7 @@ sgs.ai_use_priority.ThCannveCard = sgs.ai_use_priority.Slash + 0.1
 sgs.ai_playerchosen_intention.thcannve = 30
 sgs.ai_choicemade_filter.cardChosen.thcannve = sgs.ai_choicemade_filter.cardChosen.snatch
 
---肆暴：你可将一张装备牌或延时类锦囊牌当【酒】使用。
+--肆暴：①你可以将一张装备牌或延时类锦囊牌当【酒】使用。②当你使用【酒】时，你可以摸一张牌。
 local thsibao_skill = {}
 thsibao_skill.name = "thsibao"
 table.insert(sgs.ai_skills, thsibao_skill)
