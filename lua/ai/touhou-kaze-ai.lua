@@ -1234,16 +1234,16 @@ sgs.ai_skill_choice.thfengren = function(self, choices, data)
 	local ids = self.player:getPile("tassel")
 	if ids:length() == 2 then
 		for _, id in sgs.qlist(ids) do
-			if sgs.Sanguosha:getCard(id):isKindOf("Peach") then
+			if isCard("Peach", sgs.Sanguosha:getCard(id), self.player) then
 				return "obtain"
 			end
 		end
 		return self.player:isWounded() and "recover" or "obtain"
 	end
-	if self:willSkipDrawPhase(self.player) then
+	if self:willSkipDrawPhase(self.player) and not self:willSkipPlayPhase(self.player) then
 		return "obtain"
 	end
-	return self:isWeak(self.player) and string.find(choices, "recover") and "recover" or "obtain"
+	return self:willSkipPlayPhase(self.player) or self:isWeak(self.player) and string.find(choices, "recover") and "recover" or "obtain"
 end
 
 --扶犁：若你人物牌上的牌数小于三张，其他角色对你使用的牌在结算后置入弃牌堆时，你可以将其作为“穗”置于你的人物牌上，每回合限一次。
@@ -1261,7 +1261,7 @@ sgs.ai_skill_invoke.thfuli = function(self, data)
 	local slash = self:getCardsNum("Slash", "h")
 	if slash == 0 then
 		for _, id in sgs.qlist(self.player:getPile("tassel")) do
-			if sgs.Sanguosha:getCard(id):isKindOf("Slash") then
+			if isCard("Slash", sgs.Sanguosha:getCard(id), self.player) then
 				slash = 1
 				break
 			end
@@ -1293,13 +1293,13 @@ sgs.ai_skill_invoke.thkudao = function(self, data)
 	end
 end
 
-sgs.ai_choicemade_filter.cardChosen.thgelong = sgs.ai_choicemade_filter.cardChosen.snatch
+sgs.ai_choicemade_filter.cardChosen.thkudao = sgs.ai_choicemade_filter.cardChosen.snatch
 
 --岁轮：回合结束后，你可以弃置两张不同花色的“叶”并弃置一张手牌，然后进行一个额外的回合。
 sgs.ai_skill_use["@@thsuilun"] = function(self, prompt, method)
 	local int_table = {}
 	local cards = sgs.QList2Table(self.player:getHandcards())
-	self:sortByUseValue(cards)
+	self:sortByKeepValue(cards)
 	if #cards == 0 then
 		return "."
 	end
@@ -1547,7 +1547,7 @@ function checkBazhiHp(player)
 end
 
 sgs.ai_cardneed.thbazhi = function(to, card, self)
-	if not self:willSkipPlayPhase(to) and checkBazhiHp(to) and getCardsNum("NatureSlash", to, self.player) < 1 then
+	if not self:willSkipPlayPhase(to) and checkBazhiHp(to) and getCardsNum("FireSlash", to, self.player) < 1 then
 		return (card:getSuit() == sgs.Card_Diamond and card:isKindOf("Jink")) or card:isKindOf("Lightning")
 	end
 end
@@ -1558,7 +1558,7 @@ thyanxing_skill.name = "thyanxing"
 table.insert(sgs.ai_skills, thyanxing_skill)
 thyanxing_skill.getTurnUseCard = function(self)
 	if self.player:hasUsed("ThYanxingCard") then return nil end
-	if self:getCardsNum("NatureSlash") < 1 then return nil end
+	if self:getCardsNum("FireSlash") < 1 then return nil end
 	if not checkBazhiHp(self.player) then
 		return nil
 	end
@@ -1571,9 +1571,9 @@ thyanxing_skill.getTurnUseCard = function(self)
 	cards = sgs.QList2Table(cards)
 	self:sortByUseValue(cards, true)
 	for _, c in ipairs(cards) do
-		if c:isKindOf("Lightning") or (c:isKindOf("Jink") and c:getSuit() == sgs.Card_Diamond) or c:isKindOf("NatureSlash") then
+		if c:isKindOf("Lightning") or (c:isKindOf("Jink") and c:getSuit() == sgs.Card_Diamond) or c:isKindOf("FireSlash") then
 			local card
-			if c:isKindOf("NatureSlash") then
+			if c:isKindOf("FireSlash") then
 				card = c
 			else
 				card = sgs.cloneCard("fire_slash")
@@ -1586,7 +1586,7 @@ thyanxing_skill.getTurnUseCard = function(self)
 			self:useBasicCard(card, dummy_use)
 			if dummy_use.card and dummy_use.to:length() > 0 then
 				for _, to in sgs.qlist(dummy_use.to) do
-					if self:isEnemy(to) and getCardsNum("Jink", to, self.player) < 1 or sgs.card_lack[to:objectName()]["Jink"] == 1 or self:isWeak(to)  then	
+					if self:isEnemy(to) and getCardsNum("Jink", to, self.player) < 1 or sgs.card_lack[to:objectName()]["Jink"] == 1 or self:isWeak(to)  then
 						willHit = true
 						break
 					end
@@ -1631,7 +1631,7 @@ sgs.thyanxing_keep_value = {
 
 --埋火：当你使用红色牌指定目标后，若此牌为你于此回合内使用的第一张牌，且若目标数为1，你可以选择一种花色▶该角色展示手牌，然后其摸X张牌（X为其手牌中此花色牌的数量与3中的较小值）。
 sgs.ai_skill_invoke.thmaihuo = function(self, data)
-	local target = data:toCardUse().to:first()
+	local target = data:toCardUse().to:first() or self.player
 	if target and self:isFriend(target) then
 		local suits = {"spade", "heart", "club", "diamond"}
 		local num = 0;

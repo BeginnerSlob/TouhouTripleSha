@@ -1842,7 +1842,7 @@ public:
                     use.card->setFlags("thfuli");
                 }
             } else if (triggerEvent == BeforeCardsMove && player->hasFlag("fuli_target")
-                       && player->getPile("tassel").length() < 3) {
+                       && player->getPile("tassel").length() < 3 && room->isSomeonesTurn()) {
                 CardsMoveOneTimeStruct move = data.value<CardsMoveOneTimeStruct>();
                 if ((move.reason.m_reason & CardMoveReason::S_MASK_BASIC_REASON) == CardMoveReason::S_REASON_USE
                     && move.from_places.contains(Player::PlaceTable) && move.to_place == Player::DiscardPile
@@ -2129,15 +2129,17 @@ public:
     virtual QStringList triggerable(TriggerEvent, Room *, ServerPlayer *player, QVariant &data, ServerPlayer *&) const
     {
         DamageStruct damage = data.value<DamageStruct>();
-        if (TriggerSkill::triggerable(player) && damage.card->isKindOf("FireAttack"))
+        if (TriggerSkill::triggerable(player) && damage.card && damage.card->isKindOf("FireAttack"))
             return QStringList(objectName());
         return QStringList();
     }
 
-    virtual bool cost(TriggerEvent, Room *, ServerPlayer *player, QVariant &, ServerPlayer *) const
+    virtual bool cost(TriggerEvent, Room *room, ServerPlayer *player, QVariant &, ServerPlayer *) const
     {
-        if (player->askForSkillInvoke(objectName()))
+        if (player->askForSkillInvoke(objectName())) {
+            room->broadcastSkillInvoke(objectName());
             return true;
+        }
         return false;
     }
 
