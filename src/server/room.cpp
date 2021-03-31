@@ -4776,7 +4776,7 @@ void Room::updateCardsOnGet(const CardsMoveStruct &move)
     player = (ServerPlayer *)move.to;
     if (player != NULL
         && (move.to_place == Player::PlaceHand || move.to_place == Player::PlaceJudge
-            || move.to_place == Player::PlaceSpecial)) {
+            || (move.to_place == Player::PlaceSpecial && !move.to_pile_name.startsWith("#")))) {
         QList<const Card *> cards;
         foreach (int cardId, move.card_ids)
             cards.append(getCard(cardId));

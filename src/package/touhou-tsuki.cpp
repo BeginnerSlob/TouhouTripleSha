@@ -2807,13 +2807,13 @@ bool ThShenbaoCard::targetFilter(const QList<const Player *> &targets, const Pla
 void ThShenbaoCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> &targets) const
 {
     ServerPlayer *target = targets.first();
-    if (target->isAllNude())
+    if (!target || target->isAllNude())
         return;
 
     room->removePlayerMark(source, "@shenbao");
     room->addPlayerMark(source, "@shenbaoused");
     room->setPlayerFlag(target, "thshenbao_InTempMoving");
-    DummyCard *dummy = new DummyCard;
+    DummyCard dummy;
     int n = qMin(source->getAttackRange(), 3);
     QList<int> card_ids;
     QList<Player::Place> original_places;
@@ -2822,16 +2822,15 @@ void ThShenbaoCard::use(Room *room, ServerPlayer *source, QList<ServerPlayer *> 
             break;
         card_ids << room->askForCardChosen(source, target, "hej", objectName());
         original_places << room->getCardPlace(card_ids[i]);
-        dummy->addSubcard(card_ids[i]);
         target->addToPile("#thshenbao", card_ids[i], false);
     }
-    for (int i = 0; i < dummy->subcardsLength(); i++)
+    dummy.addSubcards(card_ids);
+    for (int i = 0; i < card_ids.length(); i++)
         room->moveCardTo(Sanguosha->getCard(card_ids[i]), target, original_places[i], false);
     room->setPlayerFlag(target, "-thshenbao_InTempMoving");
-    if (dummy->subcardsLength() > 0)
-        room->obtainCard(source, dummy, false);
-    dummy->deleteLater();
-    room->setPlayerFlag(source, "shenbaoused");
+    if (dummy.subcardsLength() > 0)
+        room->obtainCard(source, &dummy, false);
+    source->setFlags("shenbaoused");
 }
 
 class ThShenbaoViewAsSkill : public ZeroCardViewAsSkill
