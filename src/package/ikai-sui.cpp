@@ -7868,10 +7868,17 @@ public:
     {
         if (triggerEvent == EventPhaseStart) {
             if (player->getPhase() == Player::Play) {
+                QString mark_str = "mingzhen_" + player->objectName();
                 foreach (ServerPlayer *p, room->getAllPlayers()) {
-                    if (p->getMark("mingzhen_" + player->objectName()) > 0) {
-                        room->removePlayerMark(p, "@mingzhen", p->getMark("mingzhen_" + player->objectName()));
-                        room->setPlayerMark(p, "mingzhen_" + player->objectName(), 0);
+                    if (p->getMark(mark_str) > 0) {
+                        room->removePlayerMark(p, "@mingzhen", p->getMark(mark_str));
+                        p->setMark(mark_str, 0);
+
+                        foreach (ServerPlayer *pl, room->getAllPlayers())
+                            room->filterCards(pl, pl->getHandcards(), false);
+                        JsonArray args;
+                        args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+                        room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
                     }
                 }
             }
@@ -7880,19 +7887,26 @@ public:
         if (triggerEvent == Death) {
             DeathStruct death = data.value<DeathStruct>();
             if (death.who == player) {
+                QString mark_str = "mingzhen_" + player->objectName();
                 foreach (ServerPlayer *p, room->getAllPlayers()) {
-                    if (p->getMark("mingzhen_" + player->objectName()) > 0) {
-                        room->removePlayerMark(p, "@mingzhen", p->getMark("mingzhen_" + player->objectName()));
-                        room->setPlayerMark(p, "mingzhen_" + player->objectName(), 0);
+                    if (p->getMark(mark_str) > 0) {
+                        room->removePlayerMark(p, "@mingzhen", p->getMark(mark_str));
+                        p->setMark(mark_str, 0);
+
+                        foreach (ServerPlayer *pl, room->getAllPlayers())
+                            room->filterCards(pl, pl->getHandcards(), false);
+                        JsonArray args;
+                        args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+                        room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
                     }
                 }
             }
             return QStringList();
         }
-        if (!TriggerSkill::triggerable(player))
+        if (!TriggerSkill::triggerable(player) || player->hasFlag("Global_DebutFlag"))
             return QStringList();
         DamageStruct damage = data.value<DamageStruct>();
-        if (!damage.to->hasSkill("thyanmeng") && !damage.to->hasSkill("thxuanyan")) {
+        if (!damage.to->hasSkill("thyanmeng") && !damage.to->hasSkill("thxuanyan") && !damage.to->hasFlag("Global_DebutFlag")) {
             foreach (const Skill *skill, damage.to->getVisibleSkillList()) {
                 if (!skill->isAttachedLordSkill())
                     return QStringList(objectName());
@@ -7936,7 +7950,13 @@ public:
                     room->loseHp(damage.to);
             } else {
                 room->addPlayerMark(damage.to, "@mingzhen");
-                room->addPlayerMark(damage.to, "mingzhen_" + player->objectName());
+                damage.to->addMark("mingzhen_" + player->objectName());
+
+                foreach (ServerPlayer *pl, room->getAllPlayers())
+                    room->filterCards(pl, pl->getHandcards(), true);
+                JsonArray args;
+                args << QSanProtocol::S_GAME_EVENT_UPDATE_SKILL;
+                room->doBroadcastNotify(QSanProtocol::S_COMMAND_LOG_EVENT, args);
             }
         }
 
