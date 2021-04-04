@@ -8600,6 +8600,8 @@ IkaiKinPackage::IkaiKinPackage()
 
     General *bloom017 = new General(this, "bloom017", "hana");
     bloom017->addSkill(new IkPiaohu);
+    bloom017->addSkill(new FakeMoveSkill("ikpiaohu"));
+    related_skills.insertMulti("ikpiaohu", "#ikpiaohu-fake-move");
 
     General *bloom018 = new General(this, "bloom018", "hana", 3, false);
     bloom018->addSkill(new IkXuwu);

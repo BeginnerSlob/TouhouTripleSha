@@ -2327,7 +2327,7 @@ public:
         if (skills.length() == 0)
             return false;
         QString choice = r->askForChoice(p, objectName(), skills.join("+"));
-        r->acquireSkill(p, choice, true);
+        r->acquireSkill(p, choice);
         return false;
     }
 };
